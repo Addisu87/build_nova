@@ -1,9 +1,9 @@
 "use client"
 
-import { PropertiesGrid } from "@/features/properties"
+import { PropertiesGrid } from "@/components/features/properties"
 import { SearchBar } from "@/components/layout/search-bar"
-import { FeaturedCarousel } from "@/features/home"
-import { mockProperties } from "@/features/properties/mock-data"
+import { FeaturedCarousel } from "@/components/features"
+import { mockProperties } from "@/components/features/properties/mock-data"
 
 export default function HomePage() {
 	return (

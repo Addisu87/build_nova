@@ -6,9 +6,9 @@ import {
 	PropertyDetailsModal,
 	PropertyMap,
 	PropertyImageCarousel,
-} from "@/features/properties"
-import { Property } from "@/features/properties/types"
-import { mockProperties } from "@/features/properties/mock-data"
+} from "@/components/features/properties"
+import { Property } from "@/components/features/properties/types"
+import { mockProperties } from "@/components/features/properties/mock-data"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { motion } from "framer-motion"

@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { PropertyForm } from "@/features/properties"
-import { mockProperties } from "@/features/properties/mock-data"
-import { Property } from "@/features/properties/types"
+import { PropertyForm } from "@/components/features/properties"
+import { mockProperties } from "@/components/features/properties/mock-data"
+import { Property } from "@/components/features/properties/types"
 
 interface EditPropertyPageProps {
 	params: {
@@ -16,7 +16,8 @@ export default function EditPropertyPage({
 	params,
 }: EditPropertyPageProps) {
 	const router = useRouter()
-	const [property, setProperty] = useState<Property | null>(null)
+	const [property, setProperty] =
+		useState<Property | null>(null)
 	const [isLoading, setIsLoading] = useState(true)
 	const [isSaving, setIsSaving] = useState(false)
 
@@ -24,14 +25,19 @@ export default function EditPropertyPage({
 		// Simulating API call to fetch property
 		const fetchProperty = async () => {
 			try {
-				const found = mockProperties.find(p => p.id === params.id)
+				const found = mockProperties.find(
+					(p) => p.id === params.id,
+				)
 				if (!found) {
 					router.push("/404")
 					return
 				}
 				setProperty(found)
 			} catch (error) {
-				console.error("Error fetching property:", error)
+				console.error(
+					"Error fetching property:",
+					error,
+				)
 				router.push("/404")
 			} finally {
 				setIsLoading(false)
@@ -41,14 +47,21 @@ export default function EditPropertyPage({
 		fetchProperty()
 	}, [params.id, router])
 
-	const handleSubmit = async (data: Partial<Property>) => {
+	const handleSubmit = async (
+		data: Partial<Property>,
+	) => {
 		setIsSaving(true)
 		try {
 			// Simulating API call to update property
-			await new Promise(resolve => setTimeout(resolve, 1000))
+			await new Promise((resolve) =>
+				setTimeout(resolve, 1000),
+			)
 			router.push(`/properties/${params.id}`)
 		} catch (error) {
-			console.error("Error updating property:", error)
+			console.error(
+				"Error updating property:",
+				error,
+			)
 		} finally {
 			setIsSaving(false)
 		}
@@ -71,7 +84,9 @@ export default function EditPropertyPage({
 
 	return (
 		<main className="container mx-auto px-4 py-8">
-			<h1 className="mb-8 text-2xl font-bold">Edit Property</h1>
+			<h1 className="mb-8 text-2xl font-bold">
+				Edit Property
+			</h1>
 			<PropertyForm
 				initialData={property}
 				onSubmit={handleSubmit}

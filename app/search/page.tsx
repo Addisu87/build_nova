@@ -5,9 +5,9 @@ import { useSearchParams } from "next/navigation"
 import {
 	PropertyFilters,
 	PropertiesGrid,
-} from "@/features/properties"
-import { mockProperties } from "@/features/properties/mock-data"
-import { Property } from "@/features/properties/types"
+} from "@/components/features/properties"
+import { mockProperties } from "@/components/features/properties/mock-data"
+import { Property } from "@/components/features/properties/types"
 
 export default function SearchPage() {
 	const searchParams = useSearchParams()

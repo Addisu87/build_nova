@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Toaster } from "@/components/ui/sonner"
+import { toast } from "sonner"
 import { ZodSchema } from "zod"
 
 interface UseAuthFormOptions<T> {
