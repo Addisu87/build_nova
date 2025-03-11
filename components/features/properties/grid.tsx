@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useAuth } from "@/hooks/auth/use-auth"
+import { useAuth } from "@/contexts/auth-context"
 import {
 	Button,
 	Card,
@@ -27,63 +27,33 @@ import {
 	Square,
 	ArrowUpDown,
 } from "lucide-react"
+import { usePropertyManager } from "@/hooks/properties/use-property-manager"
+
+// Remove these imports
+// import { usePropertySorting } from "@/hooks/property/use-property-sorting"
+// import { usePropertyFilters } from "@/hooks/properties/use-property-filters"
 
 export function PropertiesGrid() {
-	const { user, loading } = useAuth()
-	const [filters, setFilters] =
-		useState<PropertyFiltersType>({
-			minPrice: "",
-			maxPrice: "",
-			bedrooms: "",
-			bathrooms: "",
-			propertyType: "",
-		})
-	const [sortBy, setSortBy] =
-		useState<SortOption>("newest")
-	const [favorites, setFavorites] = useState<
-		Set<string>
-	>(new Set())
+	const { user } = useAuth()
+	const { 
+		filters,
+		updateFilters,
+		sort,
+		updateSort
+	} = usePropertyManager()
 
-	const handleFilterChange = (
-		newFilters: Partial<PropertyFiltersType>,
-	) => {
-		setFilters((prev) => ({
-			...prev,
-			...newFilters,
-		}))
-	}
+	// Remove these hook calls
+	// const { sort, updateSort } = usePropertySorting()
+	// const { filters, updateFilters } = usePropertyFilters()
 
-	const handleToggleFavorite = (
-		propertyId: string,
-	) => {
-		if (!user) {
-			toast({
-				title: "Authentication required",
-				description:
-					"Please sign in to save properties to your favorites",
-				variant: "destructive",
-			})
-			return
-		}
-
-		setFavorites((prev) => {
-			const newFavorites = new Set(prev)
-			if (newFavorites.has(propertyId)) {
-				newFavorites.delete(propertyId)
-				toast({
-					title: "Removed from favorites",
-					description:
-						"Property removed from your favorites",
-				})
-			} else {
-				newFavorites.add(propertyId)
-				toast({
-					title: "Added to favorites",
-					description:
-						"Property added to your favorites",
-				})
-			}
-			return newFavorites
+	// Update filter handling to match new filter structure
+	const handleFilterChange = (newFilters: Partial<PropertyFiltersType>) => {
+		updateFilters({
+			minPrice: Number(newFilters.minPrice) || undefined,
+			maxPrice: Number(newFilters.maxPrice) || undefined,
+			bedrooms: Number(newFilters.bedrooms) || undefined,
+			bathrooms: Number(newFilters.bathrooms) || undefined,
+			propertyType: newFilters.propertyType || undefined
 		})
 	}
 
@@ -91,26 +61,22 @@ export function PropertiesGrid() {
 		mockProperties.filter((property) => {
 			if (
 				filters.minPrice &&
-				property.price <
-					parseInt(filters.minPrice)
+				property.price < filters.minPrice
 			)
 				return false
 			if (
 				filters.maxPrice &&
-				property.price >
-					parseInt(filters.maxPrice)
+				property.price > filters.maxPrice
 			)
 				return false
 			if (
 				filters.bedrooms &&
-				property.bedrooms <
-					parseInt(filters.bedrooms)
+				property.bedrooms < filters.bedrooms
 			)
 				return false
 			if (
 				filters.bathrooms &&
-				property.bathrooms <
-					parseInt(filters.bathrooms)
+				property.bathrooms < filters.bathrooms
 			)
 				return false
 			if (
@@ -125,10 +91,10 @@ export function PropertiesGrid() {
 	const sortedProperties = [
 		...filteredProperties,
 	].sort((a, b) => {
-		switch (sortBy) {
-			case "price-asc":
+		switch (sort.sortBy) {
+			case "price_asc":
 				return a.price - b.price
-			case "price-desc":
+			case "price_desc":
 				return b.price - a.price
 			case "newest":
 				return (
@@ -178,27 +144,23 @@ export function PropertiesGrid() {
 				<div className="flex items-center gap-2">
 					<ArrowUpDown className="h-4 w-4" />
 					<Select
-						value={sortBy}
-						onValueChange={(value: SortOption) =>
-							setSortBy(value)
-						}
+						value={sort.sortBy}
+						onValueChange={updateSort}
 					>
 						<SelectTrigger className="w-[180px]">
 							<SelectValue placeholder="Sort by" />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="price-asc">
-								Price: Low to High
-							</SelectItem>
-							<SelectItem value="price-desc">
-								Price: High to Low
-							</SelectItem>
-							<SelectItem value="newest">
-								Newest First
-							</SelectItem>
-							<SelectItem value="oldest">
-								Oldest First
-							</SelectItem>
+							{Object.entries(
+								sort.sortOptions,
+							).map(([value, label]) => (
+								<SelectItem
+									key={value}
+									value={value}
+								>
+									{label}
+								</SelectItem>
+							))}
 						</SelectContent>
 					</Select>
 				</div>
@@ -230,77 +192,17 @@ export function PropertiesGrid() {
 					{sortedProperties.map((property) => (
 						<motion.div
 							key={property.id}
-							initial={{
-								opacity: 0,
-								y: 20,
-							}}
-							animate={{
-								opacity: 1,
-								y: 0,
-							}}
-							transition={{
-								duration: 0.3,
-							}}
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.3 }}
 						>
-							<Card className="overflow-hidden group">
-								<div className="relative">
-									<Image
-										src={property.imageUrl}
-										alt={property.title}
-										width={800}
-										height={400}
-										className="h-48 w-full object-cover transition-transform group-hover:scale-105"
-									/>
-									<button
-										onClick={() =>
-											handleToggleFavorite(
-												property.id,
-											)
-										}
-										className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
-									>
-										<Heart
-											className={`h-4 w-4 ${
-												favorites.has(property.id)
-													? "fill-red-500 text-red-500"
-													: "text-gray-500"
-											}`}
-										/>
-									</button>
-								</div>
-								<div className="p-4">
-									<h3 className="font-semibold text-lg mb-2">
-										{property.title}
-									</h3>
-									<p className="text-2xl font-bold text-primary mb-2">
-										$
-										{property.price.toLocaleString()}
-									</p>
-									<p className="text-gray-600 mb-4">
-										{property.location}
-									</p>
-									<div className="flex justify-between text-gray-500">
-										<div className="flex items-center gap-1">
-											<Bed className="h-4 w-4" />
-											<span>
-												{property.bedrooms}
-											</span>
-										</div>
-										<div className="flex items-center gap-1">
-											<Bath className="h-4 w-4" />
-											<span>
-												{property.bathrooms}
-											</span>
-										</div>
-										<div className="flex items-center gap-1">
-											<Square className="h-4 w-4" />
-											<span>
-												{property.area} sqft
-											</span>
-										</div>
-									</div>
-								</div>
-							</Card>
+							<PropertyCard
+								property={property}
+								onFavorite={toggleFavorite}
+								isFavorite={isFavorited(
+									property.id,
+								)}
+							/>
 						</motion.div>
 					))}
 				</div>
@@ -308,3 +210,19 @@ export function PropertiesGrid() {
 		</div>
 	)
 }
+
+// Update clear filters handler
+;<Button
+	variant="outline"
+	onClick={() =>
+		updateFilters({
+			minPrice: undefined,
+			maxPrice: undefined,
+			bedrooms: undefined,
+			bathrooms: undefined,
+			propertyType: undefined,
+		})
+	}
+>
+	Clear Filters
+</Button>

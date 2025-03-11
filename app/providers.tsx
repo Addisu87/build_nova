@@ -2,7 +2,7 @@
 
 import { ThemeProvider } from "next-themes"
 import { Toaster } from "@/components/ui/sonner"
-import { useAuth } from "@/hooks/auth/use-auth"
+import { useAuth } from "@/contexts/auth-context"
 
 export function Providers({
 	children,

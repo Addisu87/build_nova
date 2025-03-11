@@ -10,7 +10,7 @@ import {
 	User,
 	LogOut,
 } from "lucide-react"
-import { useAuth } from "@/hooks/auth/use-auth"
+import { useAuth } from "@/contexts/auth-context"
 import {
 	DropdownMenu,
 	DropdownMenuContent,

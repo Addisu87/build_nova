@@ -2,14 +2,14 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui"
-import { AuthFormWrapper } from "./auth-form-wrapper"
+import { AuthForm } from "./auth-form"
 
 export function VerifyEmailMessage() {
 	return (
-		<AuthFormWrapper
+		<AuthForm
 			title="Check your email"
 			description="We've sent you a verification link. Please check your email to complete your registration."
-			footer={
+			additionalContent={
 				<div className="space-y-4">
 					<p className="text-sm text-gray-500">
 						Didn't receive the email? Check your
@@ -37,6 +37,6 @@ export function VerifyEmailMessage() {
 					hours.
 				</p>
 			</div>
-		</AuthFormWrapper>
+		</AuthForm>
 	)
 }

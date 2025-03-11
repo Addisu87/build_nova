@@ -1,6 +1,5 @@
 "use client"
 
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
 	Button,
@@ -10,7 +9,7 @@ import {
 import { useAuth } from "@/contexts/auth-context"
 import { useAuthForm } from "@/hooks/auth/use-auth-form"
 import { resetPasswordSchema } from "@/lib/auth/schemas"
-import { AuthFormWrapper } from "./auth-form-wrapper"
+import { AuthForm } from "./auth-form"
 
 export function PasswordResetForm() {
 	const router = useRouter()
@@ -26,20 +25,12 @@ export function PasswordResetForm() {
 		})
 
 	return (
-		<AuthFormWrapper
+		<AuthForm
 			title="Reset your password"
 			description="Enter your email address and we'll send you a link to reset your password"
-			footer={
-				<div>
-					Remember your password?{" "}
-					<Link
-						href="/auth/login"
-						className="text-blue-600 hover:underline"
-					>
-						Sign in
-					</Link>
-				</div>
-			}
+			linkText="Remember your password?"
+			linkHref="/auth/login"
+			linkLabel="Sign in"
 		>
 			<form
 				onSubmit={handleSubmit}
@@ -86,6 +77,6 @@ export function PasswordResetForm() {
 						: "Send Reset Link"}
 				</Button>
 			</form>
-		</AuthFormWrapper>
+		</AuthForm>
 	)
 }

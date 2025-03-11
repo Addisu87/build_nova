@@ -9,6 +9,7 @@ import {
 import { useRouter } from "next/navigation"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { Toaster } from "@/components/ui/sonner"
+import { toast } from "sonner"
 import type {
 	User,
 	Session,

@@ -5,7 +5,8 @@ import { Button, Input, Label } from "@/components/ui"
 import { useAuth } from "@/contexts/auth-context"
 import { useAuthForm } from "@/hooks/auth/use-auth-form"
 import { updatePasswordSchema } from "@/lib/auth/schemas"
-import { AuthFormWrapper } from "./auth-form-wrapper"
+import { AuthForm } from "./auth-form"
+import { toast } from "sonner"
 
 export function UpdatePasswordForm() {
     const router = useRouter()
@@ -14,13 +15,24 @@ export function UpdatePasswordForm() {
     const { handleSubmit, isLoading, errors } = useAuthForm({
         schema: updatePasswordSchema,
         onSubmit: async (data) => {
-            await updatePassword(data.password)
-            router.push("/")
+            try {
+                await updatePassword(data.password)
+                toast({
+                    title: "Success",
+                    description: "Your password has been updated successfully."
+                })
+                // Add a small delay before redirecting to ensure UI updates are visible
+                setTimeout(() => {
+                    router.push("/")
+                }, 1000)
+            } catch (error) {
+                // Error handling is already done in useAuthForm
+            }
         },
     })
 
     return (
-        <AuthFormWrapper
+        <AuthForm
             title="Update your password"
             description="Enter your new password below"
         >
@@ -73,6 +85,6 @@ export function UpdatePasswordForm() {
                     {isLoading ? "Updating password..." : "Update Password"}
                 </Button>
             </form>
-        </AuthFormWrapper>
+        </AuthForm>
     )
-} 
+}

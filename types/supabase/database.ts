@@ -52,6 +52,9 @@ export interface Database {
 						| "available"
 						| "pending"
 						| "sold"
+					property_type: string
+					amenities: string[]
+					year_built: number
 					user_id: string
 					updated_at?: string
 				}
@@ -76,6 +79,9 @@ export interface Database {
 						| "available"
 						| "pending"
 						| "sold"
+					property_type?: string
+					amenities?: string[]
+					year_built?: number
 					user_id?: string
 					updated_at?: string
 				}

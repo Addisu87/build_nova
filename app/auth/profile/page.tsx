@@ -1,12 +1,14 @@
 "use client"
 
-import { useAuth } from "@/hooks/auth/use-auth"
+import { useAuth } from "@/contexts/auth-context"
 import { usePropertyFavorites } from "@/hooks/favorites/use-property-favorites"
 import { PropertyCard } from "@/components/properties/property-card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Skeleton } from "@/components/ui/skeleton"
+import {
+	Button,
+	Skeleton,
+	Input,
+	Label,
+} from "@/components/ui"
 import { motion } from "framer-motion"
 
 export default function ProfilePage() {

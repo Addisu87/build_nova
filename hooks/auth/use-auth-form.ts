@@ -70,8 +70,9 @@ export function useAuthForm<T>({
 			toast({
 				title: "Error",
 				description:
-					errors.form ||
-					"An error occurred. Please try again.",
+					error instanceof Error
+						? error.message
+						: "An error occurred. Please try again.",
 				variant: "destructive",
 			})
 		} finally {

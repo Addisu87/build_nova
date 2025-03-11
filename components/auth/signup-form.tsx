@@ -1,7 +1,7 @@
 "use client"
 
-import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { Facebook, Chrome } from "lucide-react"
 import {
 	Input,
 	Button,
@@ -11,11 +11,11 @@ import {
 import { useAuth } from "@/contexts/auth-context"
 import { useAuthForm } from "@/hooks/auth/use-auth-form"
 import { signupSchema } from "@/lib/auth/schemas"
-import { AuthFormWrapper } from "./auth-form-wrapper"
+import { AuthForm } from "./auth-form"
 
 export function SignupForm() {
 	const router = useRouter()
-	const { signUp } = useAuth()
+	const { signUp, signInWithGoogle, signInWithFacebook } = useAuth()
 
 	const { handleSubmit, isLoading, errors } =
 		useAuthForm({
@@ -30,21 +30,29 @@ export function SignupForm() {
 			},
 		})
 
+	const handleGoogleSignIn = async () => {
+		try {
+			await signInWithGoogle()
+		} catch (error) {
+			console.error("Google sign in error:", error)
+		}
+	}
+
+	const handleFacebookSignIn = async () => {
+		try {
+			await signInWithFacebook()
+		} catch (error) {
+			console.error("Facebook sign in error:", error)
+		}
+	}
+
 	return (
-		<AuthFormWrapper
+		<AuthForm
 			title="Create an account"
 			description="Sign up to get started"
-			footer={
-				<div>
-					Already have an account?{" "}
-					<Link
-						href="/auth/login"
-						className="text-blue-600 hover:underline"
-					>
-						Sign in
-					</Link>
-				</div>
-			}
+			linkText="Already have an account?"
+			linkHref="/auth/login"
+			linkLabel="Sign in"
 		>
 			<form
 				onSubmit={handleSubmit}
@@ -173,7 +181,39 @@ export function SignupForm() {
 						? "Creating account..."
 						: "Create Account"}
 				</Button>
+
+				<div className="relative my-4">
+					<div className="absolute inset-0 flex items-center">
+						<div className="w-full border-t border-gray-300"></div>
+					</div>
+					<div className="relative flex justify-center text-sm">
+						<span className="bg-white px-2 text-gray-500">
+							Or continue with
+						</span>
+					</div>
+				</div>
+
+				<div className="grid grid-cols-2 gap-3">
+					<Button
+						type="button"
+						variant="outline"
+						className="w-full"
+						onClick={handleGoogleSignIn}
+					>
+						<Chrome className="mr-2 h-4 w-4" />
+						Google
+					</Button>
+					<Button
+						type="button"
+						variant="outline"
+						className="w-full"
+						onClick={handleFacebookSignIn}
+					>
+						<Facebook className="mr-2 h-4 w-4" />
+						Facebook
+					</Button>
+				</div>
 			</form>
-		</AuthFormWrapper>
+		</AuthForm>
 	)
 }
