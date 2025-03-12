@@ -148,18 +148,15 @@ export function AuthProvider({
 				throw error
 			}
 
-			toast({
-				title: "Verification email sent",
+			toast.success("Verification email sent", {
 				description:
 					"Please check your email to verify your account.",
 			})
 
 			router.push("/auth/verify-email")
 		} catch (error: any) {
-			toast({
-				title: "Registration failed",
+			toast.error("Registration failed", {
 				description: error.message,
-				variant: "destructive",
 			})
 			throw error
 		}
@@ -198,18 +195,15 @@ export function AuthProvider({
 				throw error
 			}
 
-			toast({
-				title: "Welcome back!",
+			toast.success("Welcome back!", {
 				description:
 					"You've successfully signed in.",
 			})
 
 			router.push("/")
 		} catch (error: any) {
-			toast({
-				title: "Sign in failed",
+			toast.error("Sign in failed", {
 				description: error.message,
-				variant: "destructive",
 			})
 			throw error
 		}
@@ -251,18 +245,15 @@ export function AuthProvider({
 				await supabase.auth.signOut()
 			if (error) throw error
 
-			toast({
-				title: "Signed out",
+			toast.success("Signed out", {
 				description:
 					"You've been successfully signed out.",
 			})
 
 			router.push("/")
 		} catch (error: any) {
-			toast({
-				title: "Sign out failed",
+			toast.error("Sign out failed", {
 				description: error.message,
-				variant: "destructive",
 			})
 		}
 	}
@@ -288,16 +279,13 @@ export function AuthProvider({
 
 			if (error) throw error
 
-			toast({
-				title: "Password reset email sent",
+			toast.success("Password reset email sent", {
 				description:
 					"Please check your email for the password reset link.",
 			})
 		} catch (error: any) {
-			toast({
-				title: "Password reset failed",
+			toast.error("Password reset failed", {
 				description: error.message,
-				variant: "destructive",
 			})
 			throw error
 		}
