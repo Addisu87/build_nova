@@ -3,7 +3,12 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { Button, Avatar } from "@/components/ui"
+import {
+	Button,
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
+} from "@/components/ui"
 import {
 	Heart,
 	Home,
@@ -58,24 +63,26 @@ export function Navbar() {
 										className="flex items-center justify-center rounded-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 hover:opacity-90"
 										aria-label="User menu"
 									>
-										<Avatar
-											src={
-												user.user_metadata
-													?.avatar_url || null
-											}
-											size="sm"
-											alt={
-												user.user_metadata
-													?.full_name || "User"
-											}
-											fallback={
+										<Avatar>
+											<AvatarImage
+												src={
+													user.user_metadata
+														?.avatar_url || null
+												}
+												size="sm"
+												alt={
+													user.user_metadata
+														?.full_name || "User"
+												}
+											/>
+											<AvatarFallback>
 												<div className="bg-blue-100 text-blue-600 flex items-center justify-center h-full w-full">
 													{user.user_metadata
 														?.full_name?.[0] ||
 														"U"}
 												</div>
-											}
-										/>
+											</AvatarFallback>
+										</Avatar>
 									</button>
 								</DropdownMenuTrigger>
 								<DropdownMenuContent

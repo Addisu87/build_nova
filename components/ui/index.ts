@@ -3,7 +3,11 @@ export { Input } from "./input"
 export { Button } from "./button"
 export { Label } from "./label"
 export { Toaster } from "./sonner"
-export { Avatar } from "./avatar"
+export {
+	Avatar,
+	AvatarImage,
+	AvatarFallback,
+} from "./avatar"
 export {
 	DropdownMenu,
 	DropdownMenuTrigger,
