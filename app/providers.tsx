@@ -2,15 +2,13 @@
 
 import { ThemeProvider } from "next-themes"
 import { Toaster } from "@/components/ui/sonner"
-import { useAuth } from "@/contexts/auth-context"
+import { AuthProvider } from "@/contexts/auth-context"
 
 export function Providers({
 	children,
 }: {
 	children: React.ReactNode
 }) {
-	const { isLoading } = useAuth()
-
 	return (
 		<ThemeProvider
 			attribute="class"
@@ -18,8 +16,10 @@ export function Providers({
 			enableSystem
 			disableTransitionOnChange
 		>
-			{children}
-			<Toaster />
+			<AuthProvider>
+				{children}
+				<Toaster />
+			</AuthProvider>
 		</ThemeProvider>
 	)
 }

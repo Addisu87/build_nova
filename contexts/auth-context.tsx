@@ -38,7 +38,6 @@ interface AuthContextType {
 	) => Promise<void>
 	canSendEmail: () => boolean
 	getTimeUntilNextEmail: () => number
-	loading: boolean
 }
 
 const AuthContext = createContext<
@@ -320,8 +319,7 @@ export function AuthProvider({
 				resetPassword,
 				updatePassword,
 				canSendEmail,
-				getTimeUntilNextEmail,
-				loading: isLoading,
+				getTimeUntilNextEmail
 			}}
 		>
 			{children}

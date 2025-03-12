@@ -1,18 +1,15 @@
 "use client"
 
 import { PropertiesGrid } from "@/components/features/properties"
-import { SearchBar } from "@/components/layout/search-bar"
 import { FeaturedCarousel } from "@/components/features"
+import { Hero } from "@/components/features/hero"
 import { mockProperties } from "@/components/features/properties/mock-data"
 
 export default function HomePage() {
 	return (
 		<main className="container mx-auto px-4 py-8">
 			<section className="mb-12">
-				<h1 className="mb-6 text-4xl font-bold">
-					Find Your Dream Home
-				</h1>
-				<SearchBar />
+				<Hero />
 			</section>
 
 			<section className="mb-12">
@@ -20,7 +17,7 @@ export default function HomePage() {
 					Featured Properties
 				</h2>
 				<FeaturedCarousel
-					properties={mockProperties.slice(0, 5)}
+					properties={mockProperties.slice(0, 6)}
 				/>
 			</section>
 
