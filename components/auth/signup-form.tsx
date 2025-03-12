@@ -2,11 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { Facebook, Chrome } from "lucide-react"
-import {
-	Input,
-	Button,
-	Label,
-} from "@/components/ui" 
+import { Input, Button,Label } from "@/components/ui"
 
 import { useAuth } from "@/contexts/auth-context"
 import { useAuthForm } from "@/hooks/auth/use-auth-form"
@@ -15,7 +11,11 @@ import { AuthForm } from "./auth-form"
 
 export function SignupForm() {
 	const router = useRouter()
-	const { signUp, signInWithGoogle, signInWithFacebook } = useAuth()
+	const {
+		signUp,
+		signInWithGoogle,
+		signInWithFacebook,
+	} = useAuth()
 
 	const { handleSubmit, isLoading, errors } =
 		useAuthForm({
@@ -34,7 +34,10 @@ export function SignupForm() {
 		try {
 			await signInWithGoogle()
 		} catch (error) {
-			console.error("Google sign in error:", error)
+			console.error(
+				"Google sign in error:",
+				error,
+			)
 		}
 	}
 
@@ -42,7 +45,10 @@ export function SignupForm() {
 		try {
 			await signInWithFacebook()
 		} catch (error) {
-			console.error("Facebook sign in error:", error)
+			console.error(
+				"Facebook sign in error:",
+				error,
+			)
 		}
 	}
 

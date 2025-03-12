@@ -76,7 +76,10 @@ export function useAuthForm<T>({
 				variant: "destructive",
 			})
 		} finally {
-			setIsLoading(false)
+			// Use setTimeout to ensure state updates don't cause UI flicker
+			setTimeout(() => {
+				setIsLoading(false)
+			}, 0)
 		}
 	}
 

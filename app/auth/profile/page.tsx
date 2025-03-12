@@ -2,18 +2,19 @@
 
 import { useAuth } from "@/contexts/auth-context"
 import { usePropertyFavorites } from "@/hooks/favorites/use-property-favorites"
-import { PropertyCard } from "@/components/properties/property-card"
+import { PropertyCard, PropertiesGrid } from "@/components/features/properties"
 import {
 	Button,
 	Skeleton,
 	Input,
 	Label,
+	Avatar,
 } from "@/components/ui"
 import { motion } from "framer-motion"
 
 export default function ProfilePage() {
 	const { user } = useAuth()
-	const { data: favorites, isLoading } =
+	const { data: favorites, isLoading, removeFavorite } =
 		usePropertyFavorites()
 
 	if (!user) {
@@ -54,10 +55,17 @@ export default function ProfilePage() {
 				transition={{ duration: 0.3 }}
 				className="space-y-8"
 			>
-				<div className="space-y-4">
-					<h1 className="text-4xl font-bold">
-						Profile
-					</h1>
+				<div className="space-y-6">
+					<div className="flex items-center gap-4">
+						<Avatar 
+							src={user.user_metadata?.avatar_url} 
+							size="lg" 
+							alt={user.user_metadata?.full_name || user.email}
+						/>
+						<h1 className="text-4xl font-bold">
+							Profile
+						</h1>
+					</div>
 					<div className="grid gap-4 md:grid-cols-2">
 						<div className="space-y-2">
 							<Label htmlFor="email">Email</Label>
@@ -87,15 +95,29 @@ export default function ProfilePage() {
 					<h2 className="text-2xl font-bold">
 						Your Favorites
 					</h2>
-					<div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-						{favorites?.map((property) => (
-							<PropertyCard
-								key={property.id}
-								property={property}
-								isFavorite={true}
-							/>
-						))}
-					</div>
+					{favorites?.length === 0 ? (
+						<p className="text-gray-600">
+							You haven't added any properties to your favorites yet.
+						</p>
+					) : (
+						<PropertiesGrid
+							properties={favorites}
+							customPropertyCard={(property) => (
+								<PropertyCard
+									key={property.id}
+									property={property}
+									isFavorite={true}
+									onFavorite={(propertyId) => {
+										const favoriteId = property.favoriteId;
+										if (favoriteId) {
+											removeFavorite(favoriteId);
+										}
+									}}
+								/>
+							)}
+						/>
+					)}
+				</div>
 				</div>
 			</motion.div>
 		</main>

@@ -29,31 +29,30 @@ import {
 } from "lucide-react"
 import { usePropertyManager } from "@/hooks/properties/use-property-manager"
 
-// Remove these imports
-// import { usePropertySorting } from "@/hooks/property/use-property-sorting"
-// import { usePropertyFilters } from "@/hooks/properties/use-property-filters"
-
 export function PropertiesGrid() {
 	const { user } = useAuth()
-	const { 
+	const {
 		filters,
 		updateFilters,
 		sort,
-		updateSort
+		updateSort,
 	} = usePropertyManager()
 
-	// Remove these hook calls
-	// const { sort, updateSort } = usePropertySorting()
-	// const { filters, updateFilters } = usePropertyFilters()
-
 	// Update filter handling to match new filter structure
-	const handleFilterChange = (newFilters: Partial<PropertyFiltersType>) => {
+	const handleFilterChange = (
+		newFilters: Partial<PropertyFiltersType>,
+	) => {
 		updateFilters({
-			minPrice: Number(newFilters.minPrice) || undefined,
-			maxPrice: Number(newFilters.maxPrice) || undefined,
-			bedrooms: Number(newFilters.bedrooms) || undefined,
-			bathrooms: Number(newFilters.bathrooms) || undefined,
-			propertyType: newFilters.propertyType || undefined
+			minPrice:
+				Number(newFilters.minPrice) || undefined,
+			maxPrice:
+				Number(newFilters.maxPrice) || undefined,
+			bedrooms:
+				Number(newFilters.bedrooms) || undefined,
+			bathrooms:
+				Number(newFilters.bathrooms) || undefined,
+			propertyType:
+				newFilters.propertyType || undefined,
 		})
 	}
 

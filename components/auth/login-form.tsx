@@ -1,20 +1,13 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import {
-	Facebook,
-	Chrome,
-} from "lucide-react"
+import { Facebook, Chrome } from "lucide-react"
 
 import { useAuth } from "@/contexts/auth-context"
 import { useAuthForm } from "@/hooks/auth/use-auth-form"
 import { loginSchema } from "@/lib/auth/schemas"
 import { AuthForm } from "./auth-form"
-import {
-	Input,
-	Button,
-	Label,
-} from "@/components/ui"
+import { Input, Button,Label } from "@/components/ui"
 
 export function LoginForm() {
 	const router = useRouter()
@@ -28,8 +21,12 @@ export function LoginForm() {
 		useAuthForm({
 			schema: loginSchema,
 			onSubmit: async (data) => {
-				await signIn(data.email, data.password)
-				router.push("/")
+				try {
+					await signIn(data.email, data.password)
+					router.push("/")
+				} catch (error) {
+					// Error handling is already done in useAuthForm
+				}
 			},
 		})
 

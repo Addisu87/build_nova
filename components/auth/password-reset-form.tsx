@@ -19,8 +19,12 @@ export function PasswordResetForm() {
 		useAuthForm({
 			schema: resetPasswordSchema,
 			onSubmit: async (data) => {
-				await resetPassword(data.email)
-				router.push("/auth/login")
+				try {
+					await resetPassword(data.email)
+					router.push("/auth/login")
+				} catch (error) {
+					// Error handling is already done in useAuthForm
+				}
 			},
 		})
 
