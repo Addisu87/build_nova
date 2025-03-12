@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { toast } from 'react-hot-toast';
+import { Toaster } from "@/components/ui/sonner"
+import { toast } from "sonner"
 import { Database } from '@/types/supabase';
 import { getProperties } from '@/lib/supabase/db';
 

@@ -1,5 +1,5 @@
-export * from "./components/grid"
-export * from "./components/filters"
+export * from "./grid"
+export * from "./filters"
 export * from "./card"
 export * from "./map"
 export * from "./image-carousel"

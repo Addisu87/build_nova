@@ -70,7 +70,7 @@ export function FeaturedCarousel({
 						className="relative h-full w-full"
 					>
 						<Image
-							src={property.images[0]}
+							src={property?.image}
 							alt={property.title}
 							fill
 							className="object-cover"

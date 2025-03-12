@@ -28,6 +28,7 @@ import {
 	ArrowUpDown,
 } from "lucide-react"
 import { usePropertyManager } from "@/hooks/properties/use-property-manager"
+const { isLoading } = useAuth()
 
 export function PropertiesGrid() {
 	const { user } = useAuth()
@@ -110,7 +111,7 @@ export function PropertiesGrid() {
 		}
 	})
 
-	if (loading) {
+	if (isLoading) {
 		return (
 			<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 				{[1, 2, 3].map((i) => (
