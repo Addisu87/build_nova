@@ -8,7 +8,6 @@ import {
 } from "react"
 import { useRouter } from "next/navigation"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
-import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
 import type {
 	User,
@@ -65,6 +64,8 @@ export function AuthProvider({
 	const supabase = createClientComponentClient()
 
 	useEffect(() => {
+		if (typeof window === "undefined") return // Ensure client-side only
+
 		const getSession = async () => {
 			const {
 				data: { session },
@@ -88,7 +89,7 @@ export function AuthProvider({
 		)
 
 		return () => subscription.unsubscribe()
-	}, [supabase.auth])
+	}, [supabase.auth, router])
 
 	const canSendEmail = () => {
 		if (!emailRateLimitEnds) return true
@@ -128,9 +129,7 @@ export function AuthProvider({
 					email,
 					password,
 					options: {
-						data: {
-							full_name: fullName,
-						},
+						data: { full_name: fullName },
 					},
 				})
 
@@ -147,11 +146,11 @@ export function AuthProvider({
 				throw error
 			}
 
+			handleEmailRateLimit()
 			toast.success("Verification email sent", {
 				description:
 					"Please check your email to verify your account.",
 			})
-
 			router.push("/auth/verify-email")
 		} catch (error: any) {
 			toast.error("Registration failed", {
@@ -171,7 +170,6 @@ export function AuthProvider({
 					email,
 					password,
 				})
-
 			if (error) {
 				if (
 					error.message.includes(
@@ -193,13 +191,10 @@ export function AuthProvider({
 				}
 				throw error
 			}
-
 			toast.success("Welcome back!", {
 				description:
 					"You've successfully signed in.",
 			})
-
-			// Use window.location.href instead of router.push for a full page reload
 			window.location.href = "/"
 		} catch (error: any) {
 			toast.error("Sign in failed", {
@@ -244,13 +239,10 @@ export function AuthProvider({
 			const { error } =
 				await supabase.auth.signOut()
 			if (error) throw error
-
 			toast.success("Signed out", {
 				description:
 					"You've been successfully signed out.",
 			})
-
-			// Use window.location.href instead of router.push for a full page reload
 			window.location.href = "/"
 		} catch (error: any) {
 			toast.error("Sign out failed", {
@@ -269,7 +261,6 @@ export function AuthProvider({
 					`Please wait ${timeLeft} seconds before requesting another reset.`,
 				)
 			}
-
 			const { error } =
 				await supabase.auth.resetPasswordForEmail(
 					email,
@@ -277,9 +268,8 @@ export function AuthProvider({
 						redirectTo: `${window.location.origin}/auth/update-password`,
 					},
 				)
-
 			if (error) throw error
-
+			handleEmailRateLimit()
 			toast.success("Password reset email sent", {
 				description:
 					"Please check your email for the password reset link.",
@@ -324,7 +314,8 @@ export function AuthProvider({
 				getTimeUntilNextEmail,
 			}}
 		>
-			{children}
+			{children}{" "}
+			{/* Removed <Toaster /> from here */}
 		</AuthContext.Provider>
 	)
 }
