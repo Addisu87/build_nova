@@ -10,14 +10,17 @@ import {
 	PropertyUpdate,
 } from "@/lib/supabase"
 
-interface PropertyFilters {
+import { PropertyFilters as BasePropertyFilters, PropertyStatus } from "@/types/properties"
+
+// Define a specialized interface for API parameters
+interface PropertyApiFilters {
 	minPrice?: number
 	maxPrice?: number
 	bedrooms?: number
 	bathrooms?: number
-	city?: string
-	state?: string
-	status?: "available" | "pending" | "sold"
+	propertyType?: string
+	location?: string
+	status?: PropertyStatus[]
 }
 
 export function useProperties(

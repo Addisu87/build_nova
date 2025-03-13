@@ -99,7 +99,9 @@ export default function PropertyDetailsPage({
 				className="space-y-8"
 			>
 				<PropertyImageCarousel
-					images={property.images}
+					images={
+						property.images || [property.imageUrl]
+					}
 					title={property.title}
 				/>
 
@@ -140,8 +142,10 @@ export default function PropertyDetailsPage({
 							<span>
 								{property.bathrooms} baths
 							</span>
+
 							<span>
-								{property.square_feet.toLocaleString()}{" "}
+								{property.square_feet?.toLocaleString() ??
+									"N/A"}{" "}
 								sqft
 							</span>
 						</div>
@@ -160,18 +164,24 @@ export default function PropertyDetailsPage({
 								Features
 							</h2>
 							<ul className="grid gap-2 sm:grid-cols-2">
-								{property.features.map(
-									(feature, index) => (
-										<li
-											key={index}
-											className="flex items-center gap-2"
-										>
-											<span className="text-blue-600">
-												•
-											</span>
-											{feature}
-										</li>
-									),
+								{property.amenities ? (
+									property.amenities.map(
+										(feature, index) => (
+											<li
+												key={index}
+												className="flex items-center gap-2"
+											>
+												<span className="text-blue-600">
+													•
+												</span>
+												{feature}
+											</li>
+										),
+									)
+								) : (
+									<li className="text-gray-500">
+										No features available
+									</li>
 								)}
 							</ul>
 						</div>
@@ -183,21 +193,14 @@ export default function PropertyDetailsPage({
 								Location
 							</h2>
 							<p className="text-gray-600">
-								{property.address}
-								<br />
-								{property.city}, {property.state}{" "}
-								{property.zip_code}
+								{property.location}
 							</p>
 						</div>
 
 						<div className="h-[300px] rounded-lg border">
 							<PropertyMap
-								properties={[property]}
-								center={[
-									property.latitude,
-									property.longitude,
-								]}
-								zoom={15}
+								property={property}
+								isLoading={false}
 							/>
 						</div>
 					</div>

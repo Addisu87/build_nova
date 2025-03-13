@@ -17,6 +17,8 @@ export interface PropertyFilters {
 	bedrooms: string
 	bathrooms: string
 	propertyType: string
+	location: string
+	status?: string[]
 }
 
 interface PropertyFiltersProps {
@@ -89,7 +91,9 @@ export function PropertyFilters({
 						<SelectValue placeholder="Any" />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="">Any</SelectItem>
+						<SelectItem value="any">
+							Any
+						</SelectItem>
 						<SelectItem value="1">1+</SelectItem>
 						<SelectItem value="2">2+</SelectItem>
 						<SelectItem value="3">3+</SelectItem>
@@ -111,7 +115,9 @@ export function PropertyFilters({
 						<SelectValue placeholder="Any" />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="">Any</SelectItem>
+						<SelectItem value="any">
+							Any
+						</SelectItem>
 						<SelectItem value="1">1+</SelectItem>
 						<SelectItem value="2">2+</SelectItem>
 						<SelectItem value="3">3+</SelectItem>
@@ -132,7 +138,9 @@ export function PropertyFilters({
 						<SelectValue placeholder="Any" />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="">Any</SelectItem>
+						<SelectItem value="any">
+							Any
+						</SelectItem>
 						<SelectItem value="house">
 							House
 						</SelectItem>

@@ -18,6 +18,8 @@ export default function SearchPage() {
 		bedrooms: "",
 		bathrooms: "",
 		propertyType: "",
+		location: "",
+		status: undefined,
 	})
 
 	const filteredProperties =

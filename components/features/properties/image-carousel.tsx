@@ -10,7 +10,7 @@ import { Button } from "@/components/ui"
 import { cn } from "@/lib/utils"
 
 interface PropertyImageCarouselProps {
-	images: string[]
+	images?: string[]
 	title: string
 }
 
@@ -30,6 +30,15 @@ export function PropertyImageCarousel({
 	const handleNext = () => {
 		setCurrentIndex((prev) =>
 			prev === images.length - 1 ? 0 : prev + 1,
+		)
+	}
+
+	// If no images are provided, show a placeholder
+	if (!images || images.length === 0) {
+		return (
+			<div className="group relative h-48 bg-gray-200 flex items-center justify-center">
+				<p className="text-gray-500">No images available</p>
+			</div>
 		)
 	}
 

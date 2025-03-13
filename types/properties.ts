@@ -8,6 +8,7 @@ export interface Property {
 	area: number
 	imageUrl: string
 	propertyType: PropertyType
+	squareFeet: number
 	createdAt?: string
 	updatedAt?: string
 	description?: string
@@ -19,11 +20,11 @@ export interface Property {
 }
 
 export type PropertyType =
-	| "House"
-	| "Apartment"
-	| "Condo"
-	| "Townhouse"
-	| "Land"
+	| "house"
+	| "apartment"
+	| "condo"
+	| "townhouse"
+	| "land"
 
 export type PropertyStatus =
 	| "for-sale"
@@ -45,4 +46,3 @@ export interface PropertyFilters {
 	propertyType: string
 	location: string
 	status?: PropertyStatus[]
-}

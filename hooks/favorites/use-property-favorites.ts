@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react"
-import { toast } from "react-hot-toast"
+import { toast } from "sonner"
 import { Database } from "@/types/supabase"
 import { supabase } from "@/lib/supabase/db"
-import { useAuth } from "./use-auth"
+import { useAuth } from "@/contexts/auth-context"
 
 type Property =
 	Database["public"]["Tables"]["properties"]["Row"]
