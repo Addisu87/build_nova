@@ -40,3 +40,21 @@ export {
 	SelectScrollUpButton,
 	SelectScrollDownButton,
 } from "./select"
+
+export {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "./dialog"
+
+export {
+	Card,
+	CardContent,
+	CardDescription,
+	CardFooter,
+	CardHeader,
+	CardTitle,
+} from "./card"

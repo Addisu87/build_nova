@@ -1,7 +1,11 @@
 "use client"
 
-import { useState } from "react"
-import { Property, PropertyType } from "./types"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import {
+	Property,
+	PropertyType,
+} from "@/types/properties"
 import {
 	Button,
 	Input,
@@ -12,10 +16,14 @@ import {
 	SelectValue,
 	Textarea,
 } from "@/components/ui"
+import {
+	propertySchema,
+	PropertyFormData,
+} from "@/lib/properties/property-schemas"
 
 interface PropertyFormProps {
 	initialData?: Partial<Property>
-	onSubmit: (data: Partial<Property>) => void
+	onSubmit: (data: PropertyFormData) => void
 	isLoading?: boolean
 }
 
@@ -24,38 +32,38 @@ export function PropertyForm({
 	onSubmit,
 	isLoading = false,
 }: PropertyFormProps) {
-	const [formData, setFormData] = useState<
-		Partial<Property>
-	>({
-		title: "",
-		description: "",
-		price: 0,
-		bedrooms: 0,
-		bathrooms: 0,
-		squareFeet: 0,
-		propertyType: PropertyType.HOUSE,
-		yearBuilt: new Date().getFullYear(),
-		...initialData,
+	const {
+		register,
+		handleSubmit,
+		formState: { errors },
+		setValue,
+		watch,
+	} = useForm<PropertyFormData>({
+		resolver: zodResolver(propertySchema),
+		defaultValues: {
+			title: "",
+			description: "",
+			price: 0,
+			bedrooms: 0,
+			bathrooms: 0,
+			squareFootage: 0,
+			propertyType: PropertyType.HOUSE,
+			yearBuilt: new Date().getFullYear(),
+			...initialData,
+		},
 	})
 
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault()
-		onSubmit(formData)
-	}
+	const propertyTypeValue = watch("propertyType")
 
-	const handleChange = (
-		field: keyof Property,
-		value: string | number,
+	const onSubmitForm = (
+		data: PropertyFormData,
 	) => {
-		setFormData((prev) => ({
-			...prev,
-			[field]: value,
-		}))
+		onSubmit(data)
 	}
 
 	return (
 		<form
-			onSubmit={handleSubmit}
+			onSubmit={handleSubmit(onSubmitForm)}
 			className="space-y-6"
 		>
 			<div className="grid gap-6 md:grid-cols-2">
@@ -64,16 +72,14 @@ export function PropertyForm({
 						Title
 					</label>
 					<Input
-						required
-						value={formData.title}
-						onChange={(e) =>
-							handleChange(
-								"title",
-								e.target.value,
-							)
-						}
+						{...register("title")}
 						className="mt-1"
 					/>
+					{errors.title && (
+						<p className="text-red-500 text-sm mt-1">
+							{errors.title.message}
+						</p>
+					)}
 				</div>
 
 				<div>
@@ -82,16 +88,16 @@ export function PropertyForm({
 					</label>
 					<Input
 						type="number"
-						required
-						value={formData.price}
-						onChange={(e) =>
-							handleChange(
-								"price",
-								Number(e.target.value),
-							)
-						}
+						{...register("price", {
+							valueAsNumber: true,
+						})}
 						className="mt-1"
 					/>
+					{errors.price && (
+						<p className="text-red-500 text-sm mt-1">
+							{errors.price.message}
+						</p>
+					)}
 				</div>
 
 				<div>
@@ -99,11 +105,11 @@ export function PropertyForm({
 						Property Type
 					</label>
 					<Select
-						value={formData.propertyType?.toLowerCase()}
+						value={propertyTypeValue?.toLowerCase()}
 						onValueChange={(value) =>
-							handleChange(
+							setValue(
 								"propertyType",
-								value.toUpperCase(),
+								value.toUpperCase() as PropertyType,
 							)
 						}
 					>
@@ -123,6 +129,11 @@ export function PropertyForm({
 							)}
 						</SelectContent>
 					</Select>
+					{errors.propertyType && (
+						<p className="text-red-500 text-sm mt-1">
+							{errors.propertyType.message}
+						</p>
+					)}
 				</div>
 
 				<div>
@@ -131,16 +142,16 @@ export function PropertyForm({
 					</label>
 					<Input
 						type="number"
-						required
-						value={formData.yearBuilt}
-						onChange={(e) =>
-							handleChange(
-								"yearBuilt",
-								Number(e.target.value),
-							)
-						}
+						{...register("yearBuilt", {
+							valueAsNumber: true,
+						})}
 						className="mt-1"
 					/>
+					{errors.yearBuilt && (
+						<p className="text-red-500 text-sm mt-1">
+							{errors.yearBuilt.message}
+						</p>
+					)}
 				</div>
 
 				<div>
@@ -149,16 +160,16 @@ export function PropertyForm({
 					</label>
 					<Input
 						type="number"
-						required
-						value={formData.bedrooms}
-						onChange={(e) =>
-							handleChange(
-								"bedrooms",
-								Number(e.target.value),
-							)
-						}
+						{...register("bedrooms", {
+							valueAsNumber: true,
+						})}
 						className="mt-1"
 					/>
+					{errors.bedrooms && (
+						<p className="text-red-500 text-sm mt-1">
+							{errors.bedrooms.message}
+						</p>
+					)}
 				</div>
 
 				<div>
@@ -167,16 +178,16 @@ export function PropertyForm({
 					</label>
 					<Input
 						type="number"
-						required
-						value={formData.bathrooms}
-						onChange={(e) =>
-							handleChange(
-								"bathrooms",
-								Number(e.target.value),
-							)
-						}
+						{...register("bathrooms", {
+							valueAsNumber: true,
+						})}
 						className="mt-1"
 					/>
+					{errors.bathrooms && (
+						<p className="text-red-500 text-sm mt-1">
+							{errors.bathrooms.message}
+						</p>
+					)}
 				</div>
 
 				<div>
@@ -185,16 +196,16 @@ export function PropertyForm({
 					</label>
 					<Input
 						type="number"
-						required
-						value={formData.squareFeet}
-						onChange={(e) =>
-							handleChange(
-								"squareFeet",
-								Number(e.target.value),
-							)
-						}
+						{...register("squareFootage", {
+							valueAsNumber: true,
+						})}
 						className="mt-1"
 					/>
+					{errors.squareFootage && (
+						<p className="text-red-500 text-sm mt-1">
+							{errors.squareFootage.message}
+						</p>
+					)}
 				</div>
 			</div>
 
@@ -203,17 +214,15 @@ export function PropertyForm({
 					Description
 				</label>
 				<Textarea
-					required
-					value={formData.description}
-					onChange={(e) =>
-						handleChange(
-							"description",
-							e.target.value,
-						)
-					}
+					{...register("description")}
 					className="mt-1"
 					rows={4}
 				/>
+				{errors.description && (
+					<p className="text-red-500 text-sm mt-1">
+						{errors.description.message}
+					</p>
+				)}
 			</div>
 
 			<Button

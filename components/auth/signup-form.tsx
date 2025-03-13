@@ -2,11 +2,15 @@
 
 import { useRouter } from "next/navigation"
 import { Facebook, Chrome } from "lucide-react"
-import { Input, Button,Label } from "@/components/ui"
+import {
+	Input,
+	Button,
+	Label,
+} from "@/components/ui"
 
 import { useAuth } from "@/contexts/auth-context"
 import { useAuthForm } from "@/hooks/auth/use-auth-form"
-import { signupSchema } from "@/lib/auth/schemas"
+import { signupSchema } from "@/lib/auth/auth-schemas"
 import { AuthForm } from "./auth-form"
 
 export function SignupForm() {
@@ -28,7 +32,8 @@ export function SignupForm() {
 						data.fullName,
 					)
 					// Use window.location.href for a full page reload
-					window.location.href = "/auth/verify-email"
+					window.location.href =
+						"/auth/verify-email"
 				} catch (error) {
 					// Error handling is already done in useAuthForm
 				}

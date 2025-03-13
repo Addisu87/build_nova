@@ -42,19 +42,11 @@ export function Navbar() {
 				<div className="flex items-center gap-4">
 					{user ? (
 						<>
-							<Link href="/favorites">
-								<Button
-									variant="ghost"
-									size="icon"
-									className={cn(
-										"transition-colors duration-200 hover:bg-gray-100/80",
-										pathname === "/favorites" &&
-											"bg-gray-100",
-									)}
-									aria-label="Favorites"
-								>
-									<Heart className="h-5 w-5" />
-								</Button>
+							<Link
+								href="/buyer"
+								className="text-xl font-bold text-gray-500 transition-colors duration-150 hover:text-blue-600"
+							>
+								Buyer
 							</Link>
 
 							<DropdownMenu>

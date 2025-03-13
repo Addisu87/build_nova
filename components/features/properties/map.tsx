@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import { Loader } from "lucide-react"
-import { Property } from "./types"
+import { Property } from "@/types/properties"
 
 interface PropertyMapProps {
 	property: Property

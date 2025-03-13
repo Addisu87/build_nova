@@ -1,6 +1,6 @@
 "use client"
 
-import { Property } from "./types"
+import { Property } from "@/types/properties"
 import {
 	Dialog,
 	DialogContent,

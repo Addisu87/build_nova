@@ -8,7 +8,7 @@ import {
 	ChevronRight,
 } from "lucide-react"
 import { Button } from "@/components/ui"
-import { Property } from "@/components/features/properties/types"
+import { Property } from "@/types/properties"
 import { cn } from "@/lib/utils"
 
 interface FeaturedCarouselProps {

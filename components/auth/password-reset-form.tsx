@@ -8,7 +8,7 @@ import {
 } from "@/components/ui"
 import { useAuth } from "@/contexts/auth-context"
 import { useAuthForm } from "@/hooks/auth/use-auth-form"
-import { resetPasswordSchema } from "@/lib/auth/schemas"
+import { resetPasswordSchema } from "@/lib/auth/auth-schemas"
 import { AuthForm } from "./auth-form"
 
 export function PasswordResetForm() {

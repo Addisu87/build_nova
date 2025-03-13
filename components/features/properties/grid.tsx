@@ -15,7 +15,7 @@ import { PropertyFilters } from "./filters"
 import {
 	type PropertyFilters as PropertyFiltersType,
 	type SortOption,
-} from "./types"
+} from "@/types/properties"
 import { mockProperties } from "./mock-data"
 import { motion } from "framer-motion"
 import Link from "next/link"
@@ -28,16 +28,19 @@ import {
 	ArrowUpDown,
 } from "lucide-react"
 import { usePropertyManager } from "@/hooks/properties/use-property-manager"
-const { isLoading } = useAuth()
+import { PropertyCard } from "./card"
+import { useFavorites } from "@/hooks/favorites/use-favorites"
 
 export function PropertiesGrid() {
-	const { user } = useAuth()
+	const { user, isLoading } = useAuth()
 	const {
 		filters,
 		updateFilters,
 		sort,
 		updateSort,
 	} = usePropertyManager()
+	const { toggleFavorite, isFavorited } =
+		useFavorites()
 
 	// Update filter handling to match new filter structure
 	const handleFilterChange = (
@@ -98,13 +101,21 @@ export function PropertiesGrid() {
 				return b.price - a.price
 			case "newest":
 				return (
-					new Date(b.createdAt).getTime() -
-					new Date(a.createdAt).getTime()
+					new Date(
+						b.createdAt || new Date(),
+					).getTime() -
+					new Date(
+						a.createdAt || new Date(),
+					).getTime()
 				)
 			case "oldest":
 				return (
-					new Date(a.createdAt).getTime() -
-					new Date(b.createdAt).getTime()
+					new Date(
+						a.createdAt || new Date(),
+					).getTime() -
+					new Date(
+						b.createdAt || new Date(),
+					).getTime()
 				)
 			default:
 				return 0
@@ -151,9 +162,12 @@ export function PropertiesGrid() {
 							<SelectValue placeholder="Sort by" />
 						</SelectTrigger>
 						<SelectContent>
-							{Object.entries(
-								sort.sortOptions,
-							).map(([value, label]) => (
+							{Object.entries({
+								price_asc: "Price: Low to High",
+								price_desc: "Price: High to Low",
+								newest: "Newest First",
+								oldest: "Oldest First",
+							}).map(([value, label]) => (
 								<SelectItem
 									key={value}
 									value={value}
@@ -175,12 +189,12 @@ export function PropertiesGrid() {
 					<Button
 						variant="outline"
 						onClick={() =>
-							setFilters({
-								minPrice: "",
-								maxPrice: "",
-								bedrooms: "",
-								bathrooms: "",
-								propertyType: "",
+							updateFilters({
+								minPrice: undefined,
+								maxPrice: undefined,
+								bedrooms: undefined,
+								bathrooms: undefined,
+								propertyType: undefined,
 							})
 						}
 					>
@@ -210,19 +224,3 @@ export function PropertiesGrid() {
 		</div>
 	)
 }
-
-// Update clear filters handler
-;<Button
-	variant="outline"
-	onClick={() =>
-		updateFilters({
-			minPrice: undefined,
-			maxPrice: undefined,
-			bedrooms: undefined,
-			bathrooms: undefined,
-			propertyType: undefined,
-		})
-	}
->
-	Clear Filters
-</Button>

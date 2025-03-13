@@ -1,6 +1,6 @@
 "use client"
 
-import { Property } from "./types"
+import { Property } from "@/types/properties"
 import { Button } from "@/components/ui"
 import { PropertyImageCarousel } from "./image-carousel"
 import { Heart } from "lucide-react"

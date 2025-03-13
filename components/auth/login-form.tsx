@@ -5,7 +5,7 @@ import { Facebook, Chrome } from "lucide-react"
 
 import { useAuth } from "@/contexts/auth-context"
 import { useAuthForm } from "@/hooks/auth/use-auth-form"
-import { loginSchema } from "@/lib/auth/schemas"
+import { loginSchema } from "@/lib/auth/auth-schemas"
 import { AuthForm } from "./auth-form"
 import {
 	Input,
