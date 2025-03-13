@@ -19,11 +19,11 @@ export interface Property {
 }
 
 export type PropertyType =
-	| "house"
-	| "apartment"
-	| "condo"
-	| "townhouse"
-	| "land"
+	| "House"
+	| "Apartment"
+	| "Condo"
+	| "Townhouse"
+	| "Land"
 
 export type PropertyStatus =
 	| "for-sale"

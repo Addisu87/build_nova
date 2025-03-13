@@ -7,7 +7,11 @@ import { useAuth } from "@/contexts/auth-context"
 import { useAuthForm } from "@/hooks/auth/use-auth-form"
 import { loginSchema } from "@/lib/auth/schemas"
 import { AuthForm } from "./auth-form"
-import { Input, Button,Label } from "@/components/ui"
+import {
+	Input,
+	Button,
+	Label,
+} from "@/components/ui"
 
 export function LoginForm() {
 	const router = useRouter()
@@ -23,7 +27,8 @@ export function LoginForm() {
 			onSubmit: async (data) => {
 				try {
 					await signIn(data.email, data.password)
-					router.push("/")
+					// Use window.location.href instead of router.push for a full page reload
+					window.location.href = "/"
 				} catch (error) {
 					// Error handling is already done in useAuthForm
 				}
@@ -33,6 +38,7 @@ export function LoginForm() {
 	const handleGoogleSignIn = async () => {
 		try {
 			await signInWithGoogle()
+			// No need to redirect here as OAuth will handle the callback
 		} catch (error) {
 			console.error(
 				"Google sign in error:",
@@ -44,6 +50,7 @@ export function LoginForm() {
 	const handleFacebookSignIn = async () => {
 		try {
 			await signInWithFacebook()
+			// No need to redirect here as OAuth will handle the callback
 		} catch (error) {
 			console.error(
 				"Facebook sign in error:",

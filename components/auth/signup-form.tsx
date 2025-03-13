@@ -21,18 +21,24 @@ export function SignupForm() {
 		useAuthForm({
 			schema: signupSchema,
 			onSubmit: async (data) => {
-				await signUp(
-					data.email,
-					data.password,
-					data.fullName,
-				)
-				router.push("/auth/verify-email")
+				try {
+					await signUp(
+						data.email,
+						data.password,
+						data.fullName,
+					)
+					// Use window.location.href for a full page reload
+					window.location.href = "/auth/verify-email"
+				} catch (error) {
+					// Error handling is already done in useAuthForm
+				}
 			},
 		})
 
 	const handleGoogleSignIn = async () => {
 		try {
 			await signInWithGoogle()
+			// No need to redirect here as OAuth will handle the callback
 		} catch (error) {
 			console.error(
 				"Google sign in error:",
@@ -44,6 +50,7 @@ export function SignupForm() {
 	const handleFacebookSignIn = async () => {
 		try {
 			await signInWithFacebook()
+			// No need to redirect here as OAuth will handle the callback
 		} catch (error) {
 			console.error(
 				"Facebook sign in error:",

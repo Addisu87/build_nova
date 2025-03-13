@@ -199,7 +199,8 @@ export function AuthProvider({
 					"You've successfully signed in.",
 			})
 
-			router.push("/")
+			// Use window.location.href instead of router.push for a full page reload
+			window.location.href = "/"
 		} catch (error: any) {
 			toast.error("Sign in failed", {
 				description: error.message,
@@ -249,7 +250,8 @@ export function AuthProvider({
 					"You've been successfully signed out.",
 			})
 
-			router.push("/")
+			// Use window.location.href instead of router.push for a full page reload
+			window.location.href = "/"
 		} catch (error: any) {
 			toast.error("Sign out failed", {
 				description: error.message,
@@ -319,7 +321,7 @@ export function AuthProvider({
 				resetPassword,
 				updatePassword,
 				canSendEmail,
-				getTimeUntilNextEmail
+				getTimeUntilNextEmail,
 			}}
 		>
 			{children}

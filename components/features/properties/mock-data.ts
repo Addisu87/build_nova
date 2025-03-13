@@ -1,4 +1,8 @@
-import { Property, PropertyType } from "./types"
+import {
+	Property,
+	PropertyType,
+	PropertyStatus,
+} from "../../../types/properties/types"
 
 export const mockProperties: Property[] = [
 	{
@@ -11,7 +15,7 @@ export const mockProperties: Property[] = [
 		area: 1200,
 		imageUrl:
 			"https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&auto=format&fit=crop&q=60",
-		propertyType: PropertyType.Apartment,
+		propertyType: "apartment",
 		createdAt: "2024-03-15T10:00:00Z",
 		updatedAt: "2024-03-15T10:00:00Z",
 	},
@@ -25,7 +29,7 @@ export const mockProperties: Property[] = [
 		area: 2400,
 		imageUrl:
 			"https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format&fit=crop&q=60",
-		propertyType: PropertyType.House,
+		propertyType: "house", 
 		createdAt: "2024-03-14T15:30:00Z",
 		updatedAt: "2024-03-14T15:30:00Z",
 	},
@@ -39,7 +43,7 @@ export const mockProperties: Property[] = [
 		area: 2000,
 		imageUrl:
 			"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=60",
-		propertyType: PropertyType.Condo,
+		propertyType: "condo", 
 		createdAt: "2024-03-13T09:15:00Z",
 		updatedAt: "2024-03-13T09:15:00Z",
 	},
@@ -53,7 +57,7 @@ export const mockProperties: Property[] = [
 		area: 1800,
 		imageUrl:
 			"https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&auto=format&fit=crop&q=60",
-		propertyType: PropertyType.Townhouse,
+		propertyType: "townhouse", 
 		createdAt: "2024-03-12T14:45:00Z",
 		updatedAt: "2024-03-12T14:45:00Z",
 	},
@@ -67,7 +71,7 @@ export const mockProperties: Property[] = [
 		area: 5000,
 		imageUrl:
 			"https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&auto=format&fit=crop&q=60",
-		propertyType: PropertyType.Land,
+		propertyType: "land", 
 		createdAt: "2024-03-11T11:20:00Z",
 		updatedAt: "2024-03-11T11:20:00Z",
 	},
@@ -81,8 +85,8 @@ export const mockProperties: Property[] = [
 		area: 1200,
 		imageUrl:
 			"https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&auto=format&fit=crop&q=60",
-		propertyType: PropertyType.Apartment,
-		status: "for-sale",
+		propertyType: "apartment", 
+		status: "for-sale", 
 		yearBuilt: 2020,
 		parkingSpaces: 1,
 		amenities: [
@@ -102,8 +106,8 @@ export const mockProperties: Property[] = [
 		area: 2400,
 		imageUrl:
 			"https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format&fit=crop&q=60",
-		propertyType: PropertyType.House,
-		status: "for-sale",
+		propertyType: "house", 
+		status: "for-sale", 
 		yearBuilt: 2018,
 		lotSize: 5000,
 		parkingSpaces: 2,
@@ -119,8 +123,8 @@ export const mockProperties: Property[] = [
 		area: 2000,
 		imageUrl:
 			"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=60",
-		propertyType: PropertyType.Condo,
-		status: "for-sale",
+		propertyType: "condo", // Use string literal from PropertyType
+		status: "for-sale", // Use string literal from PropertyStatus
 		yearBuilt: 2021,
 		parkingSpaces: 2,
 		amenities: [
