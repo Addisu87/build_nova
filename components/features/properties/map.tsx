@@ -4,20 +4,50 @@ import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Property } from "@/types/properties"
+import { cn } from "@/lib/utils"
 import { PropertyMapSkeleton } from "./map-skeleton"
-import { createPriceMarker } from './map-marker'
 
 interface PropertyMapProps {
   property: Property
+  nearbyProperties?: Property[]
   isLoading?: boolean
   className?: string
   height?: string
-  onMarkerClick?: (property: Property) => void
+  onMarkerClick?: (propertyId: string) => void
   isSelected?: boolean
+}
+
+// Custom price marker creator using Tailwind classes
+const createPriceMarker = (price: number, isSelected: boolean = false) => {
+  const formattedPrice = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(price)
+
+  const markerHtml = `
+    <div class="${cn(
+      'px-3 py-2 rounded-full shadow-md font-medium transition-all duration-200',
+      isSelected 
+        ? 'bg-primary text-white scale-110' 
+        : 'bg-white text-gray-900 hover:scale-105'
+    )}">
+      ${formattedPrice}
+    </div>
+  `
+
+  return L.divIcon({
+    html: markerHtml,
+    className: 'custom-price-marker',
+    iconSize: null,
+    iconAnchor: [30, 30],
+  })
 }
 
 export function PropertyMap({
   property,
+  nearbyProperties = [],
   isLoading = false,
   className = "",
   height = "h-[300px]",
@@ -26,75 +56,110 @@ export function PropertyMap({
 }: PropertyMapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
-  const markerRef = useRef<L.Marker | null>(null)
+  const markersRef = useRef<L.Marker[]>([])
 
   useEffect(() => {
+    if (typeof window === 'undefined') return // Check for browser environment
     if (!mapRef.current || !property.location) return
 
-    const { lat, lng } = property.location
-
+    // Initialize map if it hasn't been initialized yet
     if (!mapInstanceRef.current) {
-      mapInstanceRef.current = L.map(mapRef.current, {
-        zoomControl: false, // Disable default zoom control
-        scrollWheelZoom: false // Disable zoom on scroll
-      }).setView([lat, lng], 15)
+      const map = new L.Map(mapRef.current)
+      mapInstanceRef.current = map
 
-      // Add custom zoom control to top-right
-      L.control.zoom({
+      map.setView(
+        [property.location.latitude, property.location.longitude],
+        15
+      )
+
+      // Add custom zoom control with Tailwind styled buttons
+      const zoomControl = new L.Control.Zoom({
         position: 'topright'
-      }).addTo(mapInstanceRef.current)
+      })
 
-      // Add tile layer with light theme
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      map.addControl(zoomControl)
+
+      // Style zoom controls after they're added to the DOM
+      const zoomInButton = mapRef.current.querySelector('.leaflet-control-zoom-in')
+      const zoomOutButton = mapRef.current.querySelector('.leaflet-control-zoom-out')
+      
+      if (zoomInButton && zoomOutButton) {
+        zoomInButton.className += ' bg-white hover:bg-gray-100 text-gray-700 shadow-md'
+        zoomOutButton.className += ' bg-white hover:bg-gray-100 text-gray-700 shadow-md'
+      }
+
+      // Add tile layer
+      new L.TileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '©OpenStreetMap, ©CartoDB'
-      }).addTo(mapInstanceRef.current)
+      }).addTo(map)
     }
 
-    if (markerRef.current) {
-      markerRef.current.remove()
-    }
+    const map = mapInstanceRef.current
 
-    // Create marker with price label
-    markerRef.current = L.marker([lat, lng], {
-      icon: createPriceMarker(property.price, isSelected),
-      riseOnHover: true
-    }).addTo(mapInstanceRef.current)
+    // Clear existing markers
+    markersRef.current.forEach(marker => marker.remove())
+    markersRef.current = []
 
-    // Add popup with property details
-    const popupContent = `
-      <div class="p-2">
-        <img src="${property.imageUrl}" alt="${property.title}" class="w-48 h-32 object-cover mb-2 rounded"/>
-        <h3 class="font-semibold">${property.title}</h3>
-        <p class="text-sm text-gray-600">${property.location.address}</p>
-        <p class="text-sm">${property.bedrooms} beds • ${property.bathrooms} baths • ${property.area} sqft</p>
-      </div>
-    `
-
-    markerRef.current.bindPopup(popupContent, {
-      offset: L.point(0, -20),
-      className: 'property-popup'
-    })
+    // Add main property marker
+    const mainMarker = new L.Marker(
+      [property.location.latitude, property.location.longitude],
+      {
+        icon: createPriceMarker(property.price, isSelected),
+        riseOnHover: true
+      }
+    )
 
     if (onMarkerClick) {
-      markerRef.current.on('click', () => onMarkerClick(property))
+      mainMarker.on('click', () => onMarkerClick(property.id))
     }
 
+    mainMarker.addTo(map)
+    markersRef.current.push(mainMarker)
+
+    // Add nearby property markers
+    nearbyProperties.forEach(nearbyProperty => {
+      if (nearbyProperty.location) {
+        const marker = new L.Marker(
+          [nearbyProperty.location.latitude, nearbyProperty.location.longitude],
+          {
+            icon: createPriceMarker(nearbyProperty.price, false),
+            riseOnHover: true
+          }
+        )
+
+        if (onMarkerClick) {
+          marker.on('click', () => onMarkerClick(nearbyProperty.id))
+        }
+
+        marker.addTo(map)
+        markersRef.current.push(marker)
+      }
+    })
+
+    // Cleanup function
     return () => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove()
         mapInstanceRef.current = null
       }
+      markersRef.current = []
     }
-  }, [property, isSelected, onMarkerClick])
+  }, [property, nearbyProperties, isSelected, onMarkerClick])
 
   if (isLoading) {
     return <PropertyMapSkeleton className={className} height={height} />
   }
 
   return (
-    <div
-      ref={mapRef}
-      className={`w-full rounded-lg ${height} ${className}`}
-    />
+    <div className={cn(
+      "relative w-full overflow-hidden rounded-lg",
+      height,
+      className
+    )}>
+      <div 
+        ref={mapRef}
+        className="absolute inset-0 w-full h-full"
+      />
+    </div>
   )
 }

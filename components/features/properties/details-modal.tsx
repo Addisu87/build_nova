@@ -7,7 +7,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui"
-import { PropertyImageCarousel } from "./image-carousel"
+
 import { PropertyMap } from "./map"
 
 interface PropertyDetailsModalProps {
@@ -31,7 +31,7 @@ export function PropertyDetailsModal({
 				</DialogHeader>
 
 				<div className="grid gap-6">
-					<PropertyImageCarousel
+					<ImageCarousel
 						images={property.images}
 						title={property.title}
 					/>

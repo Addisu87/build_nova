@@ -1,38 +1,38 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { notFound } from "next/navigation"
-import {
-	PropertyMap,
-	PropertyImageCarousel,
-} from "@/components/features/properties"
-import { Property } from "@/components/features/properties/types"
+import { ImageCarousel } from "@/components/ui/image-carousel"
+import { ImageThumbnails } from "@/components/ui/image-thumbnails"
+import { PropertyMap } from "@/components/features/properties"
 import { mockProperties } from "@/components/features/properties/mock-data"
-import { usePropertyFavorites } from "@/hooks/favorites/use-property-favorites"
-import { useAuth } from "@/contexts/auth-context"
-import { useProperties } from "@/hooks/properties/use-properties"
-import PropertyDetailsLoading from "./loading"
+import { Property } from "@/components/features/properties/types"
 import {
+	Building2,
+	Calendar,
+	Car,
 	Home,
 	Ruler,
-	Car,
-	Building2,
 	Trees,
-	Map,
-	Calendar,
 } from "lucide-react"
+import { notFound } from "next/navigation"
+import { useEffect, useState } from "react"
+import PropertyDetailsLoading from "./loading"
 
 export default function PropertyDetailsPage({
 	params,
 }: {
 	params: { id: string }
 }) {
-	const [property, setProperty] = useState<Property | null>(null)
-	const [nearbyProperties, setNearbyProperties] = useState<Property[]>([])
-	
+	const [property, setProperty] =
+		useState<Property | null>(null)
+	const [nearbyProperties, setNearbyProperties] =
+		useState<Property[]>([])
+	const [currentImageIndex, setCurrentImageIndex] = useState(0)
+
 	// Fetch the main property
 	useEffect(() => {
-		const found = mockProperties.find((p) => p.id === params.id)
+		const found = mockProperties.find(
+			(p) => p.id === params.id,
+		)
 		if (!found) {
 			notFound()
 		}
@@ -40,10 +40,13 @@ export default function PropertyDetailsPage({
 
 		// Find nearby properties (excluding the current property)
 		// In a real application, you would want to use geospatial queries
-		const nearby = mockProperties.filter(p => 
-			p.id !== params.id && 
-			isNearby(found.location, p.location)
-		).slice(0, 10) // Limit to 10 nearby properties
+		const nearby = mockProperties
+			.filter(
+				(p) =>
+					p.id !== params.id &&
+					isNearby(found.location, p.location),
+			)
+			.slice(0, 10) // Limit to 10 nearby properties
 		setNearbyProperties(nearby)
 	}, [params.id])
 
@@ -53,17 +56,33 @@ export default function PropertyDetailsPage({
 
 	return (
 		<div className="relative min-h-screen bg-gray-50">
-			{/* Full width image carousel */}
-			<div className="w-full h-[400px] lg:h-[600px]">
-				<PropertyImageCarousel
+			{/* Main image carousel */}
+			<div className="relative w-full">
+				<ImageCarousel
 					images={property.images}
 					title={property.title}
+					aspectRatio="property"
 					fullWidth
+					priority
+					className="h-[500px] lg:h-[600px]"
+					currentIndex={currentImageIndex}
+					onIndexChange={setCurrentImageIndex}
+				/>
+			</div>
+
+			{/* Thumbnails below the carousel */}
+			<div className="max-w-[1600px] mx-auto px-4 -mt-20 relative z-10">
+				<ImageThumbnails
+					images={property.images}
+					currentIndex={currentImageIndex}
+					onSelect={setCurrentImageIndex}
+					title={property.title}
+					className="bg-white p-4 rounded-lg shadow-lg"
 				/>
 			</div>
 
 			{/* Main content */}
-			<div className="relative lg:flex max-w-[1600px] mx-auto">
+			<div className="relative lg:flex max-w-[1600px] mx-auto mt-8">
 				{/* Left side - Scrollable content */}
 				<div className="w-full lg:w-[45%] lg:overflow-y-auto">
 					{/* Content below carousel */}
@@ -78,12 +97,23 @@ export default function PropertyDetailsPage({
 							</p>
 							<div className="flex items-center gap-4 text-lg">
 								<span className="font-bold text-2xl text-blue-600">
-									{(property.price || 0).toLocaleString()}
+									{(
+										property.price || 0
+									).toLocaleString()}
 								</span>
 								<div className="flex items-center gap-6 text-gray-600">
-									<span>{property.bedrooms} beds</span>
-									<span>{property.bathrooms} baths</span>
-									<span>{(property.area || 0).toLocaleString()} sqft</span>
+									<span>
+										{property.bedrooms} beds
+									</span>
+									<span>
+										{property.bathrooms} baths
+									</span>
+									<span>
+										{(
+											property.area || 0
+										).toLocaleString()}{" "}
+										sqft
+									</span>
 								</div>
 							</div>
 						</div>
@@ -97,32 +127,45 @@ export default function PropertyDetailsPage({
 								<DetailItem
 									icon={Home}
 									label="Type"
-									value={property.propertyType || 'N/A'}
+									value={
+										property.propertyType || "N/A"
+									}
 								/>
 								<DetailItem
 									icon={Calendar}
 									label="Year Built"
-									value={property.yearBuilt?.toString() ?? "N/A"}
+									value={
+										property.yearBuilt?.toString() ??
+										"N/A"
+									}
 								/>
 								<DetailItem
 									icon={Ruler}
 									label="Lot Size"
-									value={`${(property.lotSize || 0).toLocaleString()} sqft`}
+									value={`${(
+										property.lotSize || 0
+									).toLocaleString()} sqft`}
 								/>
 								<DetailItem
 									icon={Car}
 									label="Garage"
-									value={`${property.garage || 0} cars`}
+									value={`${
+										property.garage || 0
+									} cars`}
 								/>
 								<DetailItem
 									icon={Building2}
 									label="Stories"
-									value={(property.stories || 0).toString()}
+									value={(
+										property.stories || 0
+									).toString()}
 								/>
 								<DetailItem
 									icon={Trees}
 									label="Outdoor Space"
-									value={property.outdoorSpace || 'N/A'}
+									value={
+										property.outdoorSpace || "N/A"
+									}
 								/>
 							</div>
 						</div>
@@ -155,28 +198,38 @@ export default function PropertyDetailsPage({
 						/>
 					</div>
 					<div className="mt-4 p-4 bg-white rounded-lg shadow-sm">
-						<h3 className="text-lg font-semibold mb-3">Nearby Properties</h3>
+						<h3 className="text-lg font-semibold mb-3">
+							Nearby Properties
+						</h3>
 						<div className="space-y-2">
-							{nearbyProperties.map(prop => (
-								<div 
+							{nearbyProperties.map((prop) => (
+								<div
 									key={prop.id}
 									className="flex items-center justify-between py-2 hover:bg-gray-50 cursor-pointer"
-									onClick={() => window.location.href = `/properties/${prop.id}`}
+									onClick={() =>
+										(window.location.href = `/properties/${prop.id}`)
+									}
 								>
 									<div className="flex items-center gap-3">
-										<img 
-											src={prop.imageUrl} 
+										<img
+											src={prop.imageUrl}
 											alt={prop.title}
 											className="w-12 h-12 object-cover rounded"
 										/>
 										<div>
-											<p className="font-medium">${prop.price.toLocaleString()}</p>
+											<p className="font-medium">
+												$
+												{prop.price.toLocaleString()}
+											</p>
 											<p className="text-sm text-gray-600">
-												{prop.bedrooms} beds • {prop.bathrooms} baths
+												{prop.bedrooms} beds •{" "}
+												{prop.bathrooms} baths
 											</p>
 										</div>
 									</div>
-									<div className="text-blue-600 text-sm">View</div>
+									<div className="text-blue-600 text-sm">
+										View
+									</div>
 								</div>
 							))}
 						</div>
@@ -185,8 +238,10 @@ export default function PropertyDetailsPage({
 
 				{/* Mobile Map Button - Shows at bottom of screen on mobile */}
 				<div className="lg:hidden fixed bottom-4 right-4">
-					<button 
-						onClick={() => {/* Add mobile map toggle logic */}}
+					<button
+						onClick={() => {
+							/* Add mobile map toggle logic */
+						}}
 						className="bg-white p-3 rounded-full shadow-lg"
 					>
 						<Map className="h-6 w-6 text-gray-700" />
@@ -203,12 +258,18 @@ interface DetailItemProps {
 	value: string
 }
 
-function DetailItem({ icon: Icon, label, value }: DetailItemProps) {
+function DetailItem({
+	icon: Icon,
+	label,
+	value,
+}: DetailItemProps) {
 	return (
 		<div className="flex items-center gap-3">
 			<Icon className="h-5 w-5 text-blue-600" />
 			<div>
-				<p className="text-sm text-gray-500">{label}</p>
+				<p className="text-sm text-gray-500">
+					{label}
+				</p>
 				<p className="font-medium">{value}</p>
 			</div>
 		</div>
@@ -217,10 +278,11 @@ function DetailItem({ icon: Icon, label, value }: DetailItemProps) {
 
 // Helper function to determine if a property is nearby
 // In a real application, you would want to use proper geospatial calculations
-function isNearby(location1: any, location2: any) {
+function isNearby(
+	location1: any,
+	location2: any,
+) {
 	// This is a simplified example - you should implement proper distance calculation
 	// using latitude and longitude
 	return true // For demo purposes, considering all properties as nearby
 }
-
-

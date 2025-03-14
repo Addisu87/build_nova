@@ -156,3 +156,60 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* Leaflet map container styles */
+  .leaflet-container {
+    @apply w-full h-full rounded-inherit;
+  }
+
+  /* Leaflet controls styling */
+  .leaflet-control-zoom {
+    @apply !border-none !shadow-none;
+  }
+
+  .leaflet-control-zoom-in,
+  .leaflet-control-zoom-out {
+    @apply !w-8 !h-8 !leading-8 !text-center !rounded-lg !border !border-gray-200 !m-1;
+  }
+
+  /* Remove default marker shadow */
+  .custom-price-marker {
+    @apply !bg-transparent !border-none;
+  }
+
+  /* Marker popup styling */
+  .leaflet-popup-content-wrapper {
+    @apply !rounded-lg !shadow-lg !p-0;
+  }
+
+  .leaflet-popup-content {
+    @apply !m-0;
+  }
+
+  /* Leaflet popup customization */
+  .leaflet-popup-content-wrapper {
+    @apply !p-0 !rounded-lg !shadow-lg;
+  }
+
+  .leaflet-popup-content {
+    @apply !m-0;
+  }
+
+  .leaflet-popup-close-button {
+    @apply !top-2 !right-2 !text-gray-500 hover:!text-gray-700;
+  }
+
+  /* Optional: Custom zoom controls */
+  .leaflet-control-zoom {
+    @apply !border-0 !shadow-none;
+  }
+
+  .leaflet-control-zoom-in,
+  .leaflet-control-zoom-out {
+    @apply !w-8 !h-8 !leading-8 !text-center !rounded-lg !border !border-gray-200 
+           !bg-white hover:!bg-gray-50 !text-gray-600 hover:!text-gray-800
+           dark:!bg-gray-800 dark:!border-gray-700 dark:!text-gray-300
+           dark:hover:!bg-gray-700 dark:hover:!text-gray-200;
+  }
+}

@@ -1,5 +1,28 @@
 // components/ui/index.ts
+export {
+	Avatar,
+	AvatarFallback,
+	AvatarImage,
+} from "./avatar"
 export { Button } from "./button"
+export { Checkbox } from "./checkbox"
+export {
+	DropdownMenu,
+	DropdownMenuCheckboxItem,
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuPortal,
+	DropdownMenuRadioGroup,
+	DropdownMenuRadioItem,
+	DropdownMenuSeparator,
+	DropdownMenuShortcut,
+	DropdownMenuSub,
+	DropdownMenuSubContent,
+	DropdownMenuSubTrigger,
+	DropdownMenuTrigger,
+} from "./dropdown-menu"
 export { Input } from "./input"
 export { Label } from "./label"
 export {
@@ -9,30 +32,7 @@ export {
 	SelectTrigger,
 	SelectValue,
 } from "./select"
-export { Checkbox } from "./checkbox"
 export { Toaster } from "./sonner"
-export {
-	Avatar,
-	AvatarImage,
-	AvatarFallback,
-} from "./avatar"
-export {
-	DropdownMenu,
-	DropdownMenuTrigger,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuCheckboxItem,
-	DropdownMenuRadioItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuShortcut,
-	DropdownMenuGroup,
-	DropdownMenuPortal,
-	DropdownMenuSub,
-	DropdownMenuSubContent,
-	DropdownMenuSubTrigger,
-	DropdownMenuRadioGroup,
-} from "./dropdown-menu"
 
 export { Skeleton } from "./skeleton"
 
@@ -53,3 +53,11 @@ export {
 	CardHeader,
 	CardTitle,
 } from "./card"
+
+export {
+	Carousel,
+	CarouselContent,
+	CarouselItem,
+	CarouselNext,
+	CarouselPrevious,
+} from "./carousel"
