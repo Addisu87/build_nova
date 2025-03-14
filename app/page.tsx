@@ -1,6 +1,6 @@
 "use client"
 
-import { PropertiesGrid } from "@/components/features/properties"
+import { PropertyListing } from "@/components/features/properties/property-listing"
 import { Hero } from "@/components/features/hero"
 
 export default function HomePage() {
@@ -14,10 +14,10 @@ export default function HomePage() {
 
 				{/* Properties Grid Section */}
 				<section className="container mx-auto px-4 py-16">
-					<h2 className="mb-8 text-3xl font-bold tracking-tight">
-						Latest Properties
-					</h2>
-					<PropertiesGrid />
+					<PropertyListing
+						title="Latest Properties"
+						initialProperties={[]}
+					/>
 				</section>
 			</main>
 		</div>

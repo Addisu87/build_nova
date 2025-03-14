@@ -48,6 +48,7 @@ export interface Range {
 
 // Filter Interface
 export interface PropertyFilters {
+  searchQuery?: string
   minPrice: string
   maxPrice: string
   bedrooms: string
@@ -63,7 +64,7 @@ export interface PropertyFilters {
     min: string
     max: string
   }
-  sortBy: SortOption
+  sortBy?: SortOption
 }
 
 // API Filter Interface (for backend queries)
