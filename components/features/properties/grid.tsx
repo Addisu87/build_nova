@@ -1,34 +1,6 @@
-import { LoadingState } from "@/components/ui/loading-state"
-import { useState, useEffect } from "react"
-import { useAuth } from "@/contexts/auth-context"
-import {
-	Button,
-	Card,
-	Skeleton,
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-	toast,
-} from "@/components/ui"
-import { PropertyFilters } from "./filters"
-import type {
-	PropertyFiltersType,
-	Property,
-} from "@/types/properties"
-import { mockProperties } from "./mock-data"
-import Link from "next/link"
-import Image from "next/image"
-import {
-	Heart,
-	Bath,
-	Bed,
-	Square,
-	ArrowUpDown,
-} from "lucide-react"
-import { usePropertyManager } from "@/hooks/properties/use-property-manager"
+import type { Property } from "@/types/properties"
 import { PropertyCard } from "./card"
+
 import { useFavorites } from "@/hooks/favorites/use-favorites"
 
 interface PropertiesGridProps {

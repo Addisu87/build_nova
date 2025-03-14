@@ -1,9 +1,9 @@
 "use client"
 
-import { PropertyFilters } from "./filters"
-import { PropertiesGrid } from "./grid"
 import { usePropertyManager } from "@/hooks/properties/use-property-manager"
 import type { Property } from "@/types/properties"
+import { PropertyFilters } from "./filters"
+import { PropertiesGrid } from "./grid"
 
 interface PropertyListingProps {
 	initialProperties?: Property[]

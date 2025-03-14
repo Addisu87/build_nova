@@ -1,8 +1,8 @@
 "use client"
 
-import { useRouter } from "next/navigation"
-import { Search } from "lucide-react"
 import { Input } from "@/components/ui"
+import { Search } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 export function SearchBar() {
@@ -12,12 +12,19 @@ export function SearchBar() {
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault()
 		if (query.trim()) {
-			router.push(`/search?q=${encodeURIComponent(query.trim())}`)
+			router.push(
+				`/search?q=${encodeURIComponent(
+					query.trim(),
+				)}`,
+			)
 		}
 	}
 
 	return (
-		<form onSubmit={handleSubmit} className="relative w-full max-w-md">
+		<form
+			onSubmit={handleSubmit}
+			className="relative w-full max-w-md"
+		>
 			<Input
 				type="text"
 				placeholder="Search properties..."

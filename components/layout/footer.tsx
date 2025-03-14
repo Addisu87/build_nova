@@ -1,12 +1,11 @@
-import Link from "next/link"
 import {
 	Facebook,
-	Twitter,
+	Github,
 	Instagram,
 	Linkedin,
-	Github,
-	Mail,
+	Twitter,
 } from "lucide-react"
+import Link from "next/link"
 
 const Footer = () => {
 	return (

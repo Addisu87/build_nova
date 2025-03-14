@@ -1,10 +1,10 @@
 "use client"
 
+import { PropertyMap } from "@/components/features/properties/property-map"
+import { Property } from "@/components/features/properties/types"
 import { ImageCarousel } from "@/components/ui/image-carousel"
 import { ImageThumbnails } from "@/components/ui/image-thumbnails"
-import { PropertyMap } from "@/components/features/properties"
-import { mockProperties } from "@/components/features/properties/mock-data"
-import { Property } from "@/components/features/properties/types"
+import { mockProperties } from "@/mock-data/properties"
 import {
 	Building2,
 	Calendar,
@@ -26,7 +26,10 @@ export default function PropertyDetailsPage({
 		useState<Property | null>(null)
 	const [nearbyProperties, setNearbyProperties] =
 		useState<Property[]>([])
-	const [currentImageIndex, setCurrentImageIndex] = useState(0)
+	const [
+		currentImageIndex,
+		setCurrentImageIndex,
+	] = useState(0)
 
 	// Fetch the main property
 	useEffect(() => {
@@ -244,7 +247,7 @@ export default function PropertyDetailsPage({
 						}}
 						className="bg-white p-3 rounded-full shadow-lg"
 					>
-						<Map className="h-6 w-6 text-gray-700" />
+						<PropertyMap className="h-6 w-6 text-gray-700" />
 					</button>
 				</div>
 			</div>
