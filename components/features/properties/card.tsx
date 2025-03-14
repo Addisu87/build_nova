@@ -19,63 +19,50 @@ export function PropertyCard({
 	onFavorite,
 	isFavorite = false,
 }: PropertyCardProps) {
-	const [currentIndex, setCurrentIndex] = useState(0)
 	const images = property.images || [property.imageUrl]
-
-	const handlePrevious = () => {
-		setCurrentIndex((prev) =>
-			prev === 0 ? images.length - 1 : prev - 1
-		)
-	}
-
-	const handleNext = () => {
-		setCurrentIndex((prev) =>
-			prev === images.length - 1 ? 0 : prev + 1
-		)
-	}
-
+	
 	return (
 		<div className="overflow-hidden rounded-lg border bg-white shadow-sm transition-shadow hover:shadow-md">
 			<div className="relative aspect-[4/3]">
 				<div className="group relative h-full w-full">
-					<Image
-						src={images[currentIndex]}
-						alt={`${property.title} - Image ${currentIndex + 1}`}
-						fill
-						className="object-cover"
-					/>
-					{images.length > 1 && (
-						<>
-							<Button
-								variant="ghost"
-								size="icon"
-								className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100"
-								onClick={handlePrevious}
-							>
-								<ChevronLeft className="h-4 w-4 text-white" />
-							</Button>
-							<Button
-								variant="ghost"
-								size="icon"
-								className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100"
-								onClick={handleNext}
-							>
-								<ChevronRight className="h-4 w-4 text-white" />
-							</Button>
-							<div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1">
-								{images.map((_, index) => (
-									<button
-										key={index}
-										className={cn(
-											"h-1.5 w-1.5 rounded-full bg-white/80 transition-all",
-											index === currentIndex ? "w-3" : "opacity-50"
-										)}
-										onClick={() => setCurrentIndex(index)}
-									/>
-								))}
+					{images.length > 1 ? (
+						// Grid layout for multiple images
+						<div className="grid grid-cols-2 gap-0.5 h-full">
+							<div className="relative row-span-2">
+								<Image
+									src={images[0]}
+									alt={`${property.title} - Main Image`}
+									fill
+									className="object-cover"
+								/>
 							</div>
-						</>
+							<div className="relative">
+								<Image
+									src={images[1]}
+									alt={`${property.title} - Image 2`}
+									fill
+									className="object-cover"
+								/>
+							</div>
+							<div className="relative">
+								<Image
+									src={images[2] || images[1]} // Fallback to second image if third doesn't exist
+									alt={`${property.title} - Image 3`}
+									fill
+									className="object-cover"
+								/>
+							</div>
+						</div>
+					) : (
+						// Single image layout
+						<Image
+							src={images[0]}
+							alt={property.title}
+							fill
+							className="object-cover"
+						/>
 					)}
+					
 					{onFavorite && (
 						<button
 							onClick={() => onFavorite(property.id)}

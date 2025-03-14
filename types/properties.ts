@@ -22,7 +22,7 @@ export interface Property {
   id: string
   title: string
   price: number
-  location: string
+  location: string // Format: "latitude,longitude"
   bedrooms: number
   bathrooms: number
   area: number

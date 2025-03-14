@@ -3,9 +3,9 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Database } from "@/types/supabase"
 import {
-	getFavorites,
-	addFavorite,
-	removeFavorite,
+  getFavorites,
+  addFavorite,
+  removeFavorite,
 } from "@/lib/supabase/db"
 import { useAuth } from "@/contexts/auth-context"
 

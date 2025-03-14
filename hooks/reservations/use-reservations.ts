@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { toast } from "react-hot-toast"
+import { toast } from "sonner" 
 import { Database } from "@/types/supabase"
 import {
 	getReservations,
@@ -8,7 +8,7 @@ import {
 	updateReservation,
 	deleteReservation,
 } from "@/lib/supabase/db"
-import { useAuth } from "./use-auth"
+import { useAuth } from "@/contexts/auth-context"
 
 type Reservation =
 	Database["public"]["Tables"]["reservations"]["Row"] & {

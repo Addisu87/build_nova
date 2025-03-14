@@ -1,13 +1,10 @@
 "use client"
 
-import {
-	useEffect,
-	useRef,
-	useState,
-} from "react"
-import { Loader } from "lucide-react"
 import { Property } from "@/types/properties"
-import { Loader as GoogleMapsLoader } from "@googlemaps/js-api-loader"
+import { Loader } from "lucide-react"
+import maplibregl from "maplibre-gl"
+import "maplibre-gl/dist/maplibre-gl.css"
+import { useEffect, useRef } from "react"
 
 interface PropertyMapProps {
 	property: Property
@@ -19,77 +16,52 @@ export function PropertyMap({
 	isLoading = false,
 }: PropertyMapProps) {
 	const mapRef = useRef<HTMLDivElement>(null)
-	const [mapError, setMapError] = useState<string | null>(null)
-	const map = useRef<any>(null)
-	const marker = useRef<any>(null)
+	const mapInstanceRef =
+		useRef<maplibregl.Map | null>(null)
+	const markerRef =
+		useRef<maplibregl.Marker | null>(null)
 
 	useEffect(() => {
 		if (!mapRef.current || !property.location)
 			return
 
-		const initMap = async () => {
-			try {
-				// Use the Google Maps Loader to load the API
-				const loader = new GoogleMapsLoader({
-					apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-					version: "weekly",
-					libraries: ["maps", "marker"]
-				})
+		// Parse location string to coordinates (assuming format: "lat,lng")
+		const [lat, lng] = property.location
+			.split(",")
+			.map(Number) || [37.7749, -122.4194]
 
-				const google = await loader.load()
-				
-				// Default position (San Francisco)
-				const defaultPosition = {
-					lat: 37.7749,
-					lng: -122.4194
-				}
-				
-				// Since property.location is a string in the mock data,
-				// we'll use a default position for demonstration
-				const position = defaultPosition
-
-				map.current = new google.maps.Map(mapRef.current, {
-					center: position,
+		if (!mapInstanceRef.current) {
+			mapInstanceRef.current = new maplibregl.Map(
+				{
+					container: mapRef.current,
+					style:
+						"https://api.maptiler.com/maps/streets/style.json?key=MAPTILER_KEY",
+					center: [lng, lat],
 					zoom: 15,
-					disableDefaultUI: true,
-					clickableIcons: false,
-				})
-
-				marker.current = new google.maps.Marker({
-					map: map.current,
-					position,
-					title: property.title,
-				})
-			} catch (error) {
-				console.error("Error initializing Google Maps:", error)
-				setMapError("Failed to load Google Maps. Please make sure you have set your API key.")
-			}
+				},
+			)
 		}
 
-		initMap()
+		if (markerRef.current) {
+			markerRef.current.remove()
+		}
+
+		markerRef.current = new maplibregl.Marker()
+			.setLngLat([lng, lat])
+			.addTo(mapInstanceRef.current)
 
 		return () => {
-			if (marker.current) {
-				marker.current.setMap(null)
-			}
-			if (map.current) {
-				map.current = null
+			if (mapInstanceRef.current) {
+				mapInstanceRef.current.remove()
+				mapInstanceRef.current = null
 			}
 		}
-	}, [property.location, property.title])
+	}, [property.location])
 
 	if (isLoading) {
 		return (
 			<div className="flex h-[300px] items-center justify-center rounded-lg bg-gray-100">
 				<Loader className="h-6 w-6 animate-spin text-gray-400" />
-			</div>
-		)
-	}
-
-	if (mapError) {
-		return (
-			<div className="flex h-[300px] items-center justify-center rounded-lg bg-gray-100">
-				<p className="text-red-500 text-center px-4">{mapError}</p>
 			</div>
 		)
 	}

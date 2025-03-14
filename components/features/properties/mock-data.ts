@@ -5,10 +5,17 @@ export const mockProperties: Property[] = [
 		id: "1",
 		title: "Modern Downtown Apartment",
 		price: 450000,
-		location: "Downtown, City",
+		location: "37.7749,-122.4194",
 		bedrooms: 2,
 		bathrooms: 2,
 		area: 1200,
+		images: [
+			"https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&auto=format&fit=crop&q=60",
+			"https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&auto=format&fit=crop&q=60",
+			"https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?w=800&auto=format&fit=crop&q=60",
+			"https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=800&auto=format&fit=crop&q=60",
+			"https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?w=800&auto=format&fit=crop&q=60",
+		],
 		imageUrl:
 			"https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&auto=format&fit=crop&q=60",
 		propertyType: "apartment",
@@ -23,6 +30,13 @@ export const mockProperties: Property[] = [
 		bedrooms: 4,
 		bathrooms: 3,
 		area: 2400,
+		images: [
+			"https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format&fit=crop&q=60",
+			"https://images.unsplash.com/photo-1576941089067-2de3c901e126?w=800&auto=format&fit=crop&q=60",
+			"https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop&q=60",
+			"https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&auto=format&fit=crop&q=60",
+			"https://images.unsplash.com/photo-1600607687644-aac4c3eac7f4?w=800&auto=format&fit=crop&q=60",
+		],
 		imageUrl:
 			"https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format&fit=crop&q=60",
 		propertyType: "house",
@@ -37,10 +51,17 @@ export const mockProperties: Property[] = [
 		bedrooms: 3,
 		bathrooms: 3,
 		area: 2000,
+		images: [
+			"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=60",
+			"https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&auto=format&fit=crop&q=60",
+			"https://images.unsplash.com/photo-1600607687644-aac4c3eac7f4?w=800&auto=format&fit=crop&q=60",
+			"https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&auto=format&fit=crop&q=60",
+			"https://images.unsplash.com/photo-1600607687126-1c366842c6db?w=800&auto=format&fit=crop&q=60",
+		],
 		imageUrl:
 			"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=60",
 		propertyType: "condo",
-		createdAt: "204-03-13T09:15:00Z",
+		createdAt: "2024-03-13T09:15:00Z",
 		updatedAt: "2024-03-13T09:15:00Z",
 	},
 	{
@@ -51,6 +72,13 @@ export const mockProperties: Property[] = [
 		bedrooms: 3,
 		bathrooms: 2.5,
 		area: 1800,
+		images: [
+			"https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&auto=format&fit=crop&q=60",
+			"https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800&auto=format&fit=crop&q=60",
+			"https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&auto=format&fit=crop&q=60",
+			"https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=800&auto=format&fit=crop&q=60",
+			"https://images.unsplash.com/photo-1600566752734-2a0cd66c42cb?w=800&auto=format&fit=crop&q=60",
+		],
 		imageUrl:
 			"https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&auto=format&fit=crop&q=60",
 		propertyType: "townhouse",
@@ -65,6 +93,11 @@ export const mockProperties: Property[] = [
 		bedrooms: 0,
 		bathrooms: 0,
 		area: 5000,
+		images: [
+			"https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&auto=format&fit=crop&q=60",
+			"https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&auto=format&fit=crop&q=60",
+			"https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&auto=format&fit=crop&q=60",
+		],
 		imageUrl:
 			"https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&auto=format&fit=crop&q=60",
 		propertyType: "land",
