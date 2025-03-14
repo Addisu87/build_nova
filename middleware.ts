@@ -2,11 +2,22 @@ import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-// Define public routes that don't require authentication
+// Define routes that don't require authentication
 const publicRoutes = [
+	"/", // Home page
+	"/properties", // Property listings
+	"/search", // Search page
 	"/auth/login",
 	"/auth/signup",
 	"/auth/reset-password",
+]
+
+// Define protected routes that require authentication
+const protectedRoutes = [
+	"/favorites",
+	"/auth/profile",
+	"/properties/create", // If you have property creation
+	"/properties/edit", // If you have property editing
 ]
 
 // Define admin routes that require admin role
@@ -24,37 +35,39 @@ export async function middleware(
 		data: { session },
 	} = await supabase.auth.getSession()
 
-	// Check if the current path is a public route
-	const isPublicRoute = publicRoutes.some(
-		(route) =>
-			req.nextUrl.pathname.startsWith(route),
+	const path = req.nextUrl.pathname
+
+	// Allow public routes without authentication
+	if (
+		publicRoutes.some((route) =>
+			path.startsWith(route),
+		)
+	) {
+		return res
+	}
+
+	// Check if the current path is a protected route
+	const isProtectedRoute = protectedRoutes.some(
+		(route) => path.startsWith(route),
 	)
 
 	// Check if the current path is an admin route
 	const isAdminRoute = adminRoutes.some((route) =>
-		req.nextUrl.pathname.startsWith(route),
+		path.startsWith(route),
 	)
 
-	// If user is not signed in and the current path is not a public route,
-	// redirect the user to /auth/login
-	if (!session && !isPublicRoute) {
+	// If user is not signed in and trying to access a protected route,
+	// redirect to login
+	if (!session && isProtectedRoute) {
 		const redirectUrl = new URL(
 			"/auth/login",
 			req.url,
 		)
 		redirectUrl.searchParams.set(
 			"redirectedFrom",
-			req.nextUrl.pathname,
+			path,
 		)
 		return NextResponse.redirect(redirectUrl)
-	}
-
-	// If user is signed in and the current path is a public route,
-	// redirect the user to /
-	if (session && isPublicRoute) {
-		return NextResponse.redirect(
-			new URL("/", req.url),
-		)
 	}
 
 	// If user is not an admin and trying to access admin routes,
@@ -84,7 +97,8 @@ export const config = {
 		 * - _next/image (image optimization files)
 		 * - favicon.ico (favicon file)
 		 * - public folder
+		 * - api routes that should be public
 		 */
-		"/((?!_next/static|_next/image|favicon.ico|public).*)",
+		"/((?!_next/static|_next/image|favicon.ico|public|api/public).*)",
 	],
 }

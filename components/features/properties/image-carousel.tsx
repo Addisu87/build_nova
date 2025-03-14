@@ -15,7 +15,7 @@ interface PropertyImageCarouselProps {
 }
 
 export function PropertyImageCarousel({
-	images,
+	images = [],
 	title,
 }: PropertyImageCarouselProps) {
 	const [currentIndex, setCurrentIndex] =

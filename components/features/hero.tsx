@@ -1,21 +1,102 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { SearchBar } from "@/components/layout/search-bar"
+import { Button } from "@/components/ui"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import { cn } from "@/lib/utils"
+
+const heroImages = [
+	"https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&auto=format&fit=crop&q=80",
+	"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&auto=format&fit=crop&q=80",
+	"https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&auto=format&fit=crop&q=80",
+	"https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200&auto=format&fit=crop&q=80",
+]
 
 export function Hero() {
+	const [currentIndex, setCurrentIndex] = useState(0)
+
+	useEffect(() => {
+		const timer = setInterval(() => {
+			setCurrentIndex((prev) =>
+				prev === heroImages.length - 1 ? 0 : prev + 1
+			)
+		}, 5000)
+
+		return () => clearInterval(timer)
+	}, [])
+
+	const handlePrevious = () => {
+		setCurrentIndex((prev) =>
+			prev === 0 ? heroImages.length - 1 : prev - 1
+		)
+	}
+
+	const handleNext = () => {
+		setCurrentIndex((prev) =>
+			prev === heroImages.length - 1 ? 0 : prev + 1
+		)
+	}
+
 	return (
-		<div className="relative h-[500px] w-full overflow-hidden rounded-lg">
-			{/* Background image with overlay */}
+		<div className="group relative h-[500px] w-full overflow-hidden rounded-lg">
+			{/* Background images with overlay */}
 			<div className="absolute inset-0">
-				<Image
-					src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&auto=format&fit=crop&q=80"
-					alt="Modern luxury home exterior"
-					fill
-					priority
-					className="object-cover"
-				/>
-				<div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/30" />
+				<div
+					className="h-full transition-transform duration-500"
+					style={{
+						transform: `translateX(-${currentIndex * 100}%)`,
+						width: `${heroImages.length * 100}%`,
+						display: "flex",
+					}}
+				>
+					{heroImages.map((image, index) => (
+						<div key={index} className="relative h-full w-full">
+							<Image
+								src={image}
+								alt={`Modern luxury home ${index + 1}`}
+								fill
+								priority
+								className="object-cover"
+							/>
+							<div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/30" />
+						</div>
+					))}
+				</div>
+			</div>
+
+			{/* Navigation buttons */}
+			<Button
+				variant="ghost"
+				size="icon"
+				className="absolute left-4 top-1/2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100"
+				onClick={handlePrevious}
+			>
+				<ChevronLeft className="h-6 w-6 text-white" />
+			</Button>
+
+			<Button
+				variant="ghost"
+				size="icon"
+				className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100"
+				onClick={handleNext}
+			>
+				<ChevronRight className="h-6 w-6 text-white" />
+			</Button>
+
+			{/* Dot indicators */}
+			<div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-1">
+				{heroImages.map((_, index) => (
+					<button
+						key={index}
+						className={cn(
+							"h-1.5 w-1.5 rounded-full bg-white/80 transition-all",
+							index === currentIndex ? "w-3" : "opacity-50"
+						)}
+						onClick={() => setCurrentIndex(index)}
+					/>
+				))}
 			</div>
 
 			{/* Content */}
@@ -26,9 +107,7 @@ export function Hero() {
 				<p className="mb-8 max-w-xl text-lg text-gray-200 md:text-xl">
 					Discover thousands of properties for sale and rent across the country
 				</p>
-				<div className="w-full max-w-md">
-					<SearchBar />
-				</div>
+				<SearchBar />
 			</div>
 		</div>
 	)

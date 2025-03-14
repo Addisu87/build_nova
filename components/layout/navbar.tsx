@@ -15,6 +15,7 @@ import {
 	User,
 	LogOut,
 	Settings,
+	Search,
 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import {
@@ -31,75 +32,84 @@ export function Navbar() {
 
 	return (
 		<nav className="border-b bg-white">
-			<div className="container mx-auto flex h-16 items-center justify-between px-4">
+			<div className="container mx-auto flex h-16 items-center px-4">
 				<Link
 					href="/"
-					className="text-2xl font-bold text-blue-600"
+					className="mr-6 flex items-center space-x-2"
 				>
-					Nova
+					<span className="text-xl font-bold">
+						Nova
+					</span>
 				</Link>
 
-				<div className="flex items-center gap-4">
+				<div className="flex flex-1 items-center space-x-4">
+					<Link
+						href="/properties"
+						className={cn(
+							"text-sm font-medium transition-colors hover:text-primary",
+							pathname === "/properties"
+								? "text-primary"
+								: "text-gray-600",
+						)}
+					>
+						Properties
+					</Link>
+					<Link
+						href="/search"
+						className={cn(
+							"text-sm font-medium transition-colors hover:text-primary",
+							pathname === "/search"
+								? "text-primary"
+								: "text-gray-600",
+						)}
+					>
+						Search
+					</Link>
+				</div>
+
+				<div className="flex items-center space-x-4">
 					{user ? (
 						<>
-							<Link
-								href="/buyer"
-								className="text-xl font-bold text-gray-500 transition-colors duration-150 hover:text-blue-600"
-							>
-								Buyer
+							<Link href="/favorites">
+								<Button
+									variant="ghost"
+									size="icon"
+								>
+									<Heart className="h-5 w-5" />
+								</Button>
 							</Link>
-
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
-									<button
-										className="flex items-center justify-center rounded-full overflow-hidden focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 hover:opacity-90"
-										aria-label="User menu"
+									<Button
+										variant="ghost"
+										className="relative h-8 w-8 rounded-full"
 									>
-										<Avatar>
+										<Avatar className="h-8 w-8">
 											<AvatarImage
 												src={
 													user.user_metadata
-														?.avatar_url || null
+														?.avatar_url
 												}
-												size="sm"
-												alt={
-													user.user_metadata
-														?.full_name || "User"
-												}
+												alt={user.email}
 											/>
 											<AvatarFallback>
-												<div className="bg-blue-100 text-blue-600 flex items-center justify-center h-full w-full">
-													{user.user_metadata
-														?.full_name?.[0] ||
-														"U"}
-												</div>
+												{user.email
+													?.charAt(0)
+													.toUpperCase()}
 											</AvatarFallback>
 										</Avatar>
-									</button>
+									</Button>
 								</DropdownMenuTrigger>
-								<DropdownMenuContent
-									align="end"
-									className="w-56 overflow-hidden animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
-								>
-									<div className="px-2 py-2">
-										<p className="text-sm font-medium">
-											{user.user_metadata
-												?.full_name || "User"}
-										</p>
-										<p className="text-xs text-gray-500 truncate mt-0.5">
-											{user.email}
-										</p>
-									</div>
-									<DropdownMenuSeparator />
+								<DropdownMenuContent align="end">
 									<Link href="/auth/profile">
-										<DropdownMenuItem className="cursor-pointer transition-colors duration-150 hover:bg-gray-100/80">
+										<DropdownMenuItem>
 											<User className="mr-2 h-4 w-4" />
 											Profile
 										</DropdownMenuItem>
 									</Link>
+									<DropdownMenuSeparator />
 									<DropdownMenuItem
-										onClick={signOut}
-										className="cursor-pointer transition-colors duration-150 hover:bg-gray-100/80"
+										onClick={() => signOut()}
 									>
 										<LogOut className="mr-2 h-4 w-4" />
 										Sign Out
@@ -108,35 +118,16 @@ export function Navbar() {
 							</DropdownMenu>
 						</>
 					) : (
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button
-									variant="ghost"
-									size="icon"
-									className="transition-colors duration-200 hover:bg-gray-100/80"
-									aria-label="Menu"
-								>
-									<User className="h-5 w-5" />
+						<div className="flex items-center space-x-2">
+							<Link href="/auth/login">
+								<Button variant="ghost">
+									Sign In
 								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent
-								align="end"
-								className="w-56 overflow-hidden animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95"
-							>
-								<Link href="/auth/login">
-									<DropdownMenuItem className="cursor-pointer transition-colors duration-150 hover:bg-gray-100/80">
-										<LogOut className="mr-2 h-4 w-4" />
-										Sign In
-									</DropdownMenuItem>
-								</Link>
-								<Link href="/auth/signup">
-									<DropdownMenuItem className="cursor-pointer transition-colors duration-150 hover:bg-gray-100/80">
-										<User className="mr-2 h-4 w-4" />
-										Sign Up
-									</DropdownMenuItem>
-								</Link>
-							</DropdownMenuContent>
-						</DropdownMenu>
+							</Link>
+							<Link href="/auth/signup">
+								<Button>Sign Up</Button>
+							</Link>
+						</div>
 					)}
 				</div>
 			</div>
