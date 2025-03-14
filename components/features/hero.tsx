@@ -19,58 +19,49 @@ export function Hero() {
 
 	useEffect(() => {
 		const timer = setInterval(() => {
-			setCurrentIndex((prev) =>
-				prev === heroImages.length - 1 ? 0 : prev + 1
-			)
+			setCurrentIndex((prev) => (prev === heroImages.length - 1 ? 0 : prev + 1))
 		}, 5000)
 
 		return () => clearInterval(timer)
 	}, [])
 
 	const handlePrevious = () => {
-		setCurrentIndex((prev) =>
-			prev === 0 ? heroImages.length - 1 : prev - 1
-		)
+		setCurrentIndex((prev) => (prev === 0 ? heroImages.length - 1 : prev - 1))
 	}
 
 	const handleNext = () => {
-		setCurrentIndex((prev) =>
-			prev === heroImages.length - 1 ? 0 : prev + 1
-		)
+		setCurrentIndex((prev) => (prev === heroImages.length - 1 ? 0 : prev + 1))
 	}
 
 	return (
 		<div className="group relative h-[500px] w-full overflow-hidden rounded-lg">
 			{/* Background images with overlay */}
 			<div className="absolute inset-0">
-				<div
-					className="h-full transition-transform duration-500"
-					style={{
-						transform: `translateX(-${currentIndex * 100}%)`,
-						width: `${heroImages.length * 100}%`,
-						display: "flex",
-					}}
-				>
-					{heroImages.map((image, index) => (
-						<div key={index} className="relative h-full w-full">
-							<Image
-								src={image}
-								alt={`Modern luxury home ${index + 1}`}
-								fill
-								priority
-								className="object-cover"
-							/>
-							<div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/30" />
-						</div>
-					))}
-				</div>
+				{heroImages.map((image, index) => (
+					<div
+						key={index}
+						className="absolute inset-0 h-full w-full transition-transform duration-500 ease-in-out"
+						style={{
+							transform: `translateX(${(index - currentIndex) * 100}%)`,
+						}}
+					>
+						<Image
+							src={image}
+							alt={`Modern luxury home ${index + 1}`}
+							fill
+							priority={index === currentIndex}
+							className="object-cover"
+						/>
+						<div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/30" />
+					</div>
+				))}
 			</div>
 
 			{/* Navigation buttons */}
 			<Button
 				variant="ghost"
 				size="icon"
-				className="absolute left-4 top-1/2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100"
+				className="absolute left-4 top-1/2 -translate-y-1/2 opacity-0 transition-opacity duration-300 hover:bg-white/10 group-hover:opacity-100"
 				onClick={handlePrevious}
 			>
 				<ChevronLeft className="h-6 w-6 text-white" />
@@ -79,7 +70,7 @@ export function Hero() {
 			<Button
 				variant="ghost"
 				size="icon"
-				className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100"
+				className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 transition-opacity duration-300 hover:bg-white/10 group-hover:opacity-100"
 				onClick={handleNext}
 			>
 				<ChevronRight className="h-6 w-6 text-white" />
