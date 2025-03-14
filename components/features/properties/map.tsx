@@ -1,75 +1,100 @@
 "use client"
 
+import { useEffect, useRef } from 'react'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 import { Property } from "@/types/properties"
-import { Loader } from "lucide-react"
-import maplibregl from "maplibre-gl"
-import "maplibre-gl/dist/maplibre-gl.css"
-import { useEffect, useRef } from "react"
+import { PropertyMapSkeleton } from "./map-skeleton"
+import { createPriceMarker } from './map-marker'
 
 interface PropertyMapProps {
-	property: Property
-	isLoading?: boolean
+  property: Property
+  isLoading?: boolean
+  className?: string
+  height?: string
+  onMarkerClick?: (property: Property) => void
+  isSelected?: boolean
 }
 
 export function PropertyMap({
-	property,
-	isLoading = false,
+  property,
+  isLoading = false,
+  className = "",
+  height = "h-[300px]",
+  onMarkerClick,
+  isSelected = false
 }: PropertyMapProps) {
-	const mapRef = useRef<HTMLDivElement>(null)
-	const mapInstanceRef =
-		useRef<maplibregl.Map | null>(null)
-	const markerRef =
-		useRef<maplibregl.Marker | null>(null)
+  const mapRef = useRef<HTMLDivElement>(null)
+  const mapInstanceRef = useRef<L.Map | null>(null)
+  const markerRef = useRef<L.Marker | null>(null)
 
-	useEffect(() => {
-		if (!mapRef.current || !property.location)
-			return
+  useEffect(() => {
+    if (!mapRef.current || !property.location) return
 
-		// Parse location string to coordinates (assuming format: "lat,lng")
-		const [lat, lng] = property.location
-			.split(",")
-			.map(Number) || [37.7749, -122.4194]
+    const { lat, lng } = property.location
 
-		if (!mapInstanceRef.current) {
-			mapInstanceRef.current = new maplibregl.Map(
-				{
-					container: mapRef.current,
-					style:
-						"https://api.maptiler.com/maps/streets/style.json?key=MAPTILER_KEY",
-					center: [lng, lat],
-					zoom: 15,
-				},
-			)
-		}
+    if (!mapInstanceRef.current) {
+      mapInstanceRef.current = L.map(mapRef.current, {
+        zoomControl: false, // Disable default zoom control
+        scrollWheelZoom: false // Disable zoom on scroll
+      }).setView([lat, lng], 15)
 
-		if (markerRef.current) {
-			markerRef.current.remove()
-		}
+      // Add custom zoom control to top-right
+      L.control.zoom({
+        position: 'topright'
+      }).addTo(mapInstanceRef.current)
 
-		markerRef.current = new maplibregl.Marker()
-			.setLngLat([lng, lat])
-			.addTo(mapInstanceRef.current)
+      // Add tile layer with light theme
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '©OpenStreetMap, ©CartoDB'
+      }).addTo(mapInstanceRef.current)
+    }
 
-		return () => {
-			if (mapInstanceRef.current) {
-				mapInstanceRef.current.remove()
-				mapInstanceRef.current = null
-			}
-		}
-	}, [property.location])
+    if (markerRef.current) {
+      markerRef.current.remove()
+    }
 
-	if (isLoading) {
-		return (
-			<div className="flex h-[300px] items-center justify-center rounded-lg bg-gray-100">
-				<Loader className="h-6 w-6 animate-spin text-gray-400" />
-			</div>
-		)
-	}
+    // Create marker with price label
+    markerRef.current = L.marker([lat, lng], {
+      icon: createPriceMarker(property.price, isSelected),
+      riseOnHover: true
+    }).addTo(mapInstanceRef.current)
 
-	return (
-		<div
-			ref={mapRef}
-			className="h-[300px] w-full rounded-lg"
-		/>
-	)
+    // Add popup with property details
+    const popupContent = `
+      <div class="p-2">
+        <img src="${property.imageUrl}" alt="${property.title}" class="w-48 h-32 object-cover mb-2 rounded"/>
+        <h3 class="font-semibold">${property.title}</h3>
+        <p class="text-sm text-gray-600">${property.location.address}</p>
+        <p class="text-sm">${property.bedrooms} beds • ${property.bathrooms} baths • ${property.area} sqft</p>
+      </div>
+    `
+
+    markerRef.current.bindPopup(popupContent, {
+      offset: L.point(0, -20),
+      className: 'property-popup'
+    })
+
+    if (onMarkerClick) {
+      markerRef.current.on('click', () => onMarkerClick(property))
+    }
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove()
+        mapInstanceRef.current = null
+      }
+    }
+  }, [property, isSelected, onMarkerClick])
+
+  if (isLoading) {
+    return <PropertyMapSkeleton className={className} height={height} />
+  }
+
+  return (
+    <div
+      ref={mapRef}
+      className={`w-full rounded-lg ${height} ${className}`}
+    />
+  )
 }

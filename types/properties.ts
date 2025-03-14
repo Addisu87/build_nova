@@ -17,27 +17,37 @@ export type SortOption =
   | "sqft_desc"
   | "rating_desc"
 
+export interface PropertyLocation {
+  lat: number;
+  lng: number;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+}
+
 // Property Interface
 export interface Property {
-  id: string
-  title: string
-  price: number
-  location: string // Format: "latitude,longitude"
-  bedrooms: number
-  bathrooms: number
-  area: number
-  imageUrl: string
-  propertyType: PropertyType
-  squareFeet: number
-  createdAt?: string
-  updatedAt?: string
-  description?: string
-  amenities?: string[]
-  yearBuilt?: number
-  lotSize?: number
-  parkingSpaces?: number
-  status?: PropertyStatus
-  rating?: number
+  id: string;
+  title: string;
+  price: number;
+  location: PropertyLocation;
+  bedrooms: number;
+  bathrooms: number;
+  area: number;
+  images: string[];
+  imageUrl: string;
+  propertyType: 'house' | 'apartment' | 'condo' | 'townhouse' | 'land';
+  status: 'for-sale' | 'for-rent' | 'sold' | 'pending';
+  yearBuilt?: number;
+  createdAt: string;
+  updatedAt: string;
+  description?: string;
+  amenities?: string[];
+  lotSize?: number;
+  parkingSpaces?: number;
+  squareFeet?: number;
+  rating?: number;
 }
 
 // Range type for numeric filters

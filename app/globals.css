@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 @layer base {
-	body {
-		@apply text-black dark:text-white;
-	}
+  body {
+    @apply text-black dark:text-white;
+  }
   :root {
 
 		--background: 0 0% 100%;
@@ -111,18 +111,48 @@
 }
 
 @layer components {
-	.btn {
-		@apply rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm ring-offset-background transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
-	}
+  .btn {
+    @apply rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm ring-offset-background transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+
+  /* Map related components */
+  .property-popup .leaflet-popup-content-wrapper {
+    @apply rounded-lg p-0 bg-background border border-border shadow-lg;
+  }
+
+  .property-popup .leaflet-popup-content {
+    @apply m-0;
+  }
+
+  .property-popup .leaflet-popup-tip {
+    @apply bg-background border border-border;
+  }
+
+  .custom-price-marker {
+    @apply bg-transparent border-none;
+  }
+
+  /* Map controls */
+  .leaflet-control-zoom {
+    @apply border border-border rounded-lg overflow-hidden shadow-lg;
+  }
+
+  .leaflet-control-zoom-in,
+  .leaflet-control-zoom-out {
+    @apply bg-background text-foreground hover:bg-accent border-border;
+  }
+
+  /* Map attribution */
+  .leaflet-control-attribution {
+    @apply bg-background/80 text-xs text-muted-foreground;
+  }
 }
-
-
 
 @layer base {
   * {
     @apply border-border;
-	}
+  }
   body {
     @apply bg-background text-foreground;
-	}
+  }
 }

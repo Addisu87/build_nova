@@ -1,8 +1,21 @@
 import { Skeleton } from "@/components/ui"
+import { cn } from "@/lib/utils"
 
-export function PropertyMapSkeleton() {
+interface PropertyMapSkeletonProps {
+    className?: string
+    height?: string
+}
+
+export function PropertyMapSkeleton({ 
+    className,
+    height = "h-[300px]"
+}: PropertyMapSkeletonProps) {
     return (
-        <div className="relative h-[300px] w-full overflow-hidden rounded-lg">
+        <div className={cn(
+            "relative w-full overflow-hidden rounded-lg",
+            height,
+            className
+        )}>
             <Skeleton className="h-full w-full" />
         </div>
     )

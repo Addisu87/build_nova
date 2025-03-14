@@ -5,7 +5,14 @@ export const mockProperties: Property[] = [
 		id: "1",
 		title: "Modern Downtown Apartment",
 		price: 450000,
-		location: "37.7749,-122.4194",
+		location: {
+			lat: 37.7749,
+			lng: -122.4194,
+			address: "123 Market Street",
+			city: "San Francisco",
+			state: "CA",
+			zipCode: "94105"
+		},
 		bedrooms: 2,
 		bathrooms: 2,
 		area: 1200,
@@ -19,6 +26,8 @@ export const mockProperties: Property[] = [
 		imageUrl:
 			"https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&auto=format&fit=crop&q=60",
 		propertyType: "apartment",
+		status: "for-sale",
+		yearBuilt: 2020,
 		createdAt: "2024-03-15T10:00:00Z",
 		updatedAt: "2024-03-15T10:00:00Z",
 	},
@@ -26,7 +35,14 @@ export const mockProperties: Property[] = [
 		id: "2",
 		title: "Suburban Family Home",
 		price: 650000,
-		location: "Suburb Area, City",
+		location: {
+			lat: 37.7749,
+			lng: -122.4194,
+			address: "456 Oak Avenue",
+			city: "Oakland",
+			state: "CA",
+			zipCode: "94601"
+		},
 		bedrooms: 4,
 		bathrooms: 3,
 		area: 2400,
@@ -40,6 +56,8 @@ export const mockProperties: Property[] = [
 		imageUrl:
 			"https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format&fit=crop&q=60",
 		propertyType: "house",
+		status: "for-sale",
+		yearBuilt: 2018,
 		createdAt: "2024-03-14T15:30:00Z",
 		updatedAt: "2024-03-14T15:30:00Z",
 	},
@@ -47,7 +65,14 @@ export const mockProperties: Property[] = [
 		id: "3",
 		title: "Luxury Penthouse",
 		price: 1200000,
-		location: "City Center",
+		location: {
+			lat: 37.7749,
+			lng: -122.4194,
+			address: "789 Pine Street",
+			city: "San Francisco",
+			state: "CA",
+			zipCode: "94107"
+		},
 		bedrooms: 3,
 		bathrooms: 3,
 		area: 2000,
@@ -61,6 +86,8 @@ export const mockProperties: Property[] = [
 		imageUrl:
 			"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=60",
 		propertyType: "condo",
+		status: "for-sale",
+		yearBuilt: 2021,
 		createdAt: "2024-03-13T09:15:00Z",
 		updatedAt: "2024-03-13T09:15:00Z",
 	},
@@ -68,7 +95,14 @@ export const mockProperties: Property[] = [
 		id: "4",
 		title: "Modern Townhouse",
 		price: 550000,
-		location: "Urban District",
+		location: {
+			lat: 37.7749,
+			lng: -122.4194,
+			address: "101 Birch Lane",
+			city: "San Francisco",
+			state: "CA",
+			zipCode: "94108"
+		},
 		bedrooms: 3,
 		bathrooms: 2.5,
 		area: 1800,
@@ -82,6 +116,8 @@ export const mockProperties: Property[] = [
 		imageUrl:
 			"https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&auto=format&fit=crop&q=60",
 		propertyType: "townhouse",
+		status: "for-sale",
+		yearBuilt: 2019,
 		createdAt: "2024-03-12T14:45:00Z",
 		updatedAt: "2024-03-12T14:45:00Z",
 	},
@@ -89,7 +125,14 @@ export const mockProperties: Property[] = [
 		id: "5",
 		title: "Premium Building Land",
 		price: 300000,
-		location: "Developing Area",
+		location: {
+			lat: 37.7749,
+			lng: -122.4194,
+			address: "202 Maple Road",
+			city: "San Francisco",
+			state: "CA",
+			zipCode: "94109"
+		},
 		bedrooms: 0,
 		bathrooms: 0,
 		area: 5000,
@@ -101,6 +144,8 @@ export const mockProperties: Property[] = [
 		imageUrl:
 			"https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&auto=format&fit=crop&q=60",
 		propertyType: "land",
+		status: "for-sale",
+		yearBuilt: 2017,
 		createdAt: "2024-03-11T11:20:00Z",
 		updatedAt: "2024-03-11T11:20:00Z",
 	},
@@ -108,7 +153,14 @@ export const mockProperties: Property[] = [
 		id: "6",
 		title: "Modern Downtown Apartment",
 		price: 450000,
-		location: "Downtown, City",
+		location: {
+			lat: 37.7749,
+			lng: -122.4194,
+			address: "303 Walnut Street",
+			city: "San Francisco",
+			state: "CA",
+			zipCode: "94110"
+		},
 		bedrooms: 2,
 		bathrooms: 2,
 		area: 1200,
@@ -129,7 +181,14 @@ export const mockProperties: Property[] = [
 		id: "7",
 		title: "Suburban Family Home",
 		price: 650000,
-		location: "Suburb Area, City",
+		location: {
+			lat: 37.7749,
+			lng: -122.4194,
+			address: "404 Oak Street",
+			city: "San Francisco",
+			state: "CA",
+			zipCode: "94111"
+		},
 		bedrooms: 4,
 		bathrooms: 3,
 		area: 2400,
@@ -146,7 +205,14 @@ export const mockProperties: Property[] = [
 		id: "9",
 		title: "Luxury Penthouse",
 		price: 1200000,
-		location: "City Center",
+		location: {
+			lat: 37.7749,
+			lng: -122.4194,
+			address: "505 Pine Street",
+			city: "San Francisco",
+			state: "CA",
+			zipCode: "94112"
+		},
 		bedrooms: 3,
 		bathrooms: 3,
 		area: 2000,

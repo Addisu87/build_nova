@@ -94,7 +94,10 @@ export function PropertyCard({
 					<span>{property.area.toLocaleString()} sqft</span>
 				</div>
 				<p className="mt-2 text-sm text-gray-600">
-					{property.location}
+					{property.location.address}
+				</p>
+				<p className="mt-2 text-sm text-gray-600">
+					{`${property.location.city}, ${property.location.state} ${property.location.zipCode}`}
 				</p>
 			</div>
 		</div>

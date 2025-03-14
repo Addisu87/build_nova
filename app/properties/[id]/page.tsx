@@ -17,247 +17,139 @@ import {
 	Car,
 	Building2,
 	Trees,
-	DollarSign,
-	Clock,
+	Map,
 	Calendar,
 } from "lucide-react"
 
-interface PropertyDetailsPageProps {
-	params: {
-		id: string
-	}
-}
-
 export default function PropertyDetailsPage({
 	params,
-}: PropertyDetailsPageProps) {
+}: {
+	params: { id: string }
+}) {
 	const [property, setProperty] = useState<Property | null>(null)
-	const { isLoading: authLoading } = useAuth()
-	const {
-		addFavorite,
-		removeFavorite,
-		isFavorite,
-	} = usePropertyFavorites()
-
+	
 	useEffect(() => {
-		// Simulating API call to fetch property details
-		const fetchProperty = async () => {
-			try {
-				// In a real app, this would be an API call
-				const found = mockProperties.find(
-					(p) => p.id === params.id,
-				)
-				if (!found) {
-					notFound()
-				}
-				setProperty(found)
-			} catch (error) {
-				console.error(
-					"Error fetching property:",
-					error,
-				)
-				notFound()
-			}
+		const found = mockProperties.find((p) => p.id === params.id)
+		if (!found) {
+			notFound()
 		}
-
-		fetchProperty()
+		setProperty(found)
 	}, [params.id])
 
-	if (authLoading) {
+	if (!property) {
 		return <PropertyDetailsLoading />
 	}
 
-	if (!property) {
-		return (
-			<main className="container mx-auto px-4 py-8">
-				<h1 className="text-2xl font-bold">
-					Property not found
-				</h1>
-			</main>
-		)
-	}
-
 	return (
-		<div className="min-h-screen bg-gray-50">
-			{/* Hero Section with Images */}
-			<section className="relative">
+		<div className="relative min-h-screen bg-gray-50">
+			{/* Full width image carousel */}
+			<div className="w-full h-[400px] lg:h-[600px]">
 				<PropertyImageCarousel
-					images={property.images || [property.imageUrl]}
+					images={property.images}
 					title={property.title}
 					fullWidth
 				/>
-			</section>
+			</div>
 
-			{/* Main Content */}
-			<main className="container mx-auto px-4 py-8">
-				<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-					{/* Main Content */}
-					<div className="lg:col-span-2 space-y-6">
+			{/* Main content */}
+			<div className="relative lg:flex max-w-[1600px] mx-auto">
+				{/* Left side - Scrollable content */}
+				<div className="w-full lg:w-[45%] lg:overflow-y-auto">
+					{/* Content below carousel */}
+					<div className="px-4 py-8">
 						{/* Basic Info */}
-						<div className="bg-white rounded-lg shadow-lg p-6">
+						<div className="mb-8">
 							<h1 className="text-3xl font-bold mb-2">
 								{property.title}
 							</h1>
 							<p className="text-xl text-gray-600 mb-4">
-								{property.location}
+								{property.location.address}
 							</p>
 							<div className="flex items-center gap-4 text-lg">
 								<span className="font-bold text-2xl text-blue-600">
-									${property.price.toLocaleString()}
+									{(property.price || 0).toLocaleString()}
 								</span>
 								<div className="flex items-center gap-6 text-gray-600">
 									<span>{property.bedrooms} beds</span>
 									<span>{property.bathrooms} baths</span>
-									<span>
-										{property.square_feet?.toLocaleString() ?? "N/A"}{" "}
-										sqft
-									</span>
+									<span>{(property.area || 0).toLocaleString()} sqft</span>
 								</div>
 							</div>
 						</div>
 
 						{/* Property Details */}
-						<div className="bg-white rounded-lg shadow-lg p-6">
+						<div className="bg-white rounded-lg shadow-sm p-6 mb-8">
 							<h2 className="text-2xl font-semibold mb-6">
 								Property Details
 							</h2>
-							<div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+							<div className="grid grid-cols-2 gap-6">
 								<DetailItem
 									icon={Home}
 									label="Type"
-									value={property.propertyType}
+									value={property.propertyType || 'N/A'}
 								/>
 								<DetailItem
 									icon={Calendar}
 									label="Year Built"
-									value={
-										property.yearBuilt?.toString() ??
-										"N/A"
-									}
+									value={property.yearBuilt?.toString() ?? "N/A"}
 								/>
 								<DetailItem
 									icon={Ruler}
 									label="Lot Size"
-									value={`${
-										property.lotSize ?? "N/A"
-									} sqft`}
+									value={`${(property.lotSize || 0).toLocaleString()} sqft`}
 								/>
 								<DetailItem
 									icon={Car}
 									label="Garage"
-									value={`${
-										property.garage ?? 0
-									} spaces`}
+									value={`${property.garage || 0} cars`}
 								/>
 								<DetailItem
 									icon={Building2}
 									label="Stories"
-									value={
-										property.stories?.toString() ??
-										"N/A"
-									}
+									value={(property.stories || 0).toString()}
 								/>
 								<DetailItem
 									icon={Trees}
-									label="Lot"
-									value={
-										property.lotSize
-											? `${(
-													property.lotSize / 43560
-											  ).toFixed(2)} acres`
-											: "N/A"
-									}
+									label="Outdoor Space"
+									value={property.outdoorSpace || 'N/A'}
 								/>
 							</div>
 						</div>
 
 						{/* Description */}
-						<div className="bg-white rounded-lg shadow-lg p-6">
+						<div className="bg-white rounded-lg shadow-sm p-6">
 							<h2 className="text-2xl font-semibold mb-4">
-								About This Property
+								Description
 							</h2>
 							<p className="text-gray-600 whitespace-pre-line">
 								{property.description}
 							</p>
 						</div>
-
-						{/* Features & Amenities */}
-						<div className="bg-white rounded-lg shadow-lg p-6">
-							<h2 className="text-2xl font-semibold mb-6">
-								Features & Amenities
-							</h2>
-							<div className="grid grid-cols-2 gap-4">
-								{property.amenities?.map(
-									(amenity, index) => (
-										<div
-											key={index}
-											className="flex items-center gap-2"
-										>
-											<span className="text-blue-600">
-												•
-											</span>
-											{amenity}
-										</div>
-									),
-								)}
-							</div>
-						</div>
-					</div>
-
-					{/* Sidebar */}
-					<div className="space-y-8">
-						{/* Map */}
-						<div className="bg-white rounded-lg shadow-lg p-6">
-							<h2 className="text-xl font-semibold mb-4">
-								Location
-							</h2>
-							<div className="h-[300px] rounded-lg overflow-hidden">
-								<PropertyMap
-									property={property}
-									isLoading={false}
-								/>
-							</div>
-							<p className="mt-4 text-gray-600">
-								{property.location}
-							</p>
-						</div>
-
-						{/* Property History */}
-						<div className="bg-white rounded-lg shadow-lg p-6">
-							<h2 className="text-xl font-semibold mb-4">
-								Property History
-							</h2>
-							<div className="space-y-4">
-								<HistoryItem
-									icon={DollarSign}
-									date="Mar 2024"
-									label="Listed for sale"
-									value={`$${property.price.toLocaleString()}`}
-								/>
-								{property.priceHistory?.map(
-									(history, index) => (
-										<HistoryItem
-											key={index}
-											icon={Clock}
-											date={new Date(
-												history.date,
-											).toLocaleDateString(
-												"en-US",
-												{
-													month: "short",
-													year: "numeric",
-												},
-											)}
-											label={history.type}
-											value={`$${history.price.toLocaleString()}`}
-										/>
-									),
-								)}
-							</div>
-						</div>
 					</div>
 				</div>
-			</main>
+
+				{/* Right side - Fixed Map */}
+				<div className="hidden lg:block lg:w-[55%] h-screen sticky top-0 pt-8 pl-4 pr-4">
+					<div className="h-[600px] bg-white rounded-lg shadow-sm overflow-hidden">
+						<PropertyMap
+							property={property}
+							height="h-full"
+							isSelected={true}
+							onMarkerClick={() => {}}
+						/>
+					</div>
+				</div>
+
+				{/* Mobile Map Button - Shows at bottom of screen on mobile */}
+				<div className="lg:hidden fixed bottom-4 right-4">
+					<button 
+						onClick={() => {/* Add mobile map toggle logic */}}
+						className="bg-white p-3 rounded-full shadow-lg"
+					>
+						<Map className="h-6 w-6 text-gray-700" />
+					</button>
+				</div>
+			</div>
 		</div>
 	)
 }
@@ -268,47 +160,16 @@ interface DetailItemProps {
 	value: string
 }
 
-function DetailItem({
-	icon: Icon,
-	label,
-	value,
-}: DetailItemProps) {
+function DetailItem({ icon: Icon, label, value }: DetailItemProps) {
 	return (
 		<div className="flex items-center gap-3">
 			<Icon className="h-5 w-5 text-blue-600" />
 			<div>
-				<p className="text-sm text-gray-500">
-					{label}
-				</p>
+				<p className="text-sm text-gray-500">{label}</p>
 				<p className="font-medium">{value}</p>
 			</div>
 		</div>
 	)
 }
 
-interface HistoryItemProps {
-	icon: any
-	date: string
-	label: string
-	value: string
-}
 
-function HistoryItem({
-	icon: Icon,
-	date,
-	label,
-	value,
-}: HistoryItemProps) {
-	return (
-		<div className="flex items-center gap-3">
-			<Icon className="h-5 w-5 text-blue-600" />
-			<div className="flex-1">
-				<p className="text-sm text-gray-500">
-					{date}
-				</p>
-				<p className="font-medium">{label}</p>
-			</div>
-			<p className="font-semibold">{value}</p>
-		</div>
-	)
-}
