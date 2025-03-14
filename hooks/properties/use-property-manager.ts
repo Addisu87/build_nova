@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { mockProperties } from "@/components/features/properties/mock-data"
 import type { Property, PropertyFilters, SortOption } from "@/types/properties"
 
 export function usePropertyManager(initialProperties: Property[] = []) {
 	const [state, setState] = useState({
-		isLoading: true,
 		properties: initialProperties.length > 0 ? initialProperties : mockProperties,
 		filters: {
 			minPrice: "",
@@ -20,17 +19,7 @@ export function usePropertyManager(initialProperties: Property[] = []) {
 		} as PropertyFilters,
 	})
 
-	useEffect(() => {
-		// Simulate loading delay
-		const timer = setTimeout(() => {
-			setState(prev => ({
-				...prev,
-				isLoading: false,
-			}))
-		}, 1000)
-
-		return () => clearTimeout(timer)
-	}, [])
+	// Remove isLoading since we'll use auth context's isLoading
 
 	const updateFilters = (newFilters: Partial<PropertyFilters>) => {
 		setState(prev => ({
@@ -50,7 +39,6 @@ export function usePropertyManager(initialProperties: Property[] = []) {
 	const filteredAndSortedProperties = applyFiltersAndSort(state.properties, state.filters)
 
 	return {
-		isLoading: state.isLoading,
 		properties: filteredAndSortedProperties,
 		filters: state.filters,
 		updateFilters,

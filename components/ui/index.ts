@@ -1,7 +1,15 @@
 // components/ui/index.ts
-export { Input } from "./input"
 export { Button } from "./button"
+export { Input } from "./input"
 export { Label } from "./label"
+export {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "./select"
+export { Checkbox } from "./checkbox"
 export { Toaster } from "./sonner"
 export {
 	Avatar,
@@ -27,19 +35,6 @@ export {
 } from "./dropdown-menu"
 
 export { Skeleton } from "./skeleton"
-
-export {
-	Select,
-	SelectGroup,
-	SelectValue,
-	SelectTrigger,
-	SelectContent,
-	SelectLabel,
-	SelectItem,
-	SelectSeparator,
-	SelectScrollUpButton,
-	SelectScrollDownButton,
-} from "./select"
 
 export {
 	Dialog,

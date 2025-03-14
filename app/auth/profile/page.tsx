@@ -3,6 +3,7 @@
 import { useAuth } from "@/contexts/auth-context"
 import { usePropertyFavorites } from "@/hooks/favorites/use-property-favorites"
 import { PropertyCard, PropertiesGrid } from "@/components/features/properties"
+import { LoadingState } from "@/components/ui/loading-state"
 import {
 	Button,
 	Skeleton,
@@ -13,36 +14,36 @@ import {
 import { motion } from "framer-motion"
 
 export default function ProfilePage() {
-	const { user } = useAuth()
-	const { data: favorites, isLoading, removeFavorite } =
-		usePropertyFavorites()
+	const { user, isLoading: authLoading } = useAuth()
+	const { data: favorites, isLoading: favoritesLoading } = usePropertyFavorites()
 
-	if (!user) {
+	if (authLoading) {
 		return (
 			<main className="container mx-auto px-4 py-8">
-				<h1 className="text-2xl font-bold">
-					Please sign in to view your profile
-				</h1>
+				<LoadingState type="profile" />
 			</main>
 		)
 	}
 
-	if (isLoading) {
+	if (!user) {
 		return (
 			<main className="container mx-auto px-4 py-8">
-				<motion.div
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					transition={{ duration: 0.3 }}
-					className="space-y-8"
-				>
+				<h1 className="text-2xl font-bold">Please sign in to view your profile</h1>
+			</main>
+		)
+	}
+
+	if (favoritesLoading) {
+		return (
+			<main className="container mx-auto px-4 py-8">
+				<div className="space-y-8">
 					<Skeleton className="h-8 w-48" />
 					<div className="space-y-4">
 						<Skeleton className="h-10 w-full" />
 						<Skeleton className="h-10 w-full" />
 						<Skeleton className="h-32 w-full" />
 					</div>
-				</motion.div>
+				</div>
 			</main>
 		)
 	}

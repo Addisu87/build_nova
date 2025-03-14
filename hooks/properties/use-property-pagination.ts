@@ -3,6 +3,7 @@ import {
 	useRouter,
 	useSearchParams,
 } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
 import { toast } from "react-hot-toast"
 
 export interface PaginationState {
@@ -22,9 +23,8 @@ const DEFAULT_PAGINATION: PaginationState = {
 export function usePropertyPagination() {
 	const router = useRouter()
 	const searchParams = useSearchParams()
-	const [pagination, setPagination] =
-		useState<PaginationState>(DEFAULT_PAGINATION)
-	const [isLoading, setIsLoading] = useState(true)
+	const { isLoading } = useAuth()
+	const [pagination, setPagination] = useState<PaginationState>(DEFAULT_PAGINATION)
 
 	useEffect(() => {
 		// Parse search params into pagination state

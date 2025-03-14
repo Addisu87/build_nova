@@ -19,13 +19,12 @@ import {
 	AMENITIES,
 	SORT_OPTIONS,
 	PropertyType,
+	SortOption,
 } from "@/types/properties"
 
 interface PropertyFiltersProps {
 	filters: PropertyFiltersType
-	onChange: (
-		filters: Partial<PropertyFiltersType>,
-	) => void
+	onChange: (filters: Partial<PropertyFiltersType>) => void
 	sort: SortOption
 	onSortChange: (sort: SortOption) => void
 	className?: string
@@ -38,8 +37,7 @@ export function PropertyFilters({
 	onSortChange,
 	className = "",
 }: PropertyFiltersProps) {
-	const [isAdvancedOpen, setIsAdvancedOpen] =
-		useState(false)
+	const [isAdvancedOpen, setIsAdvancedOpen] = useState(false)
 
 	const handleChange = (
 		field: keyof PropertyFiltersType,
@@ -48,17 +46,11 @@ export function PropertyFilters({
 		onChange({ [field]: value })
 	}
 
-	const handleAmenityChange = (
-		amenity: string,
-	) => {
-		const currentAmenities =
-			filters.amenities || []
-		const newAmenities =
-			currentAmenities.includes(amenity)
-				? currentAmenities.filter(
-						(a) => a !== amenity,
-				  )
-				: [...currentAmenities, amenity]
+	const handleAmenityChange = (amenity: string) => {
+		const currentAmenities = filters.amenities || []
+		const newAmenities = currentAmenities.includes(amenity)
+			? currentAmenities.filter((a) => a !== amenity)
+			: [...currentAmenities, amenity]
 		handleChange("amenities", newAmenities)
 	}
 
@@ -73,7 +65,6 @@ export function PropertyFilters({
 			amenities: [],
 			squareFootage: { min: "", max: "" },
 			yearBuilt: { min: "", max: "" },
-			sortBy: "date_desc",
 		})
 	}
 
@@ -89,24 +80,16 @@ export function PropertyFilters({
 							placeholder="Min"
 							value={filters.minPrice}
 							onChange={(e) =>
-								handleChange(
-									"minPrice",
-									e.target.value,
-								)
+								handleChange("minPrice", e.target.value)
 							}
-							className="w-full"
 						/>
 						<Input
 							type="number"
 							placeholder="Max"
 							value={filters.maxPrice}
 							onChange={(e) =>
-								handleChange(
-									"maxPrice",
-									e.target.value,
-								)
+								handleChange("maxPrice", e.target.value)
 							}
-							className="w-full"
 						/>
 					</div>
 				</div>
@@ -124,9 +107,7 @@ export function PropertyFilters({
 							<SelectValue placeholder="Any" />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="any">
-								Any
-							</SelectItem>
+							<SelectItem value="any">Any</SelectItem>
 							{[1, 2, 3, 4, 5].map((num) => (
 								<SelectItem
 									key={num}
@@ -145,7 +126,8 @@ export function PropertyFilters({
 					<Select
 						value={filters.propertyType || "any"}
 						onValueChange={(value) =>
-							handleChange("propertyType", 
+							handleChange(
+								"propertyType",
 								value === "any" ? "" : value as PropertyType
 							)
 						}
@@ -154,9 +136,7 @@ export function PropertyFilters({
 							<SelectValue placeholder="Any" />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="any">
-								Any
-							</SelectItem>
+							<SelectItem value="any">Any</SelectItem>
 							{Object.entries(PROPERTY_TYPES).map(
 								([value, label]) => (
 									<SelectItem
@@ -165,10 +145,23 @@ export function PropertyFilters({
 									>
 										{label}
 									</SelectItem>
-								),
+								)
 							)}
 						</SelectContent>
 					</Select>
+				</div>
+
+				{/* Location */}
+				<div className="space-y-2">
+					<Label>Location</Label>
+					<Input
+						type="text"
+						placeholder="Enter location"
+						value={filters.location}
+						onChange={(e) =>
+							handleChange("location", e.target.value)
+						}
+					/>
 				</div>
 
 				{/* Sort By */}
@@ -176,9 +169,7 @@ export function PropertyFilters({
 					<Label>Sort By</Label>
 					<Select
 						value={sort}
-						onValueChange={(value) =>
-							onSortChange(value as SortOption)
-						}
+						onValueChange={onSortChange}
 					>
 						<SelectTrigger>
 							<SelectValue placeholder="Sort by..." />
@@ -192,24 +183,19 @@ export function PropertyFilters({
 									>
 										{label}
 									</SelectItem>
-								),
+								)
 							)}
 						</SelectContent>
 					</Select>
 				</div>
 			</div>
 
-			{/* Advanced Filters Toggle */}
-			<div className="flex justify-between items-center">
+			<div className="flex space-x-2">
 				<Button
 					variant="outline"
-					onClick={() =>
-						setIsAdvancedOpen(!isAdvancedOpen)
-					}
+					onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
 				>
-					{isAdvancedOpen
-						? "Less Filters"
-						: "More Filters"}
+					{isAdvancedOpen ? "Less Filters" : "More Filters"}
 				</Button>
 				<Button
 					variant="ghost"
@@ -235,49 +221,10 @@ export function PropertyFilters({
 								<Input
 									type="number"
 									placeholder="Min"
-									value={
-										filters.squareFootage?.min
-									}
+									value={filters.squareFootage?.min}
 									onChange={(e) =>
-										handleChange(
-											"squareFootage",
-											{
-												...filters.squareFootage,
-												min: e.target.value,
-											},
-										)
-									}
-								/>
-								<Input
-									type="number"
-									placeholder="Max"
-									value={
-										filters.squareFootage?.max
-									}
-									onChange={(e) =>
-										handleChange(
-											"squareFootage",
-											{
-												...filters.squareFootage,
-												max: e.target.value,
-											},
-										)
-									}
-								/>
-							</div>
-						</div>
-
-						{/* Year Built */}
-						<div className="space-y-2">
-							<Label>Year Built</Label>
-							<div className="flex space-x-2">
-								<Input
-									type="number"
-									placeholder="Min"
-									value={filters.yearBuilt?.min}
-									onChange={(e) =>
-										handleChange("yearBuilt", {
-											...filters.yearBuilt,
+										handleChange("squareFootage", {
+											...filters.squareFootage,
 											min: e.target.value,
 										})
 									}
@@ -285,24 +232,22 @@ export function PropertyFilters({
 								<Input
 									type="number"
 									placeholder="Max"
-									value={filters.yearBuilt?.max}
+									value={filters.squareFootage?.max}
 									onChange={(e) =>
-										handleChange("yearBuilt", {
-											...filters.yearBuilt,
+										handleChange("squareFootage", {
+											...filters.squareFootage,
 											max: e.target.value,
 										})
 									}
 								/>
 							</div>
 						</div>
-					</div>
 
-					{/* Amenities */}
-					<div className="space-y-2">
-						<Label>Amenities</Label>
-						<div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-							{AMENITIES.map(
-								({ value, label }) => (
+						{/* Amenities */}
+						<div className="space-y-2">
+							<Label>Amenities</Label>
+							<div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+								{AMENITIES.map(({ value, label }) => (
 									<div
 										key={value}
 										className="flex items-center space-x-2"
@@ -310,7 +255,7 @@ export function PropertyFilters({
 										<Checkbox
 											id={value}
 											checked={filters.amenities?.includes(
-												value,
+												value
 											)}
 											onCheckedChange={() =>
 												handleAmenityChange(value)
@@ -323,8 +268,8 @@ export function PropertyFilters({
 											{label}
 										</label>
 									</div>
-								),
-							)}
+								))}
+							</div>
 						</div>
 					</div>
 				</motion.div>

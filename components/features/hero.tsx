@@ -4,8 +4,10 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import { SearchBar } from "@/components/layout/search-bar"
 import { Button } from "@/components/ui"
+import { LoadingState } from "@/components/ui/loading-state"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/contexts/auth-context"
 
 const heroImages = [
 	"https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&auto=format&fit=crop&q=80",
@@ -16,6 +18,7 @@ const heroImages = [
 
 export function Hero() {
 	const [currentIndex, setCurrentIndex] = useState(0)
+	const { isLoading } = useAuth()
 
 	useEffect(() => {
 		const timer = setInterval(() => {
@@ -24,6 +27,10 @@ export function Hero() {
 
 		return () => clearInterval(timer)
 	}, [])
+
+	if (isLoading) {
+		return <LoadingState type="hero" />
+	}
 
 	const handlePrevious = () => {
 		setCurrentIndex((prev) => (prev === 0 ? heroImages.length - 1 : prev - 1))

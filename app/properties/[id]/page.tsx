@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { notFound } from "next/navigation"
 import {
 	PropertyDetailsModal,
@@ -10,9 +10,10 @@ import {
 import { Property } from "@/components/features/properties/types"
 import { mockProperties } from "@/components/features/properties/mock-data"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
+import { LoadingState } from "@/components/ui/loading-state"
 import { motion } from "framer-motion"
 import { usePropertyFavorites } from "@/hooks/favorites/use-property-favorites"
+import { useAuth } from "@/contexts/auth-context"
 import { Heart } from "lucide-react"
 
 interface PropertyDetailsPageProps {
@@ -24,9 +25,8 @@ interface PropertyDetailsPageProps {
 export default function PropertyDetailsPage({
 	params,
 }: PropertyDetailsPageProps) {
-	const [property, setProperty] =
-		useState<Property | null>(null)
-	const [isLoading, setIsLoading] = useState(true)
+	const [property, setProperty] = useState<Property | null>(null)
+	const { isLoading } = useAuth()
 	const {
 		addFavorite,
 		removeFavorite,
@@ -62,20 +62,7 @@ export default function PropertyDetailsPage({
 	if (isLoading) {
 		return (
 			<main className="container mx-auto px-4 py-8">
-				<div className="space-y-8">
-					<Skeleton className="h-[400px] w-full" />
-					<div className="grid gap-8 md:grid-cols-3">
-						<div className="md:col-span-2 space-y-8">
-							<Skeleton className="h-8 w-3/4" />
-							<Skeleton className="h-4 w-full" />
-							<Skeleton className="h-4 w-2/3" />
-						</div>
-						<div className="space-y-4">
-							<Skeleton className="h-12 w-full" />
-							<Skeleton className="h-32 w-full" />
-						</div>
-					</div>
-				</div>
+				<LoadingState type="property" />
 			</main>
 		)
 	}
