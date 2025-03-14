@@ -1,36 +1,35 @@
 "use client"
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
 import {
-	Button,
 	Avatar,
 	AvatarFallback,
 	AvatarImage,
+	Button,
 } from "@/components/ui"
-import {
-	Heart,
-	User,
-	LogOut,
-	Building,
-	Search as SearchIcon,
-	UserPlus,
-	KeyRound,
-	Mail,
-	Lock,
-	HelpCircle,
-} from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-	DropdownMenuSeparator,
-	DropdownMenuLabel,
 	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useAuth } from "@/contexts/auth-context"
+import {
+	Building,
+	Heart,
+	HelpCircle,
+	KeyRound,
+	Lock,
+	LogOut,
+	Mail,
+	Search as SearchIcon,
+	User,
+	UserPlus,
+} from "lucide-react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 export function Navbar() {
 	const pathname = usePathname()
@@ -120,6 +119,7 @@ export function Navbar() {
 					)}
 
 					{/* Auth Dropdown - Simplified */}
+
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button
@@ -196,13 +196,19 @@ export function Navbar() {
 							) : (
 								<>
 									<DropdownMenuGroup>
-										<Link href="/auth/login">
+										<Link
+											href="?auth=login"
+											shallow
+										>
 											<DropdownMenuItem className="font-medium">
 												<KeyRound className="mr-2 h-4 w-4" />
 												Sign in
 											</DropdownMenuItem>
 										</Link>
-										<Link href="/auth/signup">
+										<Link
+											href="?auth=signup"
+											shallow
+										>
 											<DropdownMenuItem>
 												<UserPlus className="mr-2 h-4 w-4" />
 												Create account
@@ -211,13 +217,19 @@ export function Navbar() {
 									</DropdownMenuGroup>
 									<DropdownMenuSeparator />
 									<DropdownMenuGroup>
-										<Link href="/auth/verify-email">
+										<Link
+											href="?auth=verify-email"
+											shallow
+										>
 											<DropdownMenuItem>
 												<Mail className="mr-2 h-4 w-4" />
 												Verify email
 											</DropdownMenuItem>
 										</Link>
-										<Link href="/auth/reset-password">
+										<Link
+											href="?auth=reset-password"
+											shallow
+										>
 											<DropdownMenuItem>
 												<Lock className="mr-2 h-4 w-4" />
 												Reset password
