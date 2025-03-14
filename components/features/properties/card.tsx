@@ -19,87 +19,118 @@ export function PropertyCard({
 	onFavorite,
 	isFavorite = false,
 }: PropertyCardProps) {
+	const [currentImageIndex, setCurrentImageIndex] = useState(0)
 	const images = property.images || [property.imageUrl]
-	
+
+	const handlePrevious = (e: React.MouseEvent) => {
+		e.preventDefault()
+		e.stopPropagation()
+		setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))
+	}
+
+	const handleNext = (e: React.MouseEvent) => {
+		e.preventDefault()
+		e.stopPropagation()
+		setCurrentImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))
+	}
+
 	return (
-		<div className="overflow-hidden rounded-lg border bg-white shadow-sm transition-shadow hover:shadow-md">
-			<div className="relative aspect-[4/3]">
-				<div className="group relative h-full w-full">
-					{images.length > 1 ? (
-						// Grid layout for multiple images
-						<div className="grid grid-cols-2 gap-0.5 h-full">
-							<div className="relative row-span-2">
+		<Link href={`/properties/${property.id}`}>
+			<div className="group relative overflow-hidden rounded-lg border bg-white shadow-sm transition-shadow hover:shadow-md">
+				<div className="relative aspect-[4/3]">
+					{/* Image Carousel */}
+					<div className="relative h-full w-full">
+						{images.map((image, index) => (
+							<div
+								key={index}
+								className={cn(
+									"absolute h-full w-full transition-opacity duration-300",
+									index === currentImageIndex ? "opacity-100" : "opacity-0"
+								)}
+							>
 								<Image
-									src={images[0]}
-									alt={`${property.title} - Main Image`}
+									src={image}
+									alt={`${property.title} - Image ${index + 1}`}
 									fill
 									className="object-cover"
+									priority={index === 0}
 								/>
 							</div>
-							<div className="relative">
-								<Image
-									src={images[1]}
-									alt={`${property.title} - Image 2`}
-									fill
-									className="object-cover"
+						))}
+
+						{/* Navigation Buttons - Only show if there are multiple images */}
+						{images.length > 1 && (
+							<>
+								{/* Previous Button */}
+								<button
+									className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-1.5 opacity-0 shadow-md transition-opacity duration-200 hover:bg-white group-hover:opacity-100"
+									onClick={handlePrevious}
+								>
+									<ChevronLeft className="h-4 w-4" />
+								</button>
+
+								{/* Next Button */}
+								<button
+									className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-1.5 opacity-0 shadow-md transition-opacity duration-200 hover:bg-white group-hover:opacity-100"
+									onClick={handleNext}
+								>
+									<ChevronRight className="h-4 w-4" />
+								</button>
+
+								{/* Dots Indicator */}
+								<div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1">
+									{images.map((_, index) => (
+										<div
+											key={index}
+											className={cn(
+												"h-1.5 w-1.5 rounded-full bg-white transition-all",
+												index === currentImageIndex ? "opacity-100" : "opacity-50"
+											)}
+										/>
+									))}
+								</div>
+							</>
+						)}
+
+						{/* Favorite Button */}
+						{onFavorite && (
+							<button
+								className="absolute right-2 top-2 rounded-full bg-white/90 p-1.5 shadow-md transition-transform hover:scale-110"
+								onClick={(e) => {
+									e.preventDefault()
+									e.stopPropagation()
+									onFavorite(property.id)
+								}}
+							>
+								<Heart
+									className={cn(
+										"h-4 w-4",
+										isFavorite ? "fill-red-500 text-red-500" : "text-gray-600"
+									)}
 								/>
-							</div>
-							<div className="relative">
-								<Image
-									src={images[2] || images[1]} // Fallback to second image if third doesn't exist
-									alt={`${property.title} - Image 3`}
-									fill
-									className="object-cover"
-								/>
-							</div>
+							</button>
+						)}
+					</div>
+				</div>
+
+				{/* Property Information */}
+				<div className="p-4">
+					<div className="flex items-start justify-between">
+						<div>
+							<h3 className="font-semibold">{property.title}</h3>
+							<p className="text-sm text-gray-600">{property.location.address}</p>
 						</div>
-					) : (
-						// Single image layout
-						<Image
-							src={images[0]}
-							alt={property.title}
-							fill
-							className="object-cover"
-						/>
-					)}
-					
-					{onFavorite && (
-						<button
-							onClick={() => onFavorite(property.id)}
-							className="absolute right-2 top-2 rounded-full bg-white p-2 shadow-md transition-colors hover:bg-gray-100 z-10"
-						>
-							<Heart
-								className={`h-4 w-4 ${
-									isFavorite
-										? "fill-red-500 text-red-500"
-										: "text-gray-500"
-								}`}
-							/>
-						</button>
-					)}
+						<p className="font-semibold">${property.price.toLocaleString()}</p>
+					</div>
+					<div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
+						<span>{property.bedrooms} beds</span>
+						<span>•</span>
+						<span>{property.bathrooms} baths</span>
+						<span>•</span>
+						<span>{property.area.toLocaleString()} sqft</span>
+					</div>
 				</div>
 			</div>
-			<div className="p-4">
-				<Link href={`/properties/${property.id}`}>
-					<h3 className="text-lg font-semibold">
-						{property.title}
-					</h3>
-				</Link>
-				<p className="mt-2 text-2xl font-bold text-primary">
-					${property.price.toLocaleString()}
-				</p>
-				<div className="mt-4 flex justify-between text-sm text-gray-500">
-					<span>{property.bedrooms} beds</span>
-					<span>{property.bathrooms} baths</span>
-					<span>{property.area.toLocaleString()} sqft</span>
-				</div>
-				<p className="mt-2 text-sm text-gray-600">
-					{property.location.address}
-				</p>
-				<p className="mt-2 text-sm text-gray-600">
-					{`${property.location.city}, ${property.location.state} ${property.location.zipCode}`}
-				</p>
-			</div>
-		</div>
+		</Link>
 	)
 }

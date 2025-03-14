@@ -10,6 +10,7 @@ import { Property } from "@/components/features/properties/types"
 import { mockProperties } from "@/components/features/properties/mock-data"
 import { usePropertyFavorites } from "@/hooks/favorites/use-property-favorites"
 import { useAuth } from "@/contexts/auth-context"
+import { useProperties } from "@/hooks/properties/use-properties"
 import PropertyDetailsLoading from "./loading"
 import {
 	Home,
@@ -27,13 +28,23 @@ export default function PropertyDetailsPage({
 	params: { id: string }
 }) {
 	const [property, setProperty] = useState<Property | null>(null)
+	const [nearbyProperties, setNearbyProperties] = useState<Property[]>([])
 	
+	// Fetch the main property
 	useEffect(() => {
 		const found = mockProperties.find((p) => p.id === params.id)
 		if (!found) {
 			notFound()
 		}
 		setProperty(found)
+
+		// Find nearby properties (excluding the current property)
+		// In a real application, you would want to use geospatial queries
+		const nearby = mockProperties.filter(p => 
+			p.id !== params.id && 
+			isNearby(found.location, p.location)
+		).slice(0, 10) // Limit to 10 nearby properties
+		setNearbyProperties(nearby)
 	}, [params.id])
 
 	if (!property) {
@@ -133,10 +144,42 @@ export default function PropertyDetailsPage({
 					<div className="h-[600px] bg-white rounded-lg shadow-sm overflow-hidden">
 						<PropertyMap
 							property={property}
+							nearbyProperties={nearbyProperties}
 							height="h-full"
 							isSelected={true}
-							onMarkerClick={() => {}}
+							onMarkerClick={(propertyId) => {
+								if (propertyId !== property.id) {
+									window.location.href = `/properties/${propertyId}`
+								}
+							}}
 						/>
+					</div>
+					<div className="mt-4 p-4 bg-white rounded-lg shadow-sm">
+						<h3 className="text-lg font-semibold mb-3">Nearby Properties</h3>
+						<div className="space-y-2">
+							{nearbyProperties.map(prop => (
+								<div 
+									key={prop.id}
+									className="flex items-center justify-between py-2 hover:bg-gray-50 cursor-pointer"
+									onClick={() => window.location.href = `/properties/${prop.id}`}
+								>
+									<div className="flex items-center gap-3">
+										<img 
+											src={prop.imageUrl} 
+											alt={prop.title}
+											className="w-12 h-12 object-cover rounded"
+										/>
+										<div>
+											<p className="font-medium">${prop.price.toLocaleString()}</p>
+											<p className="text-sm text-gray-600">
+												{prop.bedrooms} beds • {prop.bathrooms} baths
+											</p>
+										</div>
+									</div>
+									<div className="text-blue-600 text-sm">View</div>
+								</div>
+							))}
+						</div>
 					</div>
 				</div>
 
@@ -170,6 +213,14 @@ function DetailItem({ icon: Icon, label, value }: DetailItemProps) {
 			</div>
 		</div>
 	)
+}
+
+// Helper function to determine if a property is nearby
+// In a real application, you would want to use proper geospatial calculations
+function isNearby(location1: any, location2: any) {
+	// This is a simplified example - you should implement proper distance calculation
+	// using latitude and longitude
+	return true // For demo purposes, considering all properties as nearby
 }
 
 
