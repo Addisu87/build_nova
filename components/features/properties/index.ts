@@ -1,6 +1,6 @@
 export * from "./grid"
 export * from "./filters"
-export { Card } from "./card"
+export { PropertyCard } from "./card"
 export * from "./map"
 export * from "./image-carousel"
-export { DialogContent } from "./details-modal"
+export { PropertyDetailsModal } from "./details-modal"

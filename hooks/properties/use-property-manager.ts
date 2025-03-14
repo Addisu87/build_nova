@@ -1,176 +1,103 @@
 import { useState, useEffect } from "react"
-import {
-	useRouter,
-	useSearchParams,
-} from "next/navigation"
-import { toast } from "sonner"
-import { Database } from "@/types/supabase"
-import { getProperties } from "@/lib/supabase/db"
+import { mockProperties } from "@/components/features/properties/mock-data"
+import type { Property, PropertyFilters, SortOption } from "@/types/properties"
 
-type Property =
-	Database["public"]["Tables"]["properties"]["Row"]
-
-type SortOption =
-	| "price_asc"
-	| "price_desc"
-	| "newest"
-	| "oldest"
-	| "beds_asc"
-	| "beds_desc"
-	| "baths_asc"
-	| "baths_desc"
-	| "sqft_asc"
-	| "sqft_desc"
-	| "rating_desc"
-
-const SORT_OPTIONS = {
-	price_asc: "Price: Low to High",
-	price_desc: "Price: High to Low",
-	newest: "Newest First",
-	oldest: "Oldest First",
-	beds_asc: "Bedrooms: Low to High",
-	beds_desc: "Bedrooms: High to Low",
-	baths_asc: "Bathrooms: Low to High",
-	baths_desc: "Bathrooms: High to Low",
-	sqft_asc: "Square Feet: Low to High",
-	sqft_desc: "Square Feet: High to Low",
-	rating_desc: "Highest Rated",
-} as const
-
-export function usePropertyManager() {
-	const router = useRouter()
-	const searchParams = useSearchParams()
-
+export function usePropertyManager(initialProperties: Property[] = []) {
 	const [state, setState] = useState({
-		properties: [] as Property[],
 		isLoading: true,
-		error: null as Error | null,
+		properties: initialProperties.length > 0 ? initialProperties : mockProperties,
 		filters: {
-			minPrice: undefined as number | undefined,
-			maxPrice: undefined as number | undefined,
-			bedrooms: undefined as number | undefined,
-			bathrooms: undefined as number | undefined,
-			propertyType: undefined as
-				| string
-				| undefined,
-			location: undefined as string | undefined,
-		},
-		sort: {
-			sortBy: "newest" as SortOption,
-			label: SORT_OPTIONS.newest,
-		},
+			minPrice: "",
+			maxPrice: "",
+			bedrooms: "",
+			bathrooms: "",
+			propertyType: "",
+			location: "",
+			amenities: [],
+			squareFootage: { min: "", max: "" },
+			yearBuilt: { min: "", max: "" },
+			sortBy: "date_desc" as SortOption,
+		} as PropertyFilters,
 	})
 
 	useEffect(() => {
-		const parseParams = () => {
-			const newFilters = { ...state.filters }
-			const sortBy = searchParams.get(
-				"sortBy",
-			) as SortOption
-
-			// Parse filter parameters
-			;[
-				"minPrice",
-				"maxPrice",
-				"bedrooms",
-				"bathrooms",
-				"propertyType",
-				"location",
-			].forEach((param) => {
-				const value = searchParams.get(param)
-				if (value) {
-					newFilters[
-						param as keyof typeof newFilters
-					] =
-						param === "propertyType" ||
-						param === "location"
-							? value
-							: Number(value)
-				}
-			})
-
-			// Validate and set sort
-			const validSort =
-				sortBy && SORT_OPTIONS[sortBy]
-					? sortBy
-					: "newest"
-
-			setState((prev) => ({
+		// Simulate loading delay
+		const timer = setTimeout(() => {
+			setState(prev => ({
 				...prev,
-				filters: newFilters,
-				sort: {
-					sortBy: validSort,
-					label: SORT_OPTIONS[validSort],
-				},
+				isLoading: false,
 			}))
-		}
+		}, 1000)
 
-		parseParams()
-	}, [searchParams])
+		return () => clearTimeout(timer)
+	}, [])
 
-	useEffect(() => {
-		const fetchData = async () => {
-			try {
-				setState((prev) => ({
-					...prev,
-					isLoading: true,
-				}))
-				const data = await getProperties(
-					state.filters,
-				)
-				setState((prev) => ({
-					...prev,
-					properties: data,
-					isLoading: false,
-					error: null,
-				}))
-			} catch (err) {
-				setState((prev) => ({
-					...prev,
-					error:
-						err instanceof Error
-							? err
-							: new Error("Fetch failed"),
-					isLoading: false,
-				}))
-				toast.error("Failed to load properties")
-			}
-		}
-
-		fetchData()
-	}, [state.filters])
-
-	const updateFilters = (
-		newFilters: Partial<typeof state.filters>,
-	) => {
-		const params = new URLSearchParams(
-			searchParams.toString(),
-		)
-		Object.entries(newFilters).forEach(
-			([key, value]) => {
-				if (value !== undefined) {
-					params.set(key, String(value))
-				} else {
-					params.delete(key)
-				}
+	const updateFilters = (newFilters: Partial<PropertyFilters>) => {
+		setState(prev => ({
+			...prev,
+			filters: {
+				...prev.filters,
+				...newFilters,
 			},
-		)
-		router.push(
-			params.toString() ? `?${params}` : "/",
-		)
+		}))
 	}
 
 	const updateSort = (sortBy: SortOption) => {
-		const params = new URLSearchParams(
-			searchParams.toString(),
-		)
-		params.set("sortBy", sortBy)
-		router.push(`?${params}`)
+		updateFilters({ sortBy })
 	}
 
+	// Apply filters and sorting to properties
+	const filteredAndSortedProperties = applyFiltersAndSort(state.properties, state.filters)
+
 	return {
-		...state,
+		isLoading: state.isLoading,
+		properties: filteredAndSortedProperties,
+		filters: state.filters,
 		updateFilters,
 		updateSort,
+		sortBy: state.filters.sortBy,
 	}
+}
+
+// Helper function to apply filters and sorting
+function applyFiltersAndSort(properties: Property[], filters: PropertyFilters) {
+	let filtered = [...properties]
+
+	// Apply filters
+	if (filters.minPrice) {
+		filtered = filtered.filter(p => p.price >= parseInt(filters.minPrice))
+	}
+	if (filters.maxPrice) {
+		filtered = filtered.filter(p => p.price <= parseInt(filters.maxPrice))
+	}
+	if (filters.bedrooms) {
+		filtered = filtered.filter(p => p.bedrooms >= parseInt(filters.bedrooms))
+	}
+	if (filters.bathrooms) {
+		filtered = filtered.filter(p => p.bathrooms >= parseInt(filters.bathrooms))
+	}
+	if (filters.propertyType) {
+		filtered = filtered.filter(p => p.type === filters.propertyType)
+	}
+	if (filters.location) {
+		filtered = filtered.filter(p => p.location.toLowerCase().includes(filters.location.toLowerCase()))
+	}
+
+	// Apply sorting
+	filtered.sort((a, b) => {
+		switch (filters.sortBy) {
+			case "price_asc":
+				return a.price - b.price
+			case "price_desc":
+				return b.price - a.price
+			case "date_desc":
+				return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+			case "date_asc":
+				return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+			default:
+				return 0
+		}
+	})
+
+	return filtered
 }

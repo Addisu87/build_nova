@@ -1,3 +1,5 @@
+"use client"
+
 import { useState } from "react"
 import {
 	Button,
@@ -8,157 +10,325 @@ import {
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
+	Checkbox,
 } from "@/components/ui"
 import { motion } from "framer-motion"
-
-export interface PropertyFilters {
-	minPrice: string
-	maxPrice: string
-	bedrooms: string
-	bathrooms: string
-	propertyType: string
-	location: string
-	status?: string[]
-}
+import {
+	PropertyFilters as PropertyFiltersType,
+	PROPERTY_TYPES,
+	AMENITIES,
+	SORT_OPTIONS,
+	PropertyType,
+} from "@/types/properties"
 
 interface PropertyFiltersProps {
-	filters: Partial<PropertyFilters>
+	filters: PropertyFiltersType
 	onChange: (
-		filters: Partial<PropertyFilters>,
+		filters: Partial<PropertyFiltersType>,
 	) => void
+	sort: SortOption
+	onSortChange: (sort: SortOption) => void
 	className?: string
 }
 
 export function PropertyFilters({
 	filters,
 	onChange,
+	sort,
+	onSortChange,
 	className = "",
 }: PropertyFiltersProps) {
+	const [isAdvancedOpen, setIsAdvancedOpen] =
+		useState(false)
+
 	const handleChange = (
-		key: keyof PropertyFilters,
-		value: string,
+		field: keyof PropertyFiltersType,
+		value: any,
 	) => {
-		onChange({ [key]: value })
+		onChange({ [field]: value })
+	}
+
+	const handleAmenityChange = (
+		amenity: string,
+	) => {
+		const currentAmenities =
+			filters.amenities || []
+		const newAmenities =
+			currentAmenities.includes(amenity)
+				? currentAmenities.filter(
+						(a) => a !== amenity,
+				  )
+				: [...currentAmenities, amenity]
+		handleChange("amenities", newAmenities)
+	}
+
+	const handleReset = () => {
+		onChange({
+			minPrice: "",
+			maxPrice: "",
+			bedrooms: "",
+			bathrooms: "",
+			propertyType: "",
+			location: "",
+			amenities: [],
+			squareFootage: { min: "", max: "" },
+			yearBuilt: { min: "", max: "" },
+			sortBy: "date_desc",
+		})
 	}
 
 	return (
-		<motion.div
-			initial={{ opacity: 0, y: 20 }}
-			animate={{ opacity: 1, y: 0 }}
-			className={`grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5 ${className}`}
-		>
-			<div className="space-y-2">
-				<Label>Min Price</Label>
-				<Input
-					type="number"
-					placeholder="Min Price"
-					value={filters.minPrice}
-					onChange={(e) =>
-						handleChange(
-							"minPrice",
-							e.target.value,
-						)
-					}
-					className="w-full"
-				/>
+		<div className={`space-y-4 ${className}`}>
+			<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+				{/* Price Range */}
+				<div className="space-y-2">
+					<Label>Price Range</Label>
+					<div className="flex space-x-2">
+						<Input
+							type="number"
+							placeholder="Min"
+							value={filters.minPrice}
+							onChange={(e) =>
+								handleChange(
+									"minPrice",
+									e.target.value,
+								)
+							}
+							className="w-full"
+						/>
+						<Input
+							type="number"
+							placeholder="Max"
+							value={filters.maxPrice}
+							onChange={(e) =>
+								handleChange(
+									"maxPrice",
+									e.target.value,
+								)
+							}
+							className="w-full"
+						/>
+					</div>
+				</div>
+
+				{/* Bedrooms */}
+				<div className="space-y-2">
+					<Label>Bedrooms</Label>
+					<Select
+						value={filters.bedrooms || "any"}
+						onValueChange={(value) =>
+							handleChange("bedrooms", value === "any" ? "" : value)
+						}
+					>
+						<SelectTrigger>
+							<SelectValue placeholder="Any" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="any">
+								Any
+							</SelectItem>
+							{[1, 2, 3, 4, 5].map((num) => (
+								<SelectItem
+									key={num}
+									value={num.toString()}
+								>
+									{num}+ beds
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
+
+				{/* Property Type */}
+				<div className="space-y-2">
+					<Label>Property Type</Label>
+					<Select
+						value={filters.propertyType || "any"}
+						onValueChange={(value) =>
+							handleChange("propertyType", 
+								value === "any" ? "" : value as PropertyType
+							)
+						}
+					>
+						<SelectTrigger>
+							<SelectValue placeholder="Any" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="any">
+								Any
+							</SelectItem>
+							{Object.entries(PROPERTY_TYPES).map(
+								([value, label]) => (
+									<SelectItem
+										key={value}
+										value={value}
+									>
+										{label}
+									</SelectItem>
+								),
+							)}
+						</SelectContent>
+					</Select>
+				</div>
+
+				{/* Sort By */}
+				<div className="space-y-2">
+					<Label>Sort By</Label>
+					<Select
+						value={sort}
+						onValueChange={(value) =>
+							onSortChange(value as SortOption)
+						}
+					>
+						<SelectTrigger>
+							<SelectValue placeholder="Sort by..." />
+						</SelectTrigger>
+						<SelectContent>
+							{Object.entries(SORT_OPTIONS).map(
+								([value, label]) => (
+									<SelectItem
+										key={value}
+										value={value}
+									>
+										{label}
+									</SelectItem>
+								),
+							)}
+						</SelectContent>
+					</Select>
+				</div>
 			</div>
 
-			<div className="space-y-2">
-				<Label>Max Price</Label>
-				<Input
-					type="number"
-					placeholder="Max Price"
-					value={filters.maxPrice}
-					onChange={(e) =>
-						handleChange(
-							"maxPrice",
-							e.target.value,
-						)
-					}
-					className="w-full"
-				/>
-			</div>
-
-			<div className="space-y-2">
-				<Label>Bedrooms</Label>
-				<Select
-					value={filters.bedrooms}
-					onValueChange={(value) =>
-						handleChange("bedrooms", value)
+			{/* Advanced Filters Toggle */}
+			<div className="flex justify-between items-center">
+				<Button
+					variant="outline"
+					onClick={() =>
+						setIsAdvancedOpen(!isAdvancedOpen)
 					}
 				>
-					<SelectTrigger>
-						<SelectValue placeholder="Any" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="any">
-							Any
-						</SelectItem>
-						<SelectItem value="1">1+</SelectItem>
-						<SelectItem value="2">2+</SelectItem>
-						<SelectItem value="3">3+</SelectItem>
-						<SelectItem value="4">4+</SelectItem>
-						<SelectItem value="5">5+</SelectItem>
-					</SelectContent>
-				</Select>
+					{isAdvancedOpen
+						? "Less Filters"
+						: "More Filters"}
+				</Button>
+				<Button
+					variant="ghost"
+					onClick={handleReset}
+				>
+					Reset Filters
+				</Button>
 			</div>
 
-			<div className="space-y-2">
-				<Label>Bathrooms</Label>
-				<Select
-					value={filters.bathrooms}
-					onValueChange={(value) =>
-						handleChange("bathrooms", value)
-					}
+			{/* Advanced Filters */}
+			{isAdvancedOpen && (
+				<motion.div
+					initial={{ height: 0, opacity: 0 }}
+					animate={{ height: "auto", opacity: 1 }}
+					exit={{ height: 0, opacity: 0 }}
+					className="space-y-4"
 				>
-					<SelectTrigger>
-						<SelectValue placeholder="Any" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="any">
-							Any
-						</SelectItem>
-						<SelectItem value="1">1+</SelectItem>
-						<SelectItem value="2">2+</SelectItem>
-						<SelectItem value="3">3+</SelectItem>
-						<SelectItem value="4">4+</SelectItem>
-					</SelectContent>
-				</Select>
-			</div>
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+						{/* Square Footage */}
+						<div className="space-y-2">
+							<Label>Square Footage</Label>
+							<div className="flex space-x-2">
+								<Input
+									type="number"
+									placeholder="Min"
+									value={
+										filters.squareFootage?.min
+									}
+									onChange={(e) =>
+										handleChange(
+											"squareFootage",
+											{
+												...filters.squareFootage,
+												min: e.target.value,
+											},
+										)
+									}
+								/>
+								<Input
+									type="number"
+									placeholder="Max"
+									value={
+										filters.squareFootage?.max
+									}
+									onChange={(e) =>
+										handleChange(
+											"squareFootage",
+											{
+												...filters.squareFootage,
+												max: e.target.value,
+											},
+										)
+									}
+								/>
+							</div>
+						</div>
 
-			<div className="space-y-2">
-				<Label>Property Type</Label>
-				<Select
-					value={filters.propertyType}
-					onValueChange={(value) =>
-						handleChange("propertyType", value)
-					}
-				>
-					<SelectTrigger>
-						<SelectValue placeholder="Any" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="any">
-							Any
-						</SelectItem>
-						<SelectItem value="house">
-							House
-						</SelectItem>
-						<SelectItem value="apartment">
-							Apartment
-						</SelectItem>
-						<SelectItem value="condo">
-							Condo
-						</SelectItem>
-						<SelectItem value="townhouse">
-							Townhouse
-						</SelectItem>
-						<SelectItem value="land">
-							Land
-						</SelectItem>
-					</SelectContent>
-				</Select>
-			</div>
-		</motion.div>
+						{/* Year Built */}
+						<div className="space-y-2">
+							<Label>Year Built</Label>
+							<div className="flex space-x-2">
+								<Input
+									type="number"
+									placeholder="Min"
+									value={filters.yearBuilt?.min}
+									onChange={(e) =>
+										handleChange("yearBuilt", {
+											...filters.yearBuilt,
+											min: e.target.value,
+										})
+									}
+								/>
+								<Input
+									type="number"
+									placeholder="Max"
+									value={filters.yearBuilt?.max}
+									onChange={(e) =>
+										handleChange("yearBuilt", {
+											...filters.yearBuilt,
+											max: e.target.value,
+										})
+									}
+								/>
+							</div>
+						</div>
+					</div>
+
+					{/* Amenities */}
+					<div className="space-y-2">
+						<Label>Amenities</Label>
+						<div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+							{AMENITIES.map(
+								({ value, label }) => (
+									<div
+										key={value}
+										className="flex items-center space-x-2"
+									>
+										<Checkbox
+											id={value}
+											checked={filters.amenities?.includes(
+												value,
+											)}
+											onCheckedChange={() =>
+												handleAmenityChange(value)
+											}
+										/>
+										<label
+											htmlFor={value}
+											className="text-sm text-gray-700"
+										>
+											{label}
+										</label>
+									</div>
+								),
+							)}
+						</div>
+					</div>
+				</motion.div>
+			)}
+		</div>
 	)
 }
