@@ -1,23 +1,22 @@
 "use client"
 
+import { useEffect } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import { usePropertyFavorites } from "@/hooks/favorites/use-property-favorites"
 import { PropertyCard, PropertiesGrid } from "@/components/features/properties"
 import { LoadingState } from "@/components/ui/loading-state"
-import {
-	Button,
-	Skeleton,
-	Input,
-	Label,
-	Avatar,
-} from "@/components/ui"
+import { Button, Skeleton, Input, Label, Avatar } from "@/components/ui"
 import { motion } from "framer-motion"
 
 export default function ProfilePage() {
-	const { user, isLoading: authLoading } = useAuth()
+	const { user, isLoading, requireAuth } = useAuth()
 	const { data: favorites, isLoading: favoritesLoading } = usePropertyFavorites()
 
-	if (authLoading) {
+	useEffect(() => {
+		requireAuth()
+	}, [])
+
+	if (isLoading) {
 		return (
 			<main className="container mx-auto px-4 py-8">
 				<LoadingState type="profile" />
@@ -25,13 +24,7 @@ export default function ProfilePage() {
 		)
 	}
 
-	if (!user) {
-		return (
-			<main className="container mx-auto px-4 py-8">
-				<h1 className="text-2xl font-bold">Please sign in to view your profile</h1>
-			</main>
-		)
-	}
+	if (!user) return null
 
 	if (favoritesLoading) {
 		return (

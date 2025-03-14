@@ -2,61 +2,48 @@ import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 
-// Define routes that don't require authentication
-const publicRoutes = [
-	"/", // Home page
-	"/properties", // Property listings
-	"/search", // Search page
-	"/auth/login",
-	"/auth/signup",
-	"/auth/reset-password",
-]
+// Move these to a shared config file that can be imported by both middleware and auth context
+export const AUTH_ROUTES = {
+  public: [
+    "/",
+    "/properties",
+    "/search",
+    "/auth/login",
+    "/auth/signup",
+    "/auth/reset-password",
+  ],
+  protected: [
+    "/favorites",
+    "/auth/profile",
+    "/properties/create",
+    "/properties/edit",
+  ],
+  admin: ["/admin"]
+} as const
 
-// Define protected routes that require authentication
-const protectedRoutes = [
-	"/favorites",
-	"/auth/profile",
-	"/properties/create", // If you have property creation
-	"/properties/edit", // If you have property editing
-]
+export async function middleware(req: NextRequest) {
+  const res = NextResponse.next()
+  const supabase = createMiddlewareClient({ req, res })
+  const { data: { session } } = await supabase.auth.getSession()
 
-// Define admin routes that require admin role
-const adminRoutes = ["/admin"]
+  const path = req.nextUrl.pathname
 
-export async function middleware(
-	req: NextRequest,
-) {
-	const res = NextResponse.next()
-	const supabase = createMiddlewareClient({
-		req,
-		res,
-	})
-	const {
-		data: { session },
-	} = await supabase.auth.getSession()
+  // Allow public routes without authentication
+  if (AUTH_ROUTES.public.some((route) => path.startsWith(route))) {
+    return res
+  }
 
-	const path = req.nextUrl.pathname
+  // Check if the current path is a protected route
+  const isProtectedRoute = AUTH_ROUTES.protected.some(
+    (route) => path.startsWith(route)
+  )
 
-	// Allow public routes without authentication
-	if (
-		publicRoutes.some((route) =>
-			path.startsWith(route),
-		)
-	) {
-		return res
-	}
+  // Check if the current path is an admin route
+  const isAdminRoute = AUTH_ROUTES.admin.some(
+    (route) => path.startsWith(route)
+  )
 
-	// Check if the current path is a protected route
-	const isProtectedRoute = protectedRoutes.some(
-		(route) => path.startsWith(route),
-	)
-
-	// Check if the current path is an admin route
-	const isAdminRoute = adminRoutes.some((route) =>
-		path.startsWith(route),
-	)
-
-	// If user is not signed in and trying to access a protected route,
+  // If user is not signed in and trying to access a protected route,
 	// redirect to login
 	if (!session && isProtectedRoute) {
 		const redirectUrl = new URL(

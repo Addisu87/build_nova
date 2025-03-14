@@ -1,63 +1,32 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { Facebook, Chrome } from "lucide-react"
-
 import { useAuth } from "@/contexts/auth-context"
 import { useAuthForm } from "@/hooks/auth/use-auth-form"
 import { loginSchema } from "@/lib/auth/auth-schemas"
 import { AuthForm } from "./auth-form"
-import {
-	Input,
-	Button,
-	Label,
-} from "@/components/ui"
+import { Input, Button, Label } from "@/components/ui"
 
 export function LoginForm() {
-	const router = useRouter()
 	const {
 		signIn,
 		signInWithGoogle,
 		signInWithFacebook,
+		redirectToHome,
+		isProcessing
 	} = useAuth()
 
-	const { handleSubmit, isLoading, errors } =
-		useAuthForm({
-			schema: loginSchema,
-			onSubmit: async (data) => {
-				try {
-					await signIn(data.email, data.password)
-					// Use window.location.href instead of router.push for a full page reload
-					window.location.href = "/"
-				} catch (error) {
-					// Error handling is already done in useAuthForm
-				}
-			},
-		})
-
-	const handleGoogleSignIn = async () => {
-		try {
-			await signInWithGoogle()
-			// No need to redirect here as OAuth will handle the callback
-		} catch (error) {
-			console.error(
-				"Google sign in error:",
-				error,
-			)
-		}
-	}
-
-	const handleFacebookSignIn = async () => {
-		try {
-			await signInWithFacebook()
-			// No need to redirect here as OAuth will handle the callback
-		} catch (error) {
-			console.error(
-				"Facebook sign in error:",
-				error,
-			)
-		}
-	}
+	const { handleSubmit, errors } = useAuthForm({
+		schema: loginSchema,
+		onSubmit: async (data) => {
+			try {
+				await signIn(data.email, data.password)
+				redirectToHome()
+			} catch (error) {
+				// Error handling is already done in auth context
+			}
+		},
+	})
 
 	return (
 		<AuthForm
@@ -67,6 +36,9 @@ export function LoginForm() {
 			linkText="Don't have an account?"
 			linkHref="/auth/signup"
 			linkLabel="Sign up"
+			onSubmit={handleSubmit}
+			isLoading={isProcessing('signin')}
+			errors={errors}
 		>
 			<form
 				onSubmit={handleSubmit}
@@ -133,9 +105,9 @@ export function LoginForm() {
 				<Button
 					type="submit"
 					className="w-full"
-					disabled={isLoading}
+					disabled={isProcessing('signin')}
 				>
-					{isLoading
+					{isProcessing('signin')
 						? "Signing in..."
 						: "Sign In"}
 				</Button>

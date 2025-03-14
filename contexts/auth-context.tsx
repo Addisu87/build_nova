@@ -1,331 +1,445 @@
 "use client"
 
-import {
-	createContext,
-	useContext,
-	useEffect,
-	useState,
-} from "react"
+import { createContext, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { toast } from "sonner"
-import type {
-	User,
-	Session,
-} from "@supabase/supabase-js"
+import type { User, Session } from "@supabase/supabase-js"
+import type { Property } from "@/types/properties"
 
-interface AuthContextType {
-	user: User | null
-	session: Session | null
-	isLoading: boolean
-	emailRateLimitEnds: number | null
-	signUp: (
-		email: string,
-		password: string,
-		fullName: string,
-	) => Promise<void>
-	signIn: (
-		email: string,
-		password: string,
-	) => Promise<void>
-	signInWithGoogle: () => Promise<void>
-	signInWithFacebook: () => Promise<void>
-	signOut: () => Promise<void>
-	resetPassword: (email: string) => Promise<void>
-	updatePassword: (
-		newPassword: string,
-	) => Promise<void>
-	canSendEmail: () => boolean
-	getTimeUntilNextEmail: () => number
+const GUEST_FAVORITES_KEY = "guest_favorites"
+const EMAIL_RATE_LIMIT = 60 * 1000 // 60 seconds
+
+interface AuthState {
+  user: User | null
+  session: Session | null
+  isLoading: boolean
+  emailRateLimitEnds: number | null
+  favorites: string[]
+  processingActions: Set<string>
 }
 
-const AuthContext = createContext<
-	AuthContextType | undefined
->(undefined)
+interface AuthContextType extends AuthState {
+  // Auth methods
+  signUp: (email: string, password: string, fullName: string) => Promise<void>
+  signIn: (email: string, password: string) => Promise<void>
+  signInWithGoogle: () => Promise<void>
+  signInWithFacebook: () => Promise<void>
+  signOut: () => Promise<void>
+  resetPassword: (email: string) => Promise<void>
+  updatePassword: (newPassword: string) => Promise<void>
+  
+  // Email rate limiting
+  canSendEmail: () => boolean
+  getTimeUntilNextEmail: () => number
+  
+  // Favorites management
+  toggleFavorite: (propertyId: string) => Promise<void>
+  isFavorite: (propertyId: string) => boolean
+  migrateGuestFavorites: () => Promise<void>
+  
+  // Loading state
+  isProcessing: (action: string) => boolean
+}
 
-const EMAIL_RATE_LIMIT = 60 * 1000 // 60 seconds in milliseconds
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export function AuthProvider({
-	children,
-}: {
-	children: React.ReactNode
-}) {
-	const [user, setUser] = useState<User | null>(
-		null,
-	)
-	const [session, setSession] =
-		useState<Session | null>(null)
-	const [isLoading, setIsLoading] = useState(true)
-	const [
-		emailRateLimitEnds,
-		setEmailRateLimitEnds,
-	] = useState<number | null>(null)
-	const router = useRouter()
-	const supabase = createClientComponentClient()
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [state, setState] = useState<AuthState>({
+    user: null,
+    session: null,
+    isLoading: true,
+    emailRateLimitEnds: null,
+    favorites: [],
+    processingActions: new Set()
+  })
+  
+  const router = useRouter()
+  const supabase = createClientComponentClient()
 
-	useEffect(() => {
-		if (typeof window === "undefined") return // Ensure client-side only
+  // Helper to manage processing states
+  const withProcessing = async (action: string, callback: () => Promise<void>) => {
+    setState(prev => ({
+      ...prev,
+      processingActions: new Set([...prev.processingActions, action])
+    }))
+    
+    try {
+      await callback()
+    } finally {
+      setState(prev => ({
+        ...prev,
+        processingActions: new Set(
+          [...prev.processingActions].filter(a => a !== action)
+        )
+      }))
+    }
+  }
 
-		const getSession = async () => {
-			const {
-				data: { session },
-			} = await supabase.auth.getSession()
-			setSession(session)
-			setUser(session?.user ?? null)
-			setIsLoading(false)
-		}
+  // Load initial favorites
+  useEffect(() => {
+    if (state.user) {
+      // Load authenticated user favorites from Supabase
+      loadAuthenticatedFavorites()
+    } else {
+      // Load guest favorites from localStorage
+      const stored = localStorage.getItem(GUEST_FAVORITES_KEY)
+      if (stored) {
+        setState(prev => ({
+          ...prev,
+          favorites: JSON.parse(stored)
+        }))
+      }
+    }
+  }, [state.user])
 
-		getSession()
+  // Save guest favorites to localStorage
+  useEffect(() => {
+    if (!state.user) {
+      localStorage.setItem(GUEST_FAVORITES_KEY, JSON.stringify(state.favorites))
+    }
+  }, [state.favorites, state.user])
 
-		const {
-			data: { subscription },
-		} = supabase.auth.onAuthStateChange(
-			(_event, session) => {
-				setSession(session)
-				setUser(session?.user ?? null)
-				setIsLoading(false)
-				router.refresh()
-			},
-		)
+  // Auth state management
+  useEffect(() => {
+    if (typeof window === "undefined") return
 
-		return () => subscription.unsubscribe()
-	}, [supabase.auth, router])
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setState(prev => ({
+        ...prev,
+        session,
+        user: session?.user ?? null,
+        isLoading: false
+      }))
+    }
 
-	const canSendEmail = () => {
-		if (!emailRateLimitEnds) return true
-		return Date.now() >= emailRateLimitEnds
-	}
+    getSession()
 
-	const getTimeUntilNextEmail = () => {
-		if (!emailRateLimitEnds) return 0
-		const timeLeft =
-			emailRateLimitEnds - Date.now()
-		return timeLeft > 0 ? timeLeft : 0
-	}
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setState(prev => ({
+        ...prev,
+        session,
+        user: session?.user ?? null,
+        isLoading: false
+      }))
+      router.refresh()
+    })
 
-	const handleEmailRateLimit = () => {
-		setEmailRateLimitEnds(
-			Date.now() + EMAIL_RATE_LIMIT,
-		)
-	}
+    return () => subscription.unsubscribe()
+  }, [supabase.auth, router])
 
-	const signUp = async (
-		email: string,
-		password: string,
-		fullName: string,
-	) => {
-		try {
-			if (!canSendEmail()) {
-				const timeLeft = Math.ceil(
-					getTimeUntilNextEmail() / 1000,
-				)
-				throw new Error(
-					`Please wait ${timeLeft} seconds before trying again.`,
-				)
-			}
+  // Email rate limiting methods
+  const canSendEmail = () => {
+    if (!state.emailRateLimitEnds) return true
+    return Date.now() >= state.emailRateLimitEnds
+  }
 
-			const { error } =
-				await supabase.auth.signUp({
-					email,
-					password,
-					options: {
-						data: { full_name: fullName },
-					},
-				})
+  const getTimeUntilNextEmail = () => {
+    if (!state.emailRateLimitEnds) return 0
+    const timeLeft = state.emailRateLimitEnds - Date.now()
+    return timeLeft > 0 ? timeLeft : 0
+  }
 
-			if (error) {
-				if (
-					error.message.includes(
-						"unique constraint",
-					)
-				) {
-					throw new Error(
-						"This email is already registered. Please try signing in instead.",
-					)
-				}
-				throw error
-			}
+  const handleEmailRateLimit = () => {
+    setState(prev => ({
+      ...prev,
+      emailRateLimitEnds: Date.now() + EMAIL_RATE_LIMIT
+    }))
+  }
 
-			handleEmailRateLimit()
-			toast.success("Verification email sent", {
-				description:
-					"Please check your email to verify your account.",
-			})
-			router.push("/auth/verify-email")
-		} catch (error: any) {
-			toast.error("Registration failed", {
-				description: error.message,
-			})
-			throw error
-		}
-	}
+  // Favorites management methods
+  const loadAuthenticatedFavorites = async () => {
+    const { data, error } = await supabase
+      .from('favorites')
+      .select('property_id')
+      .eq('user_id', state.user?.id)
 
-	const signIn = async (
-		email: string,
-		password: string,
-	) => {
-		try {
-			const { error } =
-				await supabase.auth.signInWithPassword({
-					email,
-					password,
-				})
-			if (error) {
-				if (
-					error.message.includes(
-						"Invalid login credentials",
-					)
-				) {
-					throw new Error(
-						"Invalid email or password. Please try again.",
-					)
-				}
-				if (
-					error.message.includes(
-						"Email not confirmed",
-					)
-				) {
-					throw new Error(
-						"Please verify your email before signing in.",
-					)
-				}
-				throw error
-			}
-			toast.success("Welcome back!", {
-				description:
-					"You've successfully signed in.",
-			})
-			window.location.href = "/"
-		} catch (error: any) {
-			toast.error("Sign in failed", {
-				description: error.message,
-			})
-			throw error
-		}
-	}
+    if (!error && data) {
+      setState(prev => ({
+        ...prev,
+        favorites: data.map(f => f.property_id)
+      }))
+    }
+  }
 
-	const signInWithGoogle = async () => {
-		try {
-			const { error } =
-				await supabase.auth.signInWithOAuth({
-					provider: "google",
-					options: {
-						redirectTo: `${window.location.origin}/auth/callback`,
-					},
-				})
-			if (error) throw error
-		} catch (error) {
-			throw error
-		}
-	}
+  const toggleFavorite = async (propertyId: string) => {
+    await withProcessing(`toggle-favorite-${propertyId}`, async () => {
+      if (state.user) {
+        // Handle authenticated favorites
+        if (state.favorites.includes(propertyId)) {
+          await supabase
+            .from('favorites')
+            .delete()
+            .eq('user_id', state.user.id)
+            .eq('property_id', propertyId)
+        } else {
+          await supabase
+            .from('favorites')
+            .insert({ user_id: state.user.id, property_id: propertyId })
+        }
+        await loadAuthenticatedFavorites()
+      } else {
+        // Handle guest favorites
+        setState(prev => ({
+          ...prev,
+          favorites: prev.favorites.includes(propertyId)
+            ? prev.favorites.filter(id => id !== propertyId)
+            : [...prev.favorites, propertyId]
+        }))
+      }
+      
+      toast.success(
+        state.favorites.includes(propertyId)
+          ? "Removed from favorites"
+          : "Added to favorites"
+      )
+    })
+  }
 
-	const signInWithFacebook = async () => {
-		try {
-			const { error } =
-				await supabase.auth.signInWithOAuth({
-					provider: "facebook",
-					options: {
-						redirectTo: `${window.location.origin}/auth/callback`,
-					},
-				})
-			if (error) throw error
-		} catch (error) {
-			throw error
-		}
-	}
+  const isFavorite = (propertyId: string): boolean => {
+    return state.favorites.includes(propertyId)
+  }
 
-	const signOut = async () => {
-		try {
-			const { error } =
-				await supabase.auth.signOut()
-			if (error) throw error
-			toast.success("Signed out", {
-				description:
-					"You've been successfully signed out.",
-			})
-			window.location.href = "/"
-		} catch (error: any) {
-			toast.error("Sign out failed", {
-				description: error.message,
-			})
-		}
-	}
+  const migrateGuestFavorites = async () => {
+    if (!state.user || state.favorites.length === 0) return
 
-	const resetPassword = async (email: string) => {
-		try {
-			if (!canSendEmail()) {
-				const timeLeft = Math.ceil(
-					getTimeUntilNextEmail() / 1000,
-				)
-				throw new Error(
-					`Please wait ${timeLeft} seconds before requesting another reset.`,
-				)
-			}
-			const { error } =
-				await supabase.auth.resetPasswordForEmail(
-					email,
-					{
-						redirectTo: `${window.location.origin}/auth/update-password`,
-					},
-				)
-			if (error) throw error
-			handleEmailRateLimit()
-			toast.success("Password reset email sent", {
-				description:
-					"Please check your email for the password reset link.",
-			})
-		} catch (error: any) {
-			toast.error("Password reset failed", {
-				description: error.message,
-			})
-			throw error
-		}
-	}
+    await withProcessing('migrate-favorites', async () => {
+      try {
+        const guestFavorites = [...state.favorites]
+        for (const propertyId of guestFavorites) {
+          await supabase
+            .from('favorites')
+            .insert({ user_id: state.user!.id, property_id: propertyId })
+            .select()
+        }
+        localStorage.removeItem(GUEST_FAVORITES_KEY)
+        await loadAuthenticatedFavorites()
+        toast.success("Favorites synchronized successfully")
+      } catch (error) {
+        toast.error("Failed to sync favorites")
+        console.error("Failed to migrate guest favorites:", error)
+      }
+    })
+  }
 
-	const updatePassword = async (
-		newPassword: string,
-	) => {
-		try {
-			const { error } =
-				await supabase.auth.updateUser({
-					password: newPassword,
-				})
-			if (error) throw error
-		} catch (error) {
-			throw error
-		}
-	}
+  // Auth methods with processing states
+  const signUp = async (email: string, password: string, fullName: string) => {
+    await withProcessing('signup', async () => {
+      try {
+        if (!canSendEmail()) {
+          const timeLeft = Math.ceil(
+            getTimeUntilNextEmail() / 1000,
+          )
+          throw new Error(
+            `Please wait ${timeLeft} seconds before trying again.`,
+          )
+        }
 
-	return (
-		<AuthContext.Provider
-			value={{
-				user,
-				session,
-				isLoading,
-				emailRateLimitEnds,
-				signUp,
-				signIn,
-				signInWithGoogle,
-				signInWithFacebook,
-				signOut,
-				resetPassword,
-				updatePassword,
-				canSendEmail,
-				getTimeUntilNextEmail,
-			}}
-		>
-			{children}{" "}
-			{/* Removed <Toaster /> from here */}
-		</AuthContext.Provider>
-	)
+        const { error } =
+          await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              data: { full_name: fullName },
+            },
+          })
+
+        if (error) {
+          if (
+            error.message.includes(
+              "unique constraint",
+            )
+          ) {
+            throw new Error(
+              "This email is already registered. Please try signing in instead.",
+            )
+          }
+          throw error
+        }
+
+        handleEmailRateLimit()
+        toast.success("Verification email sent", {
+          description:
+            "Please check your email to verify your account.",
+        })
+        router.push("/auth/verify-email")
+      } catch (error: any) {
+        toast.error("Registration failed", {
+          description: error.message,
+        })
+        throw error
+      }
+    })
+  }
+
+  const signIn = async (email: string, password: string) => {
+    await withProcessing('signin', async () => {
+      try {
+        const { error } =
+          await supabase.auth.signInWithPassword({
+            email,
+            password,
+          })
+        if (error) {
+          if (
+            error.message.includes(
+              "Invalid login credentials",
+            )
+          ) {
+            throw new Error(
+              "Invalid email or password. Please try again.",
+            )
+          }
+          if (
+            error.message.includes(
+              "Email not confirmed",
+            )
+          ) {
+            throw new Error(
+              "Please verify your email before signing in.",
+            )
+          }
+          throw error
+        }
+        toast.success("Welcome back!", {
+          description:
+            "You've successfully signed in.",
+        })
+        window.location.href = "/"
+      } catch (error: any) {
+        toast.error("Sign in failed", {
+          description: error.message,
+        })
+        throw error
+      }
+    })
+  }
+
+  const signInWithGoogle = async () => {
+    try {
+      const { error } =
+        await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback`,
+          },
+        })
+      if (error) throw error
+    } catch (error) {
+      throw error
+    }
+  }
+
+  const signInWithFacebook = async () => {
+    try {
+      const { error } =
+        await supabase.auth.signInWithOAuth({
+          provider: "facebook",
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback`,
+          },
+        })
+      if (error) throw error
+    } catch (error) {
+      throw error
+    }
+  }
+
+  const signOut = async () => {
+    await withProcessing('signout', async () => {
+      try {
+        const { error } =
+          await supabase.auth.signOut()
+        if (error) throw error
+        toast.success("Signed out", {
+          description:
+            "You've been successfully signed out.",
+        })
+        window.location.href = "/"
+      } catch (error: any) {
+        toast.error("Sign out failed", {
+          description: error.message,
+        })
+      }
+    })
+  }
+
+  const resetPassword = async (email: string) => {
+    await withProcessing('reset-password', async () => {
+      try {
+        if (!canSendEmail()) {
+          const timeLeft = Math.ceil(
+            getTimeUntilNextEmail() / 1000,
+          )
+          throw new Error(
+            `Please wait ${timeLeft} seconds before requesting another reset.`,
+          )
+        }
+        const { error } =
+          await supabase.auth.resetPasswordForEmail(
+            email,
+            {
+              redirectTo: `${window.location.origin}/auth/update-password`,
+            },
+          )
+        if (error) throw error
+        handleEmailRateLimit()
+        toast.success("Password reset email sent", {
+          description:
+            "Please check your email for the password reset link.",
+        })
+      } catch (error: any) {
+        toast.error("Password reset failed", {
+          description: error.message,
+        })
+        throw error
+      }
+    })
+  }
+
+  const updatePassword = async (newPassword: string) => {
+    await withProcessing('update-password', async () => {
+      try {
+        const { error } =
+          await supabase.auth.updateUser({
+            password: newPassword,
+          })
+        if (error) throw error
+      } catch (error) {
+        throw error
+      }
+    })
+  }
+
+  const contextValue: AuthContextType = {
+    ...state,
+    signUp,
+    signIn,
+    signInWithGoogle,
+    signInWithFacebook,
+    signOut,
+    resetPassword,
+    updatePassword,
+    canSendEmail,
+    getTimeUntilNextEmail,
+    toggleFavorite,
+    isFavorite,
+    migrateGuestFavorites,
+    isProcessing: (action: string) => state.processingActions.has(action)
+  }
+
+  return (
+    <AuthContext.Provider value={contextValue}>
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 export function useAuth() {
-	const context = useContext(AuthContext)
-	if (context === undefined) {
-		throw new Error(
-			"useAuth must be used within an AuthProvider",
-		)
-	}
-	return context
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider")
+  }
+  return context
 }
