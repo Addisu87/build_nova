@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { toast } from "react-hot-toast"
-import { Database } from "@/types/supabase"
 import {
+	deleteProperty,
 	getProperty,
 	updateProperty,
-	deleteProperty,
 } from "@/lib/supabase/db"
+import { Database } from "@/types/supabase"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
 
 type Property =
 	Database["public"]["Tables"]["properties"]["Row"]
