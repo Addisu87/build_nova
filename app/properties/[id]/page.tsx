@@ -13,9 +13,11 @@ import { PropertySpecifications } from "@/components/features/properties/propert
 import { Property } from "@/components/features/properties/types"
 import { ImageThumbnails } from "@/components/ui/image-thumbnails"
 import { mockProperties } from "@/mock-data/properties"
+import { ImageIcon } from "lucide-react"
 import { notFound } from "next/navigation"
 import { useEffect, useState } from "react"
 import PropertyDetailsLoading from "./loading"
+import { PropertyDetailsModal } from "@/components/features/properties/details-modal"
 
 export default function PropertyDetailsPage({
 	params,
@@ -30,6 +32,8 @@ export default function PropertyDetailsPage({
 		currentImageIndex,
 		setCurrentImageIndex,
 	] = useState(0)
+	const [isGalleryOpen, setIsGalleryOpen] =
+		useState(false)
 
 	useEffect(() => {
 		const found = mockProperties.find(
@@ -56,71 +60,92 @@ export default function PropertyDetailsPage({
 
 	return (
 		<div className="relative min-h-screen bg-gray-50">
-			<div className="relative w-full bg-white">
-				<div className="relative">
-					<ImageThumbnails
-						images={property.images}
-						currentIndex={currentImageIndex}
-						onSelect={setCurrentImageIndex}
-						title={property.title}
-					/>
+			{/* Full-width image section */}
+			<div className="relative w-full bg-gray-50">
+				<div className="max-w-[1600px] mx-auto">
+					<div className="relative">
+						<ImageThumbnails
+							images={property.images}
+							currentIndex={currentImageIndex}
+							onSelect={setCurrentImageIndex}
+							title={property.title}
+							className="w-full"
+						/>
 
-					<button
-						onClick={() => {
-							/* Add your view all photos logic here */
-						}}
-						className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm px-6 py-3 
-							rounded-lg shadow-md text-sm font-medium hover:bg-white 
-							transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500
-							flex items-center gap-2"
-					>
-						<span>Show all photos</span>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
-							strokeWidth={1.5}
-							stroke="currentColor"
-							className="w-4 h-4"
+						<button
+							onClick={() =>
+								setIsGalleryOpen(true)
+							}
+							className="absolute bottom-6 right-6 bg-white/90 backdrop-blur-sm px-6 py-3 
+								rounded-lg shadow-md text-sm font-medium hover:bg-white 
+								transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500
+								flex items-center gap-2 z-10"
 						>
-							<path
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
-							/>
-						</svg>
-					</button>
+							<span>View all photos</span>
+							<ImageIcon className="w-4 h-4" />
+						</button>
+					</div>
 				</div>
 			</div>
 
-			<div className="max-w-[1600px] mx-auto px-4 mt-8 pb-8">
-				<div className="relative lg:flex max-w-[1600px] mx-auto mt-8 gap-8">
+			{/* Content section */}
+			<div className="max-w-[1600px] mx-auto px-4 lg:px-8">
+				<div className="relative lg:flex gap-8 py-8">
+					{/* Main content */}
 					<div className="w-full lg:w-[65%] space-y-8">
-						<PropertyBasicInfo
-							property={property}
-						/>
-						<PropertyDescription
-							property={property}
-						/>
-						<PropertySpecifications
-							property={property}
-						/>
-						<PropertyFacts property={property} />
-						<MarketValue property={property} />
-						<MonthlyPayment property={property} />
-						<ClimateRisks />
-						<GettingAround />
+						<div className="bg-white rounded-xl shadow-sm">
+							<PropertyBasicInfo
+								property={property}
+							/>
+						</div>
+
+						<div className="bg-white rounded-xl shadow-sm">
+							<PropertyDescription
+								property={property}
+							/>
+						</div>
+
+						<div className="bg-white rounded-xl shadow-sm">
+							<PropertySpecifications
+								property={property}
+							/>
+						</div>
+
+						<div className="bg-white rounded-xl shadow-sm">
+							<PropertyFacts
+								property={property}
+							/>
+						</div>
+
+						<div className="bg-white rounded-xl shadow-sm">
+							<MarketValue property={property} />
+						</div>
+
+						<div className="bg-white rounded-xl shadow-sm">
+							<MonthlyPayment
+								property={property}
+							/>
+						</div>
+
+						<div className="bg-white rounded-xl shadow-sm">
+							<ClimateRisks />
+						</div>
+
+						<div className="bg-white rounded-xl shadow-sm">
+							<GettingAround />
+						</div>
 					</div>
 
-					<div className="hidden lg:flex lg:w-[35%] flex-col">
-						<div className="sticky top-4">
-							<div className="h-[600px] bg-white rounded-lg shadow-sm overflow-hidden mb-4">
+					{/* Sidebar */}
+					<div className="hidden lg:block lg:w-[35%]">
+						<div className="sticky top-8 space-y-8">
+							<div className="bg-white rounded-xl shadow-sm overflow-hidden">
 								<PropertyMap
 									property={property}
 									nearbyProperties={
 										nearbyProperties
 									}
-									height="h-full"
+									height="h-[400px]"
 									isSelected={true}
 									onMarkerClick={(propertyId) => {
 										if (
@@ -131,7 +156,8 @@ export default function PropertyDetailsPage({
 									}}
 								/>
 							</div>
-							<div className="h-[calc(100vh-700px)]">
+
+							<div className="bg-white rounded-xl shadow-sm">
 								<NearbyProperties
 									currentProperty={property}
 									nearbyProperties={
@@ -141,19 +167,15 @@ export default function PropertyDetailsPage({
 							</div>
 						</div>
 					</div>
-
-					<div className="lg:hidden fixed bottom-4 right-4">
-						<button
-							onClick={() => {
-								/* Add mobile map toggle logic */
-							}}
-							className="bg-white p-3 rounded-full shadow-lg"
-						>
-							<PropertyMap className="h-6 w-6 text-gray-700" />
-						</button>
-					</div>
 				</div>
 			</div>
+
+			{/* Image Gallery Modal */}
+			<PropertyDetailsModal
+				property={property}
+				isOpen={isGalleryOpen}
+				onClose={() => setIsGalleryOpen(false)}
+			/>
 		</div>
 	)
 }

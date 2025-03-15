@@ -32,27 +32,32 @@ const aspectRatioClasses = {
 
 export function ImageCarousel({
 	images,
-	title = "Image",
+	title = "",
 	aspectRatio = "square",
 	priority = false,
-	showControls = true,
-	className = "",
+	showControls = false,
+	className,
 	fullWidth = false,
-	currentIndex: controlledIndex,
-	onIndexChange,
+	currentIndex = 0,
+	onIndexChange
 }: ImageCarouselProps) {
-	const [internalIndex, setInternalIndex] = React.useState(0)
+	const [localCurrentIndex, setLocalCurrentIndex] = React.useState(currentIndex)
 	const [isHovered, setIsHovered] = React.useState(false)
-	
-	const currentIndex = controlledIndex ?? internalIndex
-	const setCurrentIndex = (index: number) => {
-		if (onIndexChange) {
-			onIndexChange(index)
-		} else {
-			setInternalIndex(index)
-		}
+
+	const activeIndex = onIndexChange ? currentIndex : localCurrentIndex
+
+	const handleNext = (e: React.MouseEvent) => {
+		e.stopPropagation()
+		const newIndex = activeIndex < images.length - 1 ? activeIndex + 1 : activeIndex
+		onIndexChange ? onIndexChange(newIndex) : setLocalCurrentIndex(newIndex)
 	}
-	
+
+	const handlePrevious = (e: React.MouseEvent) => {
+		e.stopPropagation()
+		const newIndex = activeIndex > 0 ? activeIndex - 1 : activeIndex
+		onIndexChange ? onIndexChange(newIndex) : setLocalCurrentIndex(newIndex)
+	}
+
 	const heightClass = fullWidth ? "h-[550px]" : "h-[400px]"
 	const finalClassName = cn(className, fullWidth ? heightClass : '')
 
@@ -68,16 +73,6 @@ export function ImageCarousel({
 		)
 	}
 
-	const handlePrevious = (e: React.MouseEvent) => {
-		e.stopPropagation()
-		setCurrentIndex((currentIndex - 1 + images.length) % images.length)
-	}
-
-	const handleNext = (e: React.MouseEvent) => {
-		e.stopPropagation()
-		setCurrentIndex((currentIndex + 1) % images.length)
-	}
-
 	return (
 		<div 
 			className="relative group"
@@ -91,8 +86,8 @@ export function ImageCarousel({
 				finalClassName
 			)}>
 				<Image
-					src={images[currentIndex]}
-					alt={`${title} - Image ${currentIndex + 1}`}
+					src={images[activeIndex]}
+					alt={`${title} - Image ${activeIndex + 1}`}
 					fill
 					className="object-cover"
 					priority={priority}
@@ -103,7 +98,7 @@ export function ImageCarousel({
 			{showControls && (isHovered || images.length > 1) && (
 				<>
 					{/* Navigation Buttons */}
-					{currentIndex > 0 && (
+					{activeIndex > 0 && (
 						<button
 							onClick={handlePrevious}
 							className="absolute left-6 top-1/2 -translate-y-1/2 rounded-full bg-white p-2 shadow-md transition-transform hover:scale-105 focus:outline-none"
@@ -111,7 +106,7 @@ export function ImageCarousel({
 							<ChevronLeft className="h-4 w-4" />
 						</button>
 					)}
-					{currentIndex < images.length - 1 && (
+					{activeIndex < images.length - 1 && (
 						<button
 							onClick={handleNext}
 							className="absolute right-6 top-1/2 -translate-y-1/2 rounded-full bg-white p-2 shadow-md transition-transform hover:scale-105 focus:outline-none"
@@ -127,11 +122,11 @@ export function ImageCarousel({
 								key={index}
 								onClick={(e) => {
 									e.stopPropagation()
-									setCurrentIndex(index)
+									onIndexChange ? onIndexChange(index) : setLocalCurrentIndex(index)
 								}}
 								className={cn(
 									"w-1.5 h-1.5 rounded-full transition-all duration-200",
-									currentIndex === index
+									activeIndex === index
 										? "bg-white w-2.5"
 										: "bg-white/70 hover:bg-white/90"
 								)}
