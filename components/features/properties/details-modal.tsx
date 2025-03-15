@@ -56,7 +56,7 @@ export function PropertyDetailsModal({
 									key={index}
 									onClick={() => setSelectedImageIndex(index)}
 									className={cn(
-										"relative w-20 h-20 flex-shrink-0",
+										"relative w-16 h-16 flex-shrink-0",
 										"focus:outline-none focus:ring-2 focus:ring-blue-500",
 										selectedImageIndex === index && "ring-2 ring-blue-500"
 									)}

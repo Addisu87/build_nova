@@ -13,7 +13,7 @@ import { PropertySpecifications } from "@/components/features/properties/propert
 import { Property } from "@/components/features/properties/types"
 import { ImageThumbnails } from "@/components/ui/image-thumbnails"
 import { mockProperties } from "@/mock-data/properties"
-import { ImageIcon } from "lucide-react"
+import { LayoutGrid } from "lucide-react"
 import { notFound } from "next/navigation"
 import { useEffect, useState } from "react"
 import PropertyDetailsLoading from "./loading"
@@ -82,7 +82,7 @@ export default function PropertyDetailsPage({
 								flex items-center gap-2 z-10"
 						>
 							<span>View all photos</span>
-							<ImageIcon className="w-4 h-4" />
+							<LayoutGrid className="w-4 h-4" />
 						</button>
 					</div>
 				</div>
