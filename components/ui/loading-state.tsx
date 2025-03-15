@@ -1,10 +1,24 @@
 import { Skeleton } from "./skeleton"
 
 interface LoadingStateProps {
-	type?: "default" | "profile" | "property" | "properties" | "hero"
+	type?: "default" | "profile" | "property" | "properties" | "hero" | "map"
+	className?: string
+	height?: string
 }
 
-export function LoadingState({ type = "default" }: LoadingStateProps) {
+export function LoadingState({ 
+	type = "default", 
+	className,
+	height = "h-[300px]"
+}: LoadingStateProps) {
+	if (type === "map") {
+		return (
+			<Skeleton 
+				className={className || height}
+			/>
+		)
+	}
+
 	if (type === "hero") {
 		return (
 			<div className="relative h-[500px] w-full overflow-hidden rounded-lg">

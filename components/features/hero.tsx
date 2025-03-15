@@ -16,7 +16,7 @@ export function Hero() {
 	const { isLoading } = useAuth()
 
 	if (isLoading) {
-		return <LoadingState type="hero" />
+		return <LoadingState type="map" height="h-[400px]" />
 	}
 
 	return (

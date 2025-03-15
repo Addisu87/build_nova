@@ -36,8 +36,8 @@ export const mockProperties: Property[] = [
 		title: "Suburban Family Home",
 		price: 650000,
 		location: {
-			lat: 37.7749,
-			lng: -122.4194,
+			lat: 37.7746,
+			lng: -122.4189,
 			address: "456 Oak Avenue",
 			city: "Oakland",
 			state: "CA",

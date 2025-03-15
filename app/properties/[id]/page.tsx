@@ -16,6 +16,7 @@ import {
 import { notFound } from "next/navigation"
 import { useEffect, useState } from "react"
 import PropertyDetailsLoading from "./loading"
+import { NearbyProperties } from "@/components/features/properties/nearby-properties"
 
 export default function PropertyDetailsPage({
 	params,
@@ -59,196 +60,174 @@ export default function PropertyDetailsPage({
 
 	return (
 		<div className="relative min-h-screen bg-gray-50">
-			{/* Main image carousel */}
-			<div className="relative w-full">
-				<ImageCarousel
-					images={property.images}
-					title={property.title}
-					aspectRatio="property"
-					fullWidth
-					priority
-					className="h-[500px] lg:h-[600px]"
-					currentIndex={currentImageIndex}
-					onIndexChange={setCurrentImageIndex}
-				/>
-			</div>
-
-			{/* Thumbnails below the carousel */}
-			<div className="max-w-[1600px] mx-auto px-4 -mt-20 relative z-10">
-				<ImageThumbnails
-					images={property.images}
-					currentIndex={currentImageIndex}
-					onSelect={setCurrentImageIndex}
-					title={property.title}
-					className="bg-white p-4 rounded-lg shadow-lg"
-				/>
-			</div>
-
-			{/* Main content */}
-			<div className="relative lg:flex max-w-[1600px] mx-auto mt-8">
-				{/* Left side - Scrollable content */}
-				<div className="w-full lg:w-[45%] lg:overflow-y-auto">
-					{/* Content below carousel */}
-					<div className="px-4 py-8">
-						{/* Basic Info */}
-						<div className="mb-8">
-							<h1 className="text-3xl font-bold mb-2">
-								{property.title}
-							</h1>
-							<p className="text-xl text-gray-600 mb-4">
-								{property.location.address}
-							</p>
-							<div className="flex items-center gap-4 text-lg">
-								<span className="font-bold text-2xl text-blue-600">
-									{(
-										property.price || 0
-									).toLocaleString()}
-								</span>
-								<div className="flex items-center gap-6 text-gray-600">
-									<span>
-										{property.bedrooms} beds
-									</span>
-									<span>
-										{property.bathrooms} baths
-									</span>
-									<span>
-										{(
-											property.area || 0
-										).toLocaleString()}{" "}
-										sqft
-									</span>
-								</div>
-							</div>
-						</div>
-
-						{/* Property Details */}
-						<div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-							<h2 className="text-2xl font-semibold mb-6">
-								Property Details
-							</h2>
-							<div className="grid grid-cols-2 gap-6">
-								<DetailItem
-									icon={Home}
-									label="Type"
-									value={
-										property.propertyType || "N/A"
-									}
-								/>
-								<DetailItem
-									icon={Calendar}
-									label="Year Built"
-									value={
-										property.yearBuilt?.toString() ??
-										"N/A"
-									}
-								/>
-								<DetailItem
-									icon={Ruler}
-									label="Lot Size"
-									value={`${(
-										property.lotSize || 0
-									).toLocaleString()} sqft`}
-								/>
-								<DetailItem
-									icon={Car}
-									label="Garage"
-									value={`${
-										property.garage || 0
-									} cars`}
-								/>
-								<DetailItem
-									icon={Building2}
-									label="Stories"
-									value={(
-										property.stories || 0
-									).toString()}
-								/>
-								<DetailItem
-									icon={Trees}
-									label="Outdoor Space"
-									value={
-										property.outdoorSpace || "N/A"
-									}
-								/>
-							</div>
-						</div>
-
-						{/* Description */}
-						<div className="bg-white rounded-lg shadow-sm p-6">
-							<h2 className="text-2xl font-semibold mb-4">
-								Description
-							</h2>
-							<p className="text-gray-600 whitespace-pre-line">
-								{property.description}
-							</p>
-						</div>
-					</div>
-				</div>
-
-				{/* Right side - Fixed Map */}
-				<div className="hidden lg:block lg:w-[55%] h-screen sticky top-0 pt-8 pl-4 pr-4">
-					<div className="h-[600px] bg-white rounded-lg shadow-sm overflow-hidden">
-						<PropertyMap
-							property={property}
-							nearbyProperties={nearbyProperties}
-							height="h-full"
-							isSelected={true}
-							onMarkerClick={(propertyId) => {
-								if (propertyId !== property.id) {
-									window.location.href = `/properties/${propertyId}`
-								}
-							}}
-						/>
-					</div>
-					<div className="mt-4 p-4 bg-white rounded-lg shadow-sm">
-						<h3 className="text-lg font-semibold mb-3">
-							Nearby Properties
-						</h3>
-						<div className="space-y-2">
-							{nearbyProperties.map((prop) => (
-								<div
-									key={prop.id}
-									className="flex items-center justify-between py-2 hover:bg-gray-50 cursor-pointer"
-									onClick={() =>
-										(window.location.href = `/properties/${prop.id}`)
-									}
-								>
-									<div className="flex items-center gap-3">
-										<img
-											src={prop.imageUrl}
-											alt={prop.title}
-											className="w-12 h-12 object-cover rounded"
-										/>
-										<div>
-											<p className="font-medium">
-												$
-												{prop.price.toLocaleString()}
-											</p>
-											<p className="text-sm text-gray-600">
-												{prop.bedrooms} beds •{" "}
-												{prop.bathrooms} baths
-											</p>
-										</div>
-									</div>
-									<div className="text-blue-600 text-sm">
-										View
-									</div>
-								</div>
-							))}
-						</div>
-					</div>
-				</div>
-
-				{/* Mobile Map Button - Shows at bottom of screen on mobile */}
-				<div className="lg:hidden fixed bottom-4 right-4">
+			{/* Main image carousel and thumbnails section */}
+			<div className="relative w-full bg-white">
+				<div className="relative">
+					{/* Image thumbnails grid */}
+					<ImageThumbnails
+						images={property.images}
+						currentIndex={currentImageIndex}
+						onSelect={setCurrentImageIndex}
+						title={property.title}
+					/>
+					
+					{/* View all photos button */}
 					<button
-						onClick={() => {
-							/* Add mobile map toggle logic */
-						}}
-						className="bg-white p-3 rounded-full shadow-lg"
+						onClick={() => {/* Add your view all photos logic here */}}
+						className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm px-6 py-3 
+							rounded-lg shadow-md text-sm font-medium hover:bg-white 
+							transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500
+							flex items-center gap-2"
 					>
-						<PropertyMap className="h-6 w-6 text-gray-700" />
+						<span>Show all photos</span>
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+							<path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+						</svg>
 					</button>
+				</div>
+			</div>
+
+			{/* Property content */}
+			<div className="max-w-[1600px] mx-auto px-4 mt-8 pb-8">
+				{/* Main content */}
+				<div className="relative lg:flex max-w-[1600px] mx-auto mt-8 gap-4">
+					{/* Left side - Scrollable content */}
+					<div className="w-full lg:w-[45%]">
+						{/* Content below carousel */}
+						<div className="px-4 py-8">
+							{/* Basic Info */}
+							<div className="mb-8">
+								<h1 className="text-3xl font-bold mb-2">
+									{property.title}
+								</h1>
+								<p className="text-xl text-gray-600 mb-4">
+									{property.location.address}
+								</p>
+								<div className="flex items-center gap-4 text-lg">
+									<span className="font-bold text-2xl text-blue-600">
+										{(
+											property.price || 0
+										).toLocaleString()}
+									</span>
+									<div className="flex items-center gap-6 text-gray-600">
+										<span>
+											{property.bedrooms} beds
+										</span>
+										<span>
+											{property.bathrooms} baths
+										</span>
+										<span>
+											{(
+												property.area || 0
+											).toLocaleString()}{" "}
+											sqft
+										</span>
+									</div>
+								</div>
+							</div>
+
+							{/* Property Details */}
+							<div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+								<h2 className="text-2xl font-semibold mb-6">
+									Property Details
+								</h2>
+								<div className="grid grid-cols-2 gap-6">
+									<DetailItem
+										icon={Home}
+										label="Type"
+										value={
+											property.propertyType || "N/A"
+										}
+									/>
+									<DetailItem
+										icon={Calendar}
+										label="Year Built"
+										value={
+											property.yearBuilt?.toString() ??
+											"N/A"
+										}
+									/>
+									<DetailItem
+										icon={Ruler}
+										label="Lot Size"
+										value={`${(
+											property.lotSize || 0
+										).toLocaleString()} sqft`}
+									/>
+									<DetailItem
+										icon={Car}
+										label="Garage"
+										value={`${
+											property.garage || 0
+										} cars`}
+									/>
+									<DetailItem
+										icon={Building2}
+										label="Stories"
+										value={(
+											property.stories || 0
+										).toString()}
+									/>
+									<DetailItem
+										icon={Trees}
+										label="Outdoor Space"
+										value={
+											property.outdoorSpace || "N/A"
+										}
+									/>
+								</div>
+							</div>
+
+							{/* Description */}
+							<div className="bg-white rounded-lg shadow-sm p-6">
+								<h2 className="text-2xl font-semibold mb-4">
+									Description
+								</h2>
+								<p className="text-gray-600 whitespace-pre-line">
+									{property.description}
+								</p>
+							</div>
+						</div>
+					</div>
+
+					{/* Right side - Fixed Map and Nearby Properties */}
+					<div className="hidden lg:flex lg:w-[55%] flex-col">
+						{/* Map Container */}
+						<div className="sticky top-4">
+							<div className="h-[600px] bg-white rounded-lg shadow-sm overflow-hidden mb-4">
+								<PropertyMap
+									property={property}
+									nearbyProperties={nearbyProperties}
+									height="h-full"
+									isSelected={true}
+									onMarkerClick={(propertyId) => {
+										if (propertyId !== property.id) {
+											window.location.href = `/properties/${propertyId}`
+										}
+									}}
+								/>
+							</div>
+							{/* Nearby Properties */}
+							<div className="h-[calc(100vh-700px)]"> {/* Adjusted height */}
+								<NearbyProperties 
+									currentProperty={property}
+									nearbyProperties={nearbyProperties}
+								/>
+							</div>
+						</div>
+					</div>
+
+					{/* Mobile Map Button */}
+					<div className="lg:hidden fixed bottom-4 right-4">
+						<button
+							onClick={() => {
+								/* Add mobile map toggle logic */
+							}}
+							className="bg-white p-3 rounded-full shadow-lg"
+						>
+							<PropertyMap className="h-6 w-6 text-gray-700" />
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -288,4 +267,10 @@ function isNearby(
 	// This is a simplified example - you should implement proper distance calculation
 	// using latitude and longitude
 	return true // For demo purposes, considering all properties as nearby
+}
+
+function calculateDistance(loc1: any, loc2: any) {
+	// This is a simplified version - you might want to implement actual distance calculation
+	// using the Haversine formula or similar
+	return "0.5 mi away"
 }
