@@ -24,12 +24,28 @@ export function Hero() {
 			<ImageCarousel
 				images={heroImages}
 				aspectRatio="hero"
-				className="h-[500px]"
+				className="h-[600px]"
 				priority
 			/>
+			{/* Dark gradient overlay - left to right */}
+			<div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/20" />
+			{/* Content container */}
+			<div className="absolute inset-0 container mx-auto px-4">
+				<div className="h-full flex flex-col justify-center max-w-2xl">
+					<div className="mb-8">
+						<h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
+							Find Your Dream Home
+						</h1>
+						<p className="text-lg md:text-xl text-white/90">
+							Search through thousands of
+							properties for sale and rent
+						</p>
+					</div>
 
-			<div className="absolute inset-0 z-10">
-				<SearchBar />
+					<div className="w-full max-w-xl">
+						<SearchBar variant="hero" />
+					</div>
+				</div>
 			</div>
 		</div>
 	)
