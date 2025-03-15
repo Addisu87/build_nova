@@ -59,7 +59,7 @@ export default function PropertyDetailsPage({
 	}
 
 	return (
-		<div className="relative min-h-screen bg-gray-50">
+		<div className="relative min-h-screen bg-gray-50 pt-4">
 			{/* Full-width image section */}
 			<div className="relative w-full bg-gray-50">
 				<div className="max-w-[1600px] mx-auto">
@@ -81,7 +81,7 @@ export default function PropertyDetailsPage({
 								transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500
 								flex items-center gap-2 z-10"
 						>
-							<span>View all photos</span>
+							<span>Show all</span>
 							<LayoutGrid className="w-4 h-4" />
 						</button>
 					</div>
@@ -89,10 +89,10 @@ export default function PropertyDetailsPage({
 			</div>
 
 			{/* Content section */}
-			<div className="max-w-[1600px] mx-auto px-4 lg:px-8">
-				<div className="relative lg:flex gap-8 py-8">
+			<div className="max-w-[1600px] mx-auto px-2 lg:px-4">
+				<div className="relative lg:flex gap-6 py-6">
 					{/* Main content */}
-					<div className="w-full lg:w-[65%] space-y-8">
+					<div className="w-full lg:w-[65%] space-y-6">
 						<div className="bg-white rounded-xl shadow-sm">
 							<PropertyBasicInfo
 								property={property}
