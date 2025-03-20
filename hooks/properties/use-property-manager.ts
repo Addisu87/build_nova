@@ -1,55 +1,55 @@
-import { useState, useCallback } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase/client'
-import type { PropertyFilters } from '@/types/properties'
+import { 
+  useProperties, 
+  useCreateProperty, 
+  useUpdateProperty, 
+  useDeleteProperty 
+} from "@/hooks/queries/use-query-hooks"
+import { PropertyFilters, PropertyApiFilters } from "@/types"
 
-export function usePropertyManager(initialFilters?: PropertyFilters) {
-	const [filters, setFilters] = useState<PropertyFilters>(initialFilters || {})
+export function usePropertyManager(filters: PropertyFilters = {}) {
+  // Convert UI filters to API filters
+  const apiFilters: PropertyApiFilters = {
+    min_price: filters.minPrice,
+    max_price: filters.maxPrice,
+    bedrooms: filters.bedrooms,
+    bathrooms: filters.bathrooms,
+    property_type: filters.property_type,
+    location: filters.location,
+    square_feet: {
+      min: filters.min_square_feet,
+      max: filters.max_square_feet
+    },
+    year_built: {
+      min: filters.min_year_built,
+      max: filters.max_year_built
+    },
+    status: filters.status,
+    limit: filters.limit,
+    page: filters.page,
+  }
 
-	const { data: properties, isLoading } = useQuery({
-		queryKey: ['properties', filters],
-		queryFn: async () => {
-			let query = supabase
-				.from('properties')
-				.select('*')
+  // Use existing hooks from use-query-hooks
+  const { 
+    data: properties, 
+    isLoading, 
+    isError 
+  } = useProperties(apiFilters)
 
-			if (filters.minPrice) {
-				query = query.gte('price', filters.minPrice)
-			}
-			if (filters.maxPrice) {
-				query = query.lte('price', filters.maxPrice)
-			}
-			if (filters.property_type) {
-				query = query.eq('property_type', filters.property_type)
-			}
-			if (filters.status) {
-				query = query.eq('status', filters.status)
-			}
-			if (filters.bedrooms) {
-				query = query.gte('bedrooms', filters.bedrooms)
-			}
-			if (filters.bathrooms) {
-				query = query.gte('bathrooms', filters.bathrooms)
-			}
-			if (filters.searchQuery) {
-				query = query.or(`title.ilike.%${filters.searchQuery}%,address.ilike.%${filters.searchQuery}%`)
-			}
+  const createProperty = useCreateProperty()
+  const updateProperty = useUpdateProperty()
+  const deleteProperty = useDeleteProperty()
 
-			const { data, error } = await query
-
-			if (error) throw error
-			return data
-		}
-	})
-
-	const updateFilters = useCallback((newFilters: Partial<PropertyFilters>) => {
-		setFilters(prev => ({ ...prev, ...newFilters }))
-	}, [])
-
-	return {
-		properties,
-		isLoading,
-		filters,
-		updateFilters
-	}
+  return {
+    properties,
+    isLoading,
+    isError,
+    filters,
+    updateFilters: (newFilters: Partial<PropertyFilters>) => {
+      // Handle filter updates here if needed
+      // You might want to use a state management solution or URL params
+    },
+    createProperty: createProperty.mutateAsync,
+    updateProperty: updateProperty.mutateAsync,
+    deleteProperty: deleteProperty.mutateAsync,
+  }
 }

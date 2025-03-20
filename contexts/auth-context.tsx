@@ -46,15 +46,6 @@ interface AuthContextType extends AuthState {
 // Context
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Hook
-export const useAuth = () => {
-	const context = useContext(AuthContext)
-	if (!context) {
-		throw new Error("useAuth must be used within an AuthProvider")
-	}
-	return context
-}
-
 // Provider
 export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const [state, setState] = useState<AuthState>({
@@ -71,23 +62,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 	// Helper functions
 	const updateState = (updates: Partial<AuthState>) => {
-		setState(prev => ({ ...prev, ...updates }))
+		setState((prev) => ({ ...prev, ...updates }))
 	}
 
 	const withProcessing = async (action: string, callback: () => Promise<void>) => {
 		const addProcessingAction = () => {
-			setState(prev => ({
+			setState((prev) => ({
 				...prev,
-				processingActions: new Set([...prev.processingActions, action])
+				processingActions: new Set([...prev.processingActions, action]),
 			}))
 		}
 
 		const removeProcessingAction = () => {
-			setState(prev => ({
+			setState((prev) => ({
 				...prev,
 				processingActions: new Set(
-					[...prev.processingActions].filter(a => a !== action)
-				)
+					[...prev.processingActions].filter((a) => a !== action),
+				),
 			}))
 		}
 
@@ -128,21 +119,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		if (typeof window === "undefined") return
 
 		const initializeAuth = async () => {
-			const { data: { session } } = await supabase.auth.getSession()
+			const {
+				data: { session },
+			} = await supabase.auth.getSession()
 			updateState({
 				session,
 				user: session?.user ?? null,
-				isLoading: false
+				isLoading: false,
 			})
 		}
 
 		initializeAuth()
 
-		const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+		const {
+			data: { subscription },
+		} = supabase.auth.onAuthStateChange((_event, session) => {
 			updateState({
 				session,
 				user: session?.user ?? null,
-				isLoading: false
+				isLoading: false,
 			})
 			router.refresh()
 		})

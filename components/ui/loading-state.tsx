@@ -13,9 +13,9 @@ export function LoadingState({
 }: LoadingStateProps) {
 	if (type === "map") {
 		return (
-			<Skeleton 
-				className={className || height}
-			/>
+			<div className="w-full rounded-lg overflow-hidden">
+				<Skeleton className={className || "h-[600px] w-full"} />
+			</div>
 		)
 	}
 
@@ -48,7 +48,7 @@ export function LoadingState({
 	if (type === "property") {
 		return (
 			<div className="space-y-8">
-				<Skeleton className="h-[400px] w-full" />
+				<Skeleton className="h-[400px] w-full rounded-lg" />
 				<div className="grid gap-8 md:grid-cols-3">
 					<div className="md:col-span-2 space-y-8">
 						<Skeleton className="h-8 w-3/4" />
@@ -77,6 +77,10 @@ export function LoadingState({
 								<Skeleton className="h-4 w-16" />
 								<Skeleton className="h-4 w-16" />
 								<Skeleton className="h-4 w-16" />
+							</div>
+							<div className="pt-4 flex justify-between items-center">
+								<Skeleton className="h-6 w-24" />
+								<Skeleton className="h-8 w-8 rounded-full" />
 							</div>
 						</div>
 					</div>
