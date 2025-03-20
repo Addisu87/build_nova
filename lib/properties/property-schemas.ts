@@ -1,3 +1,4 @@
+import { PropertyType } from "@/types/properties"
 import { z } from "zod"
 
 // Define the Property schema

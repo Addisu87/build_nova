@@ -47,24 +47,19 @@ export function useProperty(id: string) {
 	}, [id])
 
 	const handleUpdate = async (
-		updates: Partial<Property>,
+		updates: Database["public"]["Tables"]["properties"]["Update"],
 	) => {
 		try {
 			setIsLoading(true)
-			const updatedProperty =
-				await updateProperty(id, updates)
+			const updatedProperty = await updateProperty(id, updates)
 			setProperty(updatedProperty)
-			toast.success(
-				"Property updated successfully",
-			)
+			toast.success("Property updated successfully")
 			router.refresh()
 		} catch (err) {
 			setError(
 				err instanceof Error
 					? err
-					: new Error(
-							"Failed to update property",
-					  ),
+					: new Error("Failed to update property")
 			)
 			toast.error("Failed to update property")
 			throw err

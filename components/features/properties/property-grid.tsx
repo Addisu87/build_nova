@@ -1,5 +1,5 @@
 import type { Property } from "@/types"
-import { PropertyCard } from "./card"
+import { PropertyCard } from "./property-card"
 
 import { useFavorites } from "@/hooks/favorites/use-favorites"
 

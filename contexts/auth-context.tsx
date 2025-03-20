@@ -6,9 +6,11 @@ import { useRouter } from "next/navigation"
 import { createContext, useContext, useEffect, useState } from "react"
 import { toast } from "sonner"
 
+// Constants
 const GUEST_FAVORITES_KEY = "guest_favorites"
 const EMAIL_RATE_LIMIT = 60 * 1000 // 60 seconds
 
+// Types
 interface AuthState {
 	user: User | null
 	session: Session | null
@@ -41,8 +43,19 @@ interface AuthContextType extends AuthState {
 	isProcessing: (action: string) => boolean
 }
 
+// Context
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+// Hook
+export const useAuth = () => {
+	const context = useContext(AuthContext)
+	if (!context) {
+		throw new Error("useAuth must be used within an AuthProvider")
+	}
+	return context
+}
+
+// Provider
 export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const [state, setState] = useState<AuthState>({
 		user: null,
@@ -56,22 +69,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const router = useRouter()
 	const supabase = createClientComponentClient()
 
-	// Helper to manage processing states
-	const withProcessing = async (action: string, callback: () => Promise<void>) => {
-		setState((prev) => ({
-			...prev,
-			processingActions: new Set([...prev.processingActions, action]),
-		}))
+	// Helper functions
+	const updateState = (updates: Partial<AuthState>) => {
+		setState(prev => ({ ...prev, ...updates }))
+	}
 
+	const withProcessing = async (action: string, callback: () => Promise<void>) => {
+		const addProcessingAction = () => {
+			setState(prev => ({
+				...prev,
+				processingActions: new Set([...prev.processingActions, action])
+			}))
+		}
+
+		const removeProcessingAction = () => {
+			setState(prev => ({
+				...prev,
+				processingActions: new Set(
+					[...prev.processingActions].filter(a => a !== action)
+				)
+			}))
+		}
+
+		addProcessingAction()
 		try {
 			await callback()
 		} finally {
-			setState((prev) => ({
-				...prev,
-				processingActions: new Set(
-					[...prev.processingActions].filter((a) => a !== action),
-				),
-			}))
+			removeProcessingAction()
 		}
 	}
 
@@ -103,29 +127,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	useEffect(() => {
 		if (typeof window === "undefined") return
 
-		const getSession = async () => {
-			const {
-				data: { session },
-			} = await supabase.auth.getSession()
-			setState((prev) => ({
-				...prev,
+		const initializeAuth = async () => {
+			const { data: { session } } = await supabase.auth.getSession()
+			updateState({
 				session,
 				user: session?.user ?? null,
-				isLoading: false,
-			}))
+				isLoading: false
+			})
 		}
 
-		getSession()
+		initializeAuth()
 
-		const {
-			data: { subscription },
-		} = supabase.auth.onAuthStateChange((_event, session) => {
-			setState((prev) => ({
-				...prev,
+		const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+			updateState({
 				session,
 				user: session?.user ?? null,
-				isLoading: false,
-			}))
+				isLoading: false
+			})
 			router.refresh()
 		})
 

@@ -18,6 +18,8 @@ export interface Database {
 					bedrooms: number
 					bathrooms: number
 					square_feet: number
+					property_type: string
+					status: string
 					address: string
 					city: string
 					state: string
@@ -25,6 +27,7 @@ export interface Database {
 					latitude: number
 					longitude: number
 					images: string[]
+					imageUrl: string
 					features: string[]
 					status: "for-sale" | "for-rent" | "sold" | "pending"
 					property_type: string

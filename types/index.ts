@@ -45,6 +45,7 @@ export interface Property {
 	longitude: number
 	images: string[]
 	features: string[]
+	imageUrl: string
 	status: PropertyStatus
 	property_type: PropertyType
 	amenities: string[]
@@ -81,8 +82,8 @@ export interface Range {
 // Filter Interface
 export interface PropertyFilters extends Partial<Record<string, unknown>> {
 	searchQuery?: string
-	minPrice?: number
-	maxPrice?: number
+	min_price?: number
+	max_price?: number
 	bedrooms?: number
 	bathrooms?: number
 	property_type?: PropertyType
