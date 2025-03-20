@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
 import {
 	Button,
+	Checkbox,
 	Input,
 	Label,
 	Select,
@@ -10,17 +10,17 @@ import {
 	SelectItem,
 	SelectTrigger,
 	SelectValue,
-	Checkbox,
 } from "@/components/ui"
-import { motion } from "framer-motion"
 import {
-	PropertyFilters as PropertyFiltersType,
-	PROPERTY_TYPES,
 	AMENITIES,
-	SORT_OPTIONS,
+	PROPERTY_TYPES,
+	PropertyFilters as PropertyFiltersType,
 	PropertyType,
+	SORT_OPTIONS,
 	SortOption,
-} from "@/types/properties"
+} from "@/types"
+import { motion } from "framer-motion"
+import { useState } from "react"
 
 interface PropertyFiltersProps {
 	filters: PropertyFiltersType
@@ -39,10 +39,7 @@ export function PropertyFilters({
 }: PropertyFiltersProps) {
 	const [isAdvancedOpen, setIsAdvancedOpen] = useState(false)
 
-	const handleChange = (
-		field: keyof PropertyFiltersType,
-		value: any,
-	) => {
+	const handleChange = (field: keyof PropertyFiltersType, value: any) => {
 		onChange({ [field]: value })
 	}
 
@@ -79,17 +76,13 @@ export function PropertyFilters({
 							type="number"
 							placeholder="Min"
 							value={filters.minPrice}
-							onChange={(e) =>
-								handleChange("minPrice", e.target.value)
-							}
+							onChange={(e) => handleChange("minPrice", e.target.value)}
 						/>
 						<Input
 							type="number"
 							placeholder="Max"
 							value={filters.maxPrice}
-							onChange={(e) =>
-								handleChange("maxPrice", e.target.value)
-							}
+							onChange={(e) => handleChange("maxPrice", e.target.value)}
 						/>
 					</div>
 				</div>
@@ -109,10 +102,7 @@ export function PropertyFilters({
 						<SelectContent>
 							<SelectItem value="any">Any</SelectItem>
 							{[1, 2, 3, 4, 5].map((num) => (
-								<SelectItem
-									key={num}
-									value={num.toString()}
-								>
+								<SelectItem key={num} value={num.toString()}>
 									{num}+ beds
 								</SelectItem>
 							))}
@@ -128,7 +118,7 @@ export function PropertyFilters({
 						onValueChange={(value) =>
 							handleChange(
 								"propertyType",
-								value === "any" ? "" : value as PropertyType
+								value === "any" ? "" : (value as PropertyType),
 							)
 						}
 					>
@@ -137,16 +127,11 @@ export function PropertyFilters({
 						</SelectTrigger>
 						<SelectContent>
 							<SelectItem value="any">Any</SelectItem>
-							{Object.entries(PROPERTY_TYPES).map(
-								([value, label]) => (
-									<SelectItem
-										key={value}
-										value={value}
-									>
-										{label}
-									</SelectItem>
-								)
-							)}
+							{Object.entries(PROPERTY_TYPES).map(([value, label]) => (
+								<SelectItem key={value} value={value}>
+									{label}
+								</SelectItem>
+							))}
 						</SelectContent>
 					</Select>
 				</div>
@@ -158,49 +143,33 @@ export function PropertyFilters({
 						type="text"
 						placeholder="Enter location"
 						value={filters.location}
-						onChange={(e) =>
-							handleChange("location", e.target.value)
-						}
+						onChange={(e) => handleChange("location", e.target.value)}
 					/>
 				</div>
 
 				{/* Sort By */}
 				<div className="space-y-2">
 					<Label>Sort By</Label>
-					<Select
-						value={sort}
-						onValueChange={onSortChange}
-					>
+					<Select value={sort} onValueChange={onSortChange}>
 						<SelectTrigger>
 							<SelectValue placeholder="Sort by..." />
 						</SelectTrigger>
 						<SelectContent>
-							{Object.entries(SORT_OPTIONS).map(
-								([value, label]) => (
-									<SelectItem
-										key={value}
-										value={value}
-									>
-										{label}
-									</SelectItem>
-								)
-							)}
+							{Object.entries(SORT_OPTIONS).map(([value, label]) => (
+								<SelectItem key={value} value={value}>
+									{label}
+								</SelectItem>
+							))}
 						</SelectContent>
 					</Select>
 				</div>
 			</div>
 
 			<div className="flex space-x-2">
-				<Button
-					variant="outline"
-					onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
-				>
+				<Button variant="outline" onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}>
 					{isAdvancedOpen ? "Less Filters" : "More Filters"}
 				</Button>
-				<Button
-					variant="ghost"
-					onClick={handleReset}
-				>
+				<Button variant="ghost" onClick={handleReset}>
 					Reset Filters
 				</Button>
 			</div>
@@ -248,23 +217,13 @@ export function PropertyFilters({
 							<Label>Amenities</Label>
 							<div className="grid grid-cols-2 md:grid-cols-3 gap-2">
 								{AMENITIES.map(({ value, label }) => (
-									<div
-										key={value}
-										className="flex items-center space-x-2"
-									>
+									<div key={value} className="flex items-center space-x-2">
 										<Checkbox
 											id={value}
-											checked={filters.amenities?.includes(
-												value
-											)}
-											onCheckedChange={() =>
-												handleAmenityChange(value)
-											}
+											checked={filters.amenities?.includes(value)}
+											onCheckedChange={() => handleAmenityChange(value)}
 										/>
-										<label
-											htmlFor={value}
-											className="text-sm text-gray-700"
-										>
+										<label htmlFor={value} className="text-sm text-gray-700">
 											{label}
 										</label>
 									</div>

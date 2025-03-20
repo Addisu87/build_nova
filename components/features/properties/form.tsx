@@ -1,11 +1,5 @@
 "use client"
 
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import {
-	Property,
-	PropertyType,
-} from "@/types/properties"
 import {
 	Button,
 	Input,
@@ -16,10 +10,10 @@ import {
 	SelectValue,
 	Textarea,
 } from "@/components/ui"
-import {
-	propertySchema,
-	PropertyFormData,
-} from "@/lib/properties/property-schemas"
+import { PropertyFormData, propertySchema } from "@/lib/properties/property-schemas"
+import { Property, PropertyType } from "@/types"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
 
 interface PropertyFormProps {
 	initialData?: Partial<Property>
@@ -55,37 +49,23 @@ export function PropertyForm({
 
 	const propertyTypeValue = watch("propertyType")
 
-	const onSubmitForm = (
-		data: PropertyFormData,
-	) => {
+	const onSubmitForm = (data: PropertyFormData) => {
 		onSubmit(data)
 	}
 
 	return (
-		<form
-			onSubmit={handleSubmit(onSubmitForm)}
-			className="space-y-6"
-		>
+		<form onSubmit={handleSubmit(onSubmitForm)} className="space-y-6">
 			<div className="grid gap-6 md:grid-cols-2">
 				<div>
-					<label className="text-sm font-medium">
-						Title
-					</label>
-					<Input
-						{...register("title")}
-						className="mt-1"
-					/>
+					<label className="text-sm font-medium">Title</label>
+					<Input {...register("title")} className="mt-1" />
 					{errors.title && (
-						<p className="text-red-500 text-sm mt-1">
-							{errors.title.message}
-						</p>
+						<p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
 					)}
 				</div>
 
 				<div>
-					<label className="text-sm font-medium">
-						Price
-					</label>
+					<label className="text-sm font-medium">Price</label>
 					<Input
 						type="number"
 						{...register("price", {
@@ -94,52 +74,36 @@ export function PropertyForm({
 						className="mt-1"
 					/>
 					{errors.price && (
-						<p className="text-red-500 text-sm mt-1">
-							{errors.price.message}
-						</p>
+						<p className="text-red-500 text-sm mt-1">{errors.price.message}</p>
 					)}
 				</div>
 
 				<div>
-					<label className="text-sm font-medium">
-						Property Type
-					</label>
+					<label className="text-sm font-medium">Property Type</label>
 					<Select
 						value={propertyTypeValue?.toLowerCase()}
 						onValueChange={(value) =>
-							setValue(
-								"propertyType",
-								value.toUpperCase() as PropertyType,
-							)
+							setValue("propertyType", value.toUpperCase() as PropertyType)
 						}
 					>
 						<SelectTrigger className="mt-1">
 							<SelectValue placeholder="Select type" />
 						</SelectTrigger>
 						<SelectContent>
-							{Object.values(PropertyType).map(
-								(type) => (
-									<SelectItem
-										key={type}
-										value={type.toLowerCase()}
-									>
-										{type}
-									</SelectItem>
-								),
-							)}
+							{Object.values(PropertyType).map((type) => (
+								<SelectItem key={type} value={type.toLowerCase()}>
+									{type}
+								</SelectItem>
+							))}
 						</SelectContent>
 					</Select>
 					{errors.propertyType && (
-						<p className="text-red-500 text-sm mt-1">
-							{errors.propertyType.message}
-						</p>
+						<p className="text-red-500 text-sm mt-1">{errors.propertyType.message}</p>
 					)}
 				</div>
 
 				<div>
-					<label className="text-sm font-medium">
-						Year Built
-					</label>
+					<label className="text-sm font-medium">Year Built</label>
 					<Input
 						type="number"
 						{...register("yearBuilt", {
@@ -148,16 +112,12 @@ export function PropertyForm({
 						className="mt-1"
 					/>
 					{errors.yearBuilt && (
-						<p className="text-red-500 text-sm mt-1">
-							{errors.yearBuilt.message}
-						</p>
+						<p className="text-red-500 text-sm mt-1">{errors.yearBuilt.message}</p>
 					)}
 				</div>
 
 				<div>
-					<label className="text-sm font-medium">
-						Bedrooms
-					</label>
+					<label className="text-sm font-medium">Bedrooms</label>
 					<Input
 						type="number"
 						{...register("bedrooms", {
@@ -166,16 +126,12 @@ export function PropertyForm({
 						className="mt-1"
 					/>
 					{errors.bedrooms && (
-						<p className="text-red-500 text-sm mt-1">
-							{errors.bedrooms.message}
-						</p>
+						<p className="text-red-500 text-sm mt-1">{errors.bedrooms.message}</p>
 					)}
 				</div>
 
 				<div>
-					<label className="text-sm font-medium">
-						Bathrooms
-					</label>
+					<label className="text-sm font-medium">Bathrooms</label>
 					<Input
 						type="number"
 						{...register("bathrooms", {
@@ -184,16 +140,12 @@ export function PropertyForm({
 						className="mt-1"
 					/>
 					{errors.bathrooms && (
-						<p className="text-red-500 text-sm mt-1">
-							{errors.bathrooms.message}
-						</p>
+						<p className="text-red-500 text-sm mt-1">{errors.bathrooms.message}</p>
 					)}
 				</div>
 
 				<div>
-					<label className="text-sm font-medium">
-						Square Feet
-					</label>
+					<label className="text-sm font-medium">Square Feet</label>
 					<Input
 						type="number"
 						{...register("squareFootage", {
@@ -202,37 +154,21 @@ export function PropertyForm({
 						className="mt-1"
 					/>
 					{errors.squareFootage && (
-						<p className="text-red-500 text-sm mt-1">
-							{errors.squareFootage.message}
-						</p>
+						<p className="text-red-500 text-sm mt-1">{errors.squareFootage.message}</p>
 					)}
 				</div>
 			</div>
 
 			<div>
-				<label className="text-sm font-medium">
-					Description
-				</label>
-				<Textarea
-					{...register("description")}
-					className="mt-1"
-					rows={4}
-				/>
+				<label className="text-sm font-medium">Description</label>
+				<Textarea {...register("description")} className="mt-1" rows={4} />
 				{errors.description && (
-					<p className="text-red-500 text-sm mt-1">
-						{errors.description.message}
-					</p>
+					<p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
 				)}
 			</div>
 
-			<Button
-				type="submit"
-				disabled={isLoading}
-				className="w-full"
-			>
-				{isLoading
-					? "Saving..."
-					: "Save Property"}
+			<Button type="submit" disabled={isLoading} className="w-full">
+				{isLoading ? "Saving..." : "Save Property"}
 			</Button>
 		</form>
 	)

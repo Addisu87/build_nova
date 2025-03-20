@@ -1,4 +1,4 @@
-import type { Property } from "@/types/properties"
+import type { Property } from "@/types"
 import { PropertyCard } from "./card"
 
 import { useFavorites } from "@/hooks/favorites/use-favorites"
@@ -7,18 +7,13 @@ interface PropertiesGridProps {
 	properties: Property[]
 }
 
-export function PropertiesGrid({
-	properties,
-}: PropertiesGridProps) {
-	const { toggleFavorite, isFavorited } =
-		useFavorites()
+export function PropertiesGrid({ properties }: PropertiesGridProps) {
+	const { toggleFavorite, isFavorited } = useFavorites()
 
 	if (!properties || properties.length === 0) {
 		return (
 			<div className="text-center py-8">
-				<p className="text-gray-500">
-					No properties found.
-				</p>
+				<p className="text-gray-500">No properties found.</p>
 			</div>
 		)
 	}
@@ -29,9 +24,7 @@ export function PropertiesGrid({
 				<PropertyCard
 					key={property.id}
 					property={property}
-					onFavoriteToggle={() =>
-						toggleFavorite(property.id)
-					}
+					onFavoriteToggle={() => toggleFavorite(property.id)}
 					isFavorited={isFavorited(property.id)}
 				/>
 			))}

@@ -1,7 +1,7 @@
 "use client"
 
 import { usePropertyManager } from "@/hooks/properties/use-property-manager"
-import type { Property } from "@/types/properties"
+import type { Property } from "@/types"
 import { PropertyFilters } from "./filters"
 import { PropertiesGrid } from "./grid"
 
@@ -18,24 +18,14 @@ export function PropertyListing({
 	title,
 	showFilters = true,
 }: PropertyListingProps) {
-	const {
-		properties,
-		filters,
-		updateFilters,
-		updateSort,
-		sortBy,
-	} = usePropertyManager(
+	const { properties, filters, updateFilters, updateSort, sortBy } = usePropertyManager(
 		initialProperties,
 		initialSearchQuery,
 	)
 
 	return (
 		<div className="space-y-6">
-			{title && (
-				<h1 className="text-2xl font-bold mb-6">
-					{title}
-				</h1>
-			)}
+			{title && <h1 className="text-2xl font-bold mb-6">{title}</h1>}
 
 			{showFilters && (
 				<div className="mb-8">

@@ -1,7 +1,7 @@
 "use client"
 
-import { cn } from "@/lib/utils"
-import Image from "next/image"
+import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface ImageThumbnailsProps {
 	images: string[]
@@ -12,13 +12,18 @@ interface ImageThumbnailsProps {
 }
 
 export function ImageThumbnails({
-	images,
+	images = [],
 	currentIndex,
 	onSelect,
 	title,
 	className,
 }: ImageThumbnailsProps) {
-	const displayImages = images.slice(0, 5)
+	// Ensure `images` is defined and has at least one element
+	if (!images || images.length === 0) {
+		return null
+	}
+
+	const displayImages = images?.slice(0, 5)
 
 	return (
 		<div className={cn("grid grid-cols-1 md:grid-cols-4 gap-2 h-[600px]", className)}>
@@ -44,7 +49,7 @@ export function ImageThumbnails({
 
 			{/* Right side smaller images grid */}
 			<div className="hidden md:grid md:col-span-2 grid-cols-2 gap-2 h-full">
-				{displayImages.slice(1).map((image, idx) => {
+				{displayImages.slice(1)?.map((image, idx) => {
 					const actualIndex = idx + 1
 					const isLastVisible = actualIndex === 4 && images.length > 5
 

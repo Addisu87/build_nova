@@ -1,6 +1,5 @@
 "use client"
 
-import { Property } from "@/types/properties"
 import { Card } from "@/components/ui/card"
 import {
 	Table,
@@ -10,14 +9,13 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table"
+import { Property } from "@/types"
 
 interface PropertySpecificationsProps {
 	property: Property
 }
 
-export function PropertySpecifications({
-	property,
-}: PropertySpecificationsProps) {
+export function PropertySpecifications({ property }: PropertySpecificationsProps) {
 	const specifications = [
 		{
 			label: "Property Type",
@@ -33,9 +31,7 @@ export function PropertySpecifications({
 		},
 		{
 			label: "Lot Size",
-			value: property.lotSize
-				? `${property.lotSize.toLocaleString()} sqft`
-				: "N/A",
+			value: property.lotSize ? `${property.lotSize.toLocaleString()} sqft` : "N/A",
 		},
 		{
 			label: "Bedrooms",
@@ -62,9 +58,7 @@ export function PropertySpecifications({
 
 	return (
 		<Card className="p-6">
-			<h2 className="text-2xl font-semibold mb-6">
-				Property Specifications
-			</h2>
+			<h2 className="text-2xl font-semibold mb-6">Property Specifications</h2>
 			<Table>
 				<TableHeader>
 					<TableRow>
@@ -75,12 +69,8 @@ export function PropertySpecifications({
 				<TableBody>
 					{specifications.map((spec) => (
 						<TableRow key={spec.label}>
-							<TableCell className="font-medium">
-								{spec.label}
-							</TableCell>
-							<TableCell className="capitalize">
-								{spec.value}
-							</TableCell>
+							<TableCell className="font-medium">{spec.label}</TableCell>
+							<TableCell className="capitalize">{spec.value}</TableCell>
 						</TableRow>
 					))}
 				</TableBody>

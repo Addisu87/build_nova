@@ -1,17 +1,11 @@
 "use client"
 
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui"
 import { ImageCarousel } from "@/components/ui/image-carousel"
-import { Property } from "@/types/properties"
-import { useState } from "react"
-import Image from "next/image"
 import { cn } from "@/lib/utils"
-import { PropertyMap } from "./property-map"
+import { Property } from "@/types"
+import Image from "next/image"
+import { useState } from "react"
 
 interface PropertyDetailsModalProps {
 	property: Property
@@ -30,9 +24,7 @@ export function PropertyDetailsModal({
 		<Dialog open={isOpen} onOpenChange={onClose}>
 			<DialogContent className="max-w-5xl h-[90vh] p-0">
 				<DialogHeader className="p-6">
-					<DialogTitle>
-						{property.title}
-					</DialogTitle>
+					<DialogTitle>{property.title}</DialogTitle>
 				</DialogHeader>
 
 				<div className="flex flex-col h-full">
@@ -58,7 +50,7 @@ export function PropertyDetailsModal({
 									className={cn(
 										"relative w-16 h-16 flex-shrink-0",
 										"focus:outline-none focus:ring-2 focus:ring-blue-500",
-										selectedImageIndex === index && "ring-2 ring-blue-500"
+										selectedImageIndex === index && "ring-2 ring-blue-500",
 									)}
 								>
 									<Image

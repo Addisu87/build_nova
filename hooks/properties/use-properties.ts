@@ -1,16 +1,7 @@
-import {
-	useQuery,
-	useMutation,
-	useQueryClient,
-} from "@tanstack/react-query"
-import {
-	supabase,
-	Property,
-	NewProperty,
-	PropertyUpdate,
-} from "@/lib/supabase"
+import { NewProperty, Property, PropertyUpdate, supabase } from "@/lib/supabase"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
-import { PropertyFilters as BasePropertyFilters, PropertyStatus } from "@/types/properties"
+import { PropertyStatus } from "@/types"
 
 // Define a specialized interface for API parameters
 interface PropertyApiFilters {
@@ -23,57 +14,35 @@ interface PropertyApiFilters {
 	status?: PropertyStatus[]
 }
 
-export function useProperties(
-	filters: PropertyFilters = {},
-) {
+export function useProperties(filters: PropertyFilters = {}) {
 	return useQuery({
 		queryKey: ["properties", filters],
 		queryFn: async () => {
-			let query = supabase
-				.from("properties")
-				.select("*")
+			let query = supabase.from("properties").select("*")
 
 			if (filters.minPrice) {
-				query = query.gte(
-					"price",
-					filters.minPrice,
-				)
+				query = query.gte("price", filters.minPrice)
 			}
 			if (filters.maxPrice) {
-				query = query.lte(
-					"price",
-					filters.maxPrice,
-				)
+				query = query.lte("price", filters.maxPrice)
 			}
 			if (filters.bedrooms) {
-				query = query.eq(
-					"bedrooms",
-					filters.bedrooms,
-				)
+				query = query.eq("bedrooms", filters.bedrooms)
 			}
 			if (filters.bathrooms) {
-				query = query.eq(
-					"bathrooms",
-					filters.bathrooms,
-				)
+				query = query.eq("bathrooms", filters.bathrooms)
 			}
 			if (filters.city) {
 				query = query.ilike("city", filters.city)
 			}
 			if (filters.state) {
-				query = query.ilike(
-					"state",
-					filters.state,
-				)
+				query = query.ilike("state", filters.state)
 			}
 			if (filters.status) {
 				query = query.eq("status", filters.status)
 			}
 
-			const { data, error } = await query.order(
-				"created_at",
-				{ ascending: false },
-			)
+			const { data, error } = await query.order("created_at", { ascending: false })
 
 			if (error) throw error
 			return data as Property[]
@@ -101,9 +70,7 @@ export function useCreateProperty() {
 	const queryClient = useQueryClient()
 
 	return useMutation({
-		mutationFn: async (
-			newProperty: NewProperty,
-		) => {
+		mutationFn: async (newProperty: NewProperty) => {
 			const { data, error } = await supabase
 				.from("properties")
 				.insert(newProperty)
@@ -125,13 +92,7 @@ export function useUpdateProperty() {
 	const queryClient = useQueryClient()
 
 	return useMutation({
-		mutationFn: async ({
-			id,
-			updates,
-		}: {
-			id: string
-			updates: PropertyUpdate
-		}) => {
+		mutationFn: async ({ id, updates }: { id: string; updates: PropertyUpdate }) => {
 			const { data, error } = await supabase
 				.from("properties")
 				.update(updates)
@@ -158,10 +119,7 @@ export function useDeleteProperty() {
 
 	return useMutation({
 		mutationFn: async (id: string) => {
-			const { error } = await supabase
-				.from("properties")
-				.delete()
-				.eq("id", id)
+			const { error } = await supabase.from("properties").delete().eq("id", id)
 			if (error) throw error
 		},
 		onSuccess: () => {

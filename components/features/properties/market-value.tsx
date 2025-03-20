@@ -1,27 +1,21 @@
 "use client"
 
-import { Property } from "@/types/properties"
-import { TrendingUp } from "lucide-react"
 import { formatPrice } from "@/lib/utils"
+import { Property } from "@/types"
+import { TrendingUp } from "lucide-react"
 
 interface MarketValueProps {
 	property: Property
 }
 
-export function MarketValue({
-	property,
-}: MarketValueProps) {
+export function MarketValue({ property }: MarketValueProps) {
 	return (
 		<section className="bg-white rounded-lg shadow-sm p-6">
-			<h2 className="text-2xl font-semibold mb-6">
-				Market Value & History
-			</h2>
+			<h2 className="text-2xl font-semibold mb-6">Market Value & History</h2>
 			<div className="space-y-6">
 				<div className="flex items-center justify-between">
 					<div>
-						<h3 className="text-lg font-medium">
-							Estimated Market Value
-						</h3>
+						<h3 className="text-lg font-medium">Estimated Market Value</h3>
 						<p className="text-3xl font-bold text-blue-600">
 							{formatPrice(property.price)}
 						</p>
@@ -30,9 +24,7 @@ export function MarketValue({
 				</div>
 
 				<div>
-					<h3 className="text-lg font-medium mb-4">
-						Price History
-					</h3>
+					<h3 className="text-lg font-medium mb-4">Price History</h3>
 					<div className="space-y-3">
 						{[
 							{
@@ -48,16 +40,9 @@ export function MarketValue({
 								price: property.price * 0.75,
 							},
 						].map((history, index) => (
-							<div
-								key={index}
-								className="flex justify-between items-center"
-							>
-								<span className="text-gray-600">
-									{history.date}
-								</span>
-								<span className="font-medium">
-									{formatPrice(history.price)}
-								</span>
+							<div key={index} className="flex justify-between items-center">
+								<span className="text-gray-600">{history.date}</span>
+								<span className="font-medium">{formatPrice(history.price)}</span>
 							</div>
 						))}
 					</div>

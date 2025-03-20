@@ -3,7 +3,7 @@
 import { LoadingState } from "@/components/ui/loading-state"
 import { createPriceMarker } from "@/lib/mapbox"
 import { cn } from "@/lib/utils"
-import { Property } from "@/types/properties"
+import { Property } from "@/types"
 import mapboxgl from "mapbox-gl"
 import "mapbox-gl/dist/mapbox-gl.css"
 import { useEffect, useRef } from "react"

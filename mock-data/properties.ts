@@ -1,4 +1,4 @@
-import { Property } from "@/types/properties"
+import { Property } from "@/types"
 
 export const mockProperties: Property[] = [
 	{
@@ -170,12 +170,7 @@ export const mockProperties: Property[] = [
 		status: "for-sale",
 		yearBuilt: 2020,
 		parkingSpaces: 1,
-		amenities: [
-			"Air Conditioning",
-			"Elevator",
-			"Gym",
-			"Pool",
-		],
+		amenities: ["Air Conditioning", "Elevator", "Gym", "Pool"],
 	},
 	{
 		id: "7",
@@ -222,10 +217,6 @@ export const mockProperties: Property[] = [
 		status: "for-sale",
 		yearBuilt: 2021,
 		parkingSpaces: 2,
-		amenities: [
-			"Concierge",
-			"Rooftop Terrace",
-			"Smart Home",
-		],
+		amenities: ["Concierge", "Rooftop Terrace", "Smart Home"],
 	},
 ]
