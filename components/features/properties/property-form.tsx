@@ -14,6 +14,8 @@ import { PropertyFormData, propertySchema } from "@/lib/properties/property-sche
 import { Property, PropertyType } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import { usePropertyImages } from "@/hooks/properties/use-property-images"
+import { useFieldImageUpload } from "@/hooks/form/use-field-image-upload"
 
 interface PropertyFormProps {
 	initialData?: Partial<Property>
@@ -74,6 +76,23 @@ export function PropertyForm({
 		},
 	})
 
+	const { uploadMultipleImages, deleteMultipleImages, isUploading: isUploadingImages } = usePropertyImages()
+	const imageUpload = useFieldImageUpload({
+		maxFiles: 10,
+		accept: "image/*",
+		maxSize: 5 * 1024 * 1024, // 5MB
+		onUpload: async (files) => {
+			try {
+				const results = await uploadMultipleImages(files)
+				setValue('images', [...watch('images'), ...results.map(r => r.url)])
+			} catch (error) {
+				console.error("Failed to upload images:", error)
+			}
+		}
+	})
+
+	const propertyTypeValue = watch("property_type")?.toLowerCase()
+
 	const onSubmitForm = (data: PropertyFormData) => {
 		onSubmit(data)
 	}
@@ -106,9 +125,9 @@ export function PropertyForm({
 				<div>
 					<label className="text-sm font-medium">Property Type</label>
 					<Select
-						value={propertyTypeValue?.toLowerCase()}
+						value={propertyTypeValue}
 						onValueChange={(value) =>
-							setValue("propertyType", value.toUpperCase() as PropertyType)
+							setValue("property_type", value.toUpperCase() as PropertyType)
 						}
 					>
 						<SelectTrigger className="mt-1">
@@ -122,8 +141,8 @@ export function PropertyForm({
 							))}
 						</SelectContent>
 					</Select>
-					{errors.propertyType && (
-						<p className="text-red-500 text-sm mt-1">{errors.propertyType.message}</p>
+					{errors.property_type && (
+						<p className="text-red-500 text-sm mt-1">{errors.property_type.message}</p>
 					)}
 				</div>
 
@@ -184,6 +203,41 @@ export function PropertyForm({
 				</div>
 			</div>
 
+			{/* Image upload section */}
+			<div className="space-y-4">
+				<label className="text-sm font-medium">Property Images</label>
+				<div {...imageUpload.getDropZoneProps()} className="border-2 border-dashed rounded-lg p-4">
+					<input {...imageUpload.getInputProps()} />
+					<div className="text-center">
+						{imageUpload.isDragging ? (
+							<p>Drop the files here ...</p>
+						) : (
+							<p>Drag 'n' drop images here, or click to select files</p>
+						)}
+					</div>
+				</div>
+
+				{/* Image previews */}
+				<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+					{imageUpload.previews.map((preview, index) => (
+						<div key={preview} className="relative aspect-square">
+							<img
+								src={preview}
+								alt={`Preview ${index + 1}`}
+								className="w-full h-full object-cover rounded-lg"
+							/>
+							<button
+								type="button"
+								onClick={() => imageUpload.removeFile(index)}
+								className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+							>
+								×
+							</button>
+						</div>
+					))}
+				</div>
+			</div>
+
 			<div>
 				<label className="text-sm font-medium">Description</label>
 				<Textarea {...register("description")} className="mt-1" rows={4} />
@@ -192,8 +246,12 @@ export function PropertyForm({
 				)}
 			</div>
 
-			<Button type="submit" disabled={isLoading} className="w-full">
-				{isLoading ? "Saving..." : "Save Property"}
+			<Button 
+				type="submit" 
+				disabled={isLoading || isUploadingImages} 
+				className="w-full"
+			>
+				{isLoading || isUploadingImages ? "Saving..." : "Save Property"}
 			</Button>
 		</form>
 	)

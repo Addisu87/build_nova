@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { toast } from "react-hot-toast"
-import { supabase } from "@/lib/supabase/db"
+import { supabase } from "@/lib/supabase/client"
 
 interface ImageUploadResult {
 	url: string
