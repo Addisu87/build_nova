@@ -79,13 +79,13 @@ export function PropertyCard({ property, variant = "default" }: PropertyCardProp
 					<Button
 						variant="ghost"
 						size="icon"
-						className={`favorite-btn absolute right-4 top-4 z-20 h-11 w-11 rounded-full 
+						className={`favorite-btn absolute right-3 top-3 z-20 h-12 w-12 rounded-full 
 							bg-transparent hover:bg-transparent transition-all duration-300 hover:scale-110`}
 						onClick={handleFavoriteClick}
 					>
 						<Heart
-							size={64}
-							className={`h-9 w-9 transition-all duration-300 
+							strokeWidth={2.5}
+							className={`h-12 w-12 transition-all duration-300 
 								${
 									isFavorite(property.id)
 										? "fill-red-500 text-red-500"
