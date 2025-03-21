@@ -15,8 +15,8 @@ export const mockProperties: PropertyRow[] = [
 		city: "San Francisco",
 		state: "CA",
 		zip_code: "94105",
-		latitude: 37.7749,
-		longitude: -122.4194,
+		latitude: 37.7929,
+		longitude: -122.3971,
 		images: [
 			"https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&auto=format&fit=crop&q=60", // Main view
 			"https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&auto=format&fit=crop&q=60", // Living room
@@ -64,8 +64,8 @@ export const mockProperties: PropertyRow[] = [
 		city: "Oakland",
 		state: "CA",
 		zip_code: "94601",
-		latitude: 37.7746,
-		longitude: -122.4189,
+		latitude: 37.8060,
+		longitude: -122.4103,
 		images: [
 			"https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format&fit=crop&q=60", // Front view
 			"https://images.unsplash.com/photo-1576941089067-2de3c901e126?w=800&auto=format&fit=crop&q=60", // Back yard
@@ -114,7 +114,7 @@ export const mockProperties: PropertyRow[] = [
 		city: "San Francisco",
 		state: "CA",
 		zip_code: "94108",
-		latitude: 37.7749,
+		latitude: 37.8010,
 		longitude: -122.4194,
 		images: [
 			"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=60", // Exterior view
@@ -165,8 +165,8 @@ export const mockProperties: PropertyRow[] = [
 		city: "San Francisco",
 		state: "CA",
 		zip_code: "94108",
-		latitude: 37.7749,
-		longitude: -122.4194,
+		latitude: 37.7925,
+		longitude: -122.4147,
 		images: [
 			"https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&auto=format&fit=crop&q=60", // Front view
 			"https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800&auto=format&fit=crop&q=60", // Living room
@@ -213,8 +213,8 @@ export const mockProperties: PropertyRow[] = [
 		city: "San Francisco",
 		state: "CA",
 		zip_code: "94109",
-		latitude: 37.7749,
-		longitude: -122.4194,
+		latitude: 37.7925,
+		longitude: -122.4382,
 		images: [
 			"https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&auto=format&fit=crop&q=60", // Aerial view
 			"https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&auto=format&fit=crop&q=60", // Street view
@@ -259,8 +259,8 @@ export const mockProperties: PropertyRow[] = [
 		city: "San Francisco",
 		state: "CA",
 		zip_code: "94110",
-		latitude: 37.7749,
-		longitude: -122.4194,
+		latitude: 37.8037,
+		longitude: -122.4368,
 		images: [
 			"https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&auto=format&fit=crop&q=60", // Main view
 			"https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&auto=format&fit=crop&q=60", // City view
@@ -304,8 +304,8 @@ export const mockProperties: PropertyRow[] = [
 		city: "San Francisco",
 		state: "CA",
 		zip_code: "94111",
-		latitude: 37.7749,
-		longitude: -122.4194,
+		latitude: 37.7759,
+		longitude: -122.4245,
 		images: [
 			"https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format&fit=crop&q=60", // Front view
 			"https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format&fit=crop&q=60", // Back yard
@@ -349,8 +349,8 @@ export const mockProperties: PropertyRow[] = [
 		city: "San Francisco",
 		state: "CA",
 		zip_code: "94112",
-		latitude: 37.7749,
-		longitude: -122.4194,
+		latitude: 37.7599,
+		longitude: -122.4148,
 		images: [
 			"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=60", // Exterior view
 			"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=60", // Living area
