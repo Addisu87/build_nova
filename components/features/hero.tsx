@@ -22,13 +22,15 @@ export function Hero() {
 	return (
 		<div className="relative">
 			<ImageCarousel
-				images={heroImages}
+				images={[...heroImages]} // Convert readonly array to regular array
 				aspectRatio="hero"
 				className="h-[600px]"
 				priority
+				showControls={true} // Enable navigation controls
+				fullWidth={true} // Make it full width
 			/>
 			{/* Dark gradient overlay - left to right */}
-			<div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/20" />
+			<div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/20 pointer-events-none" />
 			{/* Content container */}
 			<div className="absolute inset-0 container mx-auto px-4">
 				<div className="h-full flex flex-col justify-center max-w-2xl">
@@ -37,8 +39,7 @@ export function Hero() {
 							Find Your Dream Home
 						</h1>
 						<p className="text-lg md:text-xl text-white/90">
-							Search through thousands of
-							properties for sale and rent
+							Search through thousands of properties for sale and rent
 						</p>
 					</div>
 
