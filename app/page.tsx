@@ -2,6 +2,7 @@
 
 import { PropertyListing } from "@/components/features/properties/property-listing"
 import { Hero } from "@/components/features/hero"
+import { mockProperties } from "@/mock-data/properties"
 
 export default function HomePage() {
 	return (
@@ -16,7 +17,7 @@ export default function HomePage() {
 				<section className="container mx-auto px-4 py-16">
 					<PropertyListing
 						title="Latest Properties"
-						initialProperties={[]}
+						initialProperties={mockProperties}
 					/>
 				</section>
 			</main>

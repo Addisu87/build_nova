@@ -99,7 +99,7 @@ export function NearbyProperties({
 										</h5>
 
 										<p className="text-sm text-gray-600 truncate mb-2">
-											{property.location.address}
+											{property.address}
 										</p>
 
 										<div className="flex items-center gap-3 text-sm text-gray-600">
@@ -107,7 +107,7 @@ export function NearbyProperties({
 											<span>•</span>
 											<span>{property.bathrooms} baths</span>
 											<span>•</span>
-											<span>{property.area.toLocaleString()} sqft</span>
+											<span>{property.square_feet.toLocaleString()} sqft</span>
 										</div>
 									</div>
 								</div>
@@ -125,27 +125,27 @@ export function NearbyProperties({
 										<PropertyFeature
 											icon={Home}
 											label="Property Type"
-											value={property.propertyType}
+											value={property.property_type}
 										/>
 										<PropertyFeature
 											icon={Building2}
 											label="Year Built"
-											value={property.yearBuilt}
+											value={property.year_built}
 										/>
 										<PropertyFeature
 											icon={Car}
 											label="Parking"
-											value={property.parking || "N/A"}
+											value={property.parking_spaces || "N/A"}
 										/>
 										<PropertyFeature
 											icon={Ruler}
 											label="Lot Size"
-											value={`${property.lotSize?.toLocaleString() || "N/A"} sqft`}
+											value={`${property.lot_size?.toLocaleString() || "N/A"} sqft`}
 										/>
 										<PropertyFeature
 											icon={Trees}
-											label="Outdoor Space"
-											value={property.outdoorSpace || "N/A"}
+											label="Amenities"
+											value={property.amenities?.join(", ") || "None"}
 										/>
 									</div>
 

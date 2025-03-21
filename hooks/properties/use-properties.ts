@@ -47,6 +47,12 @@ export function useProperties(filters: PropertyFilters = {}) {
       if (filters.year_built) {
         query = query.eq("year_built", filters.year_built)
       }
+      if (filters.lot_size?.min) {
+        query = query.gte("lot_size", filters.lot_size.min)
+      }
+      if (filters.lot_size?.max) {
+        query = query.lte("lot_size", filters.lot_size.max)
+      }
 
       const { data, error } = await query
 
