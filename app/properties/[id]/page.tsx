@@ -34,9 +34,9 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
 		setProperty(found)
 
 		const nearby = mockProperties
-			.filter((p) => p.id !== params.id && isNearby(found.location, p.location))
+			.filter((p) => p.id !== params.id && isNearby(found, p))
 			.slice(0, 10)
-		setNearbyProperties(nearby)
+		setNearbyProperties(nearby as Property[])
 	}, [params.id])
 
 	if (!property) {
@@ -46,7 +46,7 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
 	return (
 		<div className="relative min-h-screen bg-gray-50 pt-4">
 			{/* Full-width image section */}
-			<div className="relative w-full bg-gray-50">
+			<div className="max-w-[1600px] mx-auto px-2 lg:px-4">
 				<div className="max-w-[1600px] mx-auto">
 					<div className="relative">
 						<ImageThumbnails
@@ -74,8 +74,8 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
 			{/* Content section */}
 			<div className="max-w-[1600px] mx-auto px-2 lg:px-4">
 				<div className="relative lg:flex gap-6 py-6">
-					{/* Main content */}
-					<div className="w-full lg:w-[65%] space-y-6">
+					{/* Main content - reduced from 60% to 50% */}
+					<div className="w-full lg:w-[50%] space-y-6">
 						<div className="bg-white rounded-xl shadow-sm">
 							<PropertyBasicInfo property={property} />
 						</div>
@@ -109,14 +109,15 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
 						</div>
 					</div>
 
-					{/* Sidebar */}
-					<div className="hidden lg:block lg:w-[35%]">
+					{/* Sidebar - increased from 40% to 50% */}
+					<div className="hidden lg:block lg:w-[50%]">
 						<div className="sticky top-8 space-y-8">
 							<div className="bg-white rounded-xl shadow-sm overflow-hidden">
 								<PropertyMap
 									property={property}
 									nearbyProperties={nearbyProperties}
-									height="h-[400px]"
+									zoom={13}
+									height="h-[500px]"
 									isSelected={true}
 									onMarkerClick={(propertyId) => {
 										if (propertyId !== property.id) {
@@ -147,7 +148,22 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
 	)
 }
 
-// Helper function to determine if a property is nearby
-function isNearby(location1: any, location2: any) {
-	return true // For demo purposes, considering all properties as nearby
+// Helper function to determine if a property is nearby based on coordinates
+function isNearby(prop1: Property, prop2: Property): boolean {
+	const MAX_DISTANCE = 10 // kilometers
+
+	// Calculate distance using Haversine formula
+	const R = 6371 // Earth's radius in kilometers
+	const dLat = ((prop2.latitude - prop1.latitude) * Math.PI) / 180
+	const dLon = ((prop2.longitude - prop1.longitude) * Math.PI) / 180
+	const a =
+		Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+		Math.cos((prop1.latitude * Math.PI) / 180) *
+			Math.cos((prop2.latitude * Math.PI) / 180) *
+			Math.sin(dLon / 2) *
+			Math.sin(dLon / 2)
+	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+	const distance = R * c
+
+	return distance <= MAX_DISTANCE
 }

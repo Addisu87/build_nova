@@ -1,7 +1,7 @@
 "use client"
 
-import { cn } from "@/lib/utils";
-import Image from "next/image";
+import { cn } from "@/lib/utils"
+import Image from "next/image"
 
 interface ImageThumbnailsProps {
 	images: string[]
@@ -40,7 +40,7 @@ export function ImageThumbnails({
 						src={images[0]}
 						alt={`${title} - Main Image`}
 						fill
-						className="object-cover"
+						className="object-cover rounded-lg"
 						sizes="(max-width: 768px) 100vw, 50vw"
 						priority
 					/>
