@@ -19,6 +19,7 @@ export interface Database {
 					bathrooms: number
 					square_feet: number
 					property_type: string
+					status: string
 					address: string
 					city: string
 					state: string
@@ -28,7 +29,6 @@ export interface Database {
 					images: string[]
 					imageUrl: string
 					features: string[]
-					status: "for-sale" | "for-rent" | "sold" | "pending"
 					amenities: string[]
 					year_built: number
 					lot_size?: number
@@ -69,8 +69,8 @@ export interface Database {
 					longitude: number
 					images: string[]
 					features: string[]
-					status: "for-sale" | "for-rent" | "sold" | "pending"
 					property_type: string
+					status: string
 					amenities: string[]
 					year_built: number
 					lot_size?: number
@@ -111,8 +111,8 @@ export interface Database {
 					longitude?: number
 					images?: string[]
 					features?: string[]
-					status?: "for-sale" | "for-rent" | "sold" | "pending"
 					property_type?: string
+					status: string
 					amenities?: string[]
 					year_built?: number
 					lot_size?: number
