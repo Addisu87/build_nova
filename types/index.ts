@@ -156,3 +156,23 @@ export const AMENITIES = [
 	{ value: "pets_allowed", label: "Pets Allowed" },
 	{ value: "furnished", label: "Furnished" },
 ] as const
+
+// Review Types
+export type Review = Database['public']['Tables']['reviews']['Row']
+
+export interface ReviewWithUser extends Review {
+  rating: any;
+  id: string;
+  user: {
+    name: string
+    avatar_url: string | null
+  }
+}
+
+export interface ReviewStats {
+  averageRating: number
+  totalReviews: number
+  ratingDistribution: {
+    [key: number]: number
+  }
+}

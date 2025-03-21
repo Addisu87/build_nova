@@ -103,6 +103,7 @@ export function ImageCarousel({
 			className="relative group"
 			onMouseEnter={() => setIsHovered(true)}
 			onMouseLeave={() => setIsHovered(false)}
+			onClick={(e) => e.stopPropagation()}
 		>
 			{/* Main Image */}
 			<div className={cn(
@@ -125,13 +126,17 @@ export function ImageCarousel({
 					{/* Navigation Buttons */}
 					<button
 						onClick={handlePrevious}
-						className="absolute left-6 top-1/2 -translate-y-1/2 rounded-full bg-white p-2 shadow-md transition-transform hover:scale-105 focus:outline-none opacity-0 group-hover:opacity-100"
+						className="absolute left-6 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 
+							shadow-md transition-transform hover:scale-105 focus:outline-none 
+							opacity-0 group-hover:opacity-100 z-20"
 					>
 						<ChevronLeft className="h-4 w-4" />
 					</button>
 					<button
 						onClick={handleNext}
-						className="absolute right-6 top-1/2 -translate-y-1/2 rounded-full bg-white p-2 shadow-md transition-transform hover:scale-105 focus:outline-none opacity-0 group-hover:opacity-100"
+						className="absolute right-6 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 
+							shadow-md transition-transform hover:scale-105 focus:outline-none 
+							opacity-0 group-hover:opacity-100 z-20"
 					>
 						<ChevronRight className="h-4 w-4" />
 					</button>

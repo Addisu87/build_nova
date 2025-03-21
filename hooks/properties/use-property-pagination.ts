@@ -1,10 +1,7 @@
-import { useState, useEffect } from "react"
-import {
-	useRouter,
-	useSearchParams,
-} from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
-import { toast } from "react-hot-toast"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
 
 export interface PaginationState {
 	currentPage: number
@@ -45,10 +42,7 @@ export function usePropertyPagination() {
 		const perPage = searchParams.get("perPage")
 		if (perPage) {
 			const parsedPerPage = parseInt(perPage)
-			if (
-				!isNaN(parsedPerPage) &&
-				parsedPerPage > 0
-			) {
+			if (!isNaN(parsedPerPage) && parsedPerPage > 0) {
 				newPagination.itemsPerPage = parsedPerPage
 			}
 		}
@@ -57,46 +51,31 @@ export function usePropertyPagination() {
 		setIsLoading(false)
 	}, [searchParams])
 
-	const updatePagination = (
-		updates: Partial<PaginationState>,
-	) => {
+	const updatePagination = (updates: Partial<PaginationState>) => {
 		try {
 			setIsLoading(true)
 			const updatedPagination = {
 				...pagination,
 				...updates,
 			}
-			const params = new URLSearchParams(
-				searchParams.toString(),
-			)
+			const params = new URLSearchParams(searchParams.toString())
 
 			// Update page parameter
 			if (updatedPagination.currentPage > 1) {
-				params.set(
-					"page",
-					updatedPagination.currentPage.toString(),
-				)
+				params.set("page", updatedPagination.currentPage.toString())
 			} else {
 				params.delete("page")
 			}
 
 			// Update items per page parameter
-			if (
-				updatedPagination.itemsPerPage !==
-				DEFAULT_PAGINATION.itemsPerPage
-			) {
-				params.set(
-					"perPage",
-					updatedPagination.itemsPerPage.toString(),
-				)
+			if (updatedPagination.itemsPerPage !== DEFAULT_PAGINATION.itemsPerPage) {
+				params.set("perPage", updatedPagination.itemsPerPage.toString())
 			} else {
 				params.delete("perPage")
 			}
 
 			const queryString = params.toString()
-			router.push(
-				queryString ? `?${queryString}` : "/",
-			)
+			router.push(queryString ? `?${queryString}` : "/")
 		} catch (err) {
 			toast.error("Failed to update pagination")
 			throw err
@@ -106,20 +85,14 @@ export function usePropertyPagination() {
 	}
 
 	const goToPage = (page: number) => {
-		if (
-			page < 1 ||
-			page > pagination.totalPages
-		) {
+		if (page < 1 || page > pagination.totalPages) {
 			return
 		}
 		updatePagination({ currentPage: page })
 	}
 
 	const goToNextPage = () => {
-		if (
-			pagination.currentPage <
-			pagination.totalPages
-		) {
+		if (pagination.currentPage < pagination.totalPages) {
 			goToPage(pagination.currentPage + 1)
 		}
 	}
@@ -130,9 +103,7 @@ export function usePropertyPagination() {
 		}
 	}
 
-	const updateItemsPerPage = (
-		itemsPerPage: number,
-	) => {
+	const updateItemsPerPage = (itemsPerPage: number) => {
 		if (itemsPerPage < 1) {
 			return
 		}
@@ -145,15 +116,11 @@ export function usePropertyPagination() {
 	const resetPagination = () => {
 		try {
 			setIsLoading(true)
-			const params = new URLSearchParams(
-				searchParams.toString(),
-			)
+			const params = new URLSearchParams(searchParams.toString())
 			params.delete("page")
 			params.delete("perPage")
 			const queryString = params.toString()
-			router.push(
-				queryString ? `?${queryString}` : "/",
-			)
+			router.push(queryString ? `?${queryString}` : "/")
 		} catch (err) {
 			toast.error("Failed to reset pagination")
 			throw err

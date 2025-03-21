@@ -189,6 +189,34 @@ export interface Database {
 					updated_at?: string
 				}
 			}
+			reviews: {
+				Row: {
+					id: string
+					property_id: string
+					user_id: string
+					rating: number
+					comment: string
+					created_at: string
+					updated_at: string
+				}
+				Insert: {
+					id?: string
+					property_id: string
+					user_id: string
+					rating: number
+					comment: string
+					created_at?: string
+					updated_at?: string
+				}
+				Update: {
+					id?: string
+					property_id?: string
+					user_id?: string
+					rating?: number
+					comment?: string
+					updated_at?: string
+				}
+			}
 		}
 		Views: {
 			[_ in never]: never
