@@ -20,6 +20,8 @@ interface ImageCarouselProps {
 	fullWidth?: boolean
 	currentIndex?: number
 	onIndexChange?: (index: number) => void
+	autoPlay?: boolean
+	interval?: number
 }
 
 const aspectRatioClasses = {
@@ -39,12 +41,25 @@ export function ImageCarousel({
 	className,
 	fullWidth = false,
 	currentIndex = 0,
-	onIndexChange
+	onIndexChange,
+	autoPlay = false,
+	interval = 5000
 }: ImageCarouselProps) {
 	const [localCurrentIndex, setLocalCurrentIndex] = React.useState(currentIndex)
 	const [isHovered, setIsHovered] = React.useState(false)
 
 	const activeIndex = onIndexChange ? currentIndex : localCurrentIndex
+
+	React.useEffect(() => {
+		if (!autoPlay || isHovered) return
+
+		const timer = setInterval(() => {
+			const newIndex = activeIndex < images.length - 1 ? activeIndex + 1 : 0
+			onIndexChange ? onIndexChange(newIndex) : setLocalCurrentIndex(newIndex)
+		}, interval)
+
+		return () => clearInterval(timer)
+	}, [autoPlay, interval, activeIndex, images.length, onIndexChange, isHovered])
 
 	const handleNext = (e: React.MouseEvent) => {
 		e.stopPropagation()

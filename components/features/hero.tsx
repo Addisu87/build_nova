@@ -5,29 +5,32 @@ import { ImageCarousel } from "@/components/ui/image-carousel"
 import { LoadingState } from "@/components/ui/loading-state"
 import { useAuth } from "@/contexts/auth-context"
 
+// Optimize image URLs with specific sizes and formats
 const heroImages = [
-	"https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&auto=format&fit=crop&q=80",
-	"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&auto=format&fit=crop&q=80",
-	"https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=1200&auto=format&fit=crop&q=80",
-	"https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=1200&auto=format&fit=crop&q=80",
+	"https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&w=2000&q=75",
+	"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&w=2000&q=75",
+	"https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&w=2000&q=75",
+	"https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&w=2000&q=75",
 ] as const
 
 export function Hero() {
 	const { isLoading } = useAuth()
 
 	if (isLoading) {
-		return <LoadingState type="map" height="h-[400px]" />
+		return <LoadingState type="hero" />
 	}
 
 	return (
 		<div className="relative">
 			<ImageCarousel
-				images={[...heroImages]} // Convert readonly array to regular array
+				images={[...heroImages]}
 				aspectRatio="hero"
 				className="h-[600px]"
-				priority
-				showControls={true} // Enable navigation controls
-				fullWidth={true} // Make it full width
+				priority={true}
+				showControls={true}
+				fullWidth={true}
+				autoPlay={true}
+				interval={6000}
 			/>
 			{/* Dark gradient overlay - left to right */}
 			<div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/20 pointer-events-none" />
