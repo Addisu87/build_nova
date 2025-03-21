@@ -13,6 +13,16 @@ const nextConfig = {
 				hostname: 'images.unsplash.com',
 				pathname: '/**',
 			},
+			{
+				protocol: 'https',
+				hostname: '*.cloudinary.com',
+				pathname: '/**',
+			},
+			{
+				protocol: 'https',
+				hostname: '*.githubusercontent.com',
+				pathname: '/**',
+			}
 		],
 	},
 }

@@ -44,7 +44,10 @@ export function PropertyCard({ property, variant = 'default' }: PropertyCardProp
         onMouseLeave={() => setIsHovered(false)}
       >
         {/* Image Carousel */}
-        <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg">
+        <div 
+          className="relative aspect-[4/3] overflow-hidden rounded-t-lg"
+          onClick={(e) => e.stopPropagation()}
+        >
           <ImageCarousel
             images={property.images}
             aspectRatio="property"
@@ -53,12 +56,17 @@ export function PropertyCard({ property, variant = 'default' }: PropertyCardProp
             interval={3000}
             currentIndex={currentImageIndex}
             onIndexChange={setCurrentImageIndex}
+            preventNavigation={true}
           />
           <Button
             variant="ghost"
             size="icon"
             className="favorite-btn absolute right-2 top-2 z-10 bg-white/80 hover:bg-white/90 dark:bg-gray-900/80 dark:hover:bg-gray-900/90"
-            onClick={handleFavoriteClick}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              handleFavoriteClick()
+            }}
           >
             <Heart
               className={`h-5 w-5 ${

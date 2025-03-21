@@ -22,6 +22,7 @@ interface ImageCarouselProps {
 	onIndexChange?: (index: number) => void
 	autoPlay?: boolean
 	interval?: number
+	preventNavigation?: boolean
 }
 
 const aspectRatioClasses = {
@@ -43,7 +44,8 @@ export function ImageCarousel({
 	currentIndex = 0,
 	onIndexChange,
 	autoPlay = false,
-	interval = 5000
+	interval = 5000,
+	preventNavigation = false
 }: ImageCarouselProps) {
 	const [localCurrentIndex, setLocalCurrentIndex] = React.useState(currentIndex)
 	const [isHovered, setIsHovered] = React.useState(false)
@@ -62,15 +64,23 @@ export function ImageCarousel({
 	}, [autoPlay, interval, activeIndex, images.length, onIndexChange, isHovered])
 
 	const handleNext = (e: React.MouseEvent) => {
+		e.preventDefault()
 		e.stopPropagation()
-		const newIndex = activeIndex < images.length - 1 ? activeIndex + 1 : activeIndex
+		const newIndex = activeIndex < images.length - 1 ? activeIndex + 1 : 0
 		onIndexChange ? onIndexChange(newIndex) : setLocalCurrentIndex(newIndex)
 	}
 
 	const handlePrevious = (e: React.MouseEvent) => {
+		e.preventDefault()
 		e.stopPropagation()
-		const newIndex = activeIndex > 0 ? activeIndex - 1 : activeIndex
+		const newIndex = activeIndex > 0 ? activeIndex - 1 : images.length - 1
 		onIndexChange ? onIndexChange(newIndex) : setLocalCurrentIndex(newIndex)
+	}
+
+	const handleDotClick = (e: React.MouseEvent, index: number) => {
+		e.preventDefault()
+		e.stopPropagation()
+		onIndexChange ? onIndexChange(index) : setLocalCurrentIndex(index)
 	}
 
 	const heightClass = fullWidth ? "h-[550px]" : "h-[400px]"
@@ -110,35 +120,31 @@ export function ImageCarousel({
 				/>
 			</div>
 
-			{showControls && (isHovered || images.length > 1) && (
+			{showControls && (
 				<>
 					{/* Navigation Buttons */}
-					{activeIndex > 0 && (
-						<button
-							onClick={handlePrevious}
-							className="absolute left-6 top-1/2 -translate-y-1/2 rounded-full bg-white p-2 shadow-md transition-transform hover:scale-105 focus:outline-none"
-						>
-							<ChevronLeft className="h-4 w-4" />
-						</button>
-					)}
-					{activeIndex < images.length - 1 && (
-						<button
-							onClick={handleNext}
-							className="absolute right-6 top-1/2 -translate-y-1/2 rounded-full bg-white p-2 shadow-md transition-transform hover:scale-105 focus:outline-none"
-						>
-							<ChevronRight className="h-4 w-4" />
-						</button>
-					)}
+					<button
+						onClick={handlePrevious}
+						className="absolute left-6 top-1/2 -translate-y-1/2 rounded-full bg-white p-2 shadow-md transition-transform hover:scale-105 focus:outline-none opacity-0 group-hover:opacity-100"
+					>
+						<ChevronLeft className="h-4 w-4" />
+					</button>
+					<button
+						onClick={handleNext}
+						className="absolute right-6 top-1/2 -translate-y-1/2 rounded-full bg-white p-2 shadow-md transition-transform hover:scale-105 focus:outline-none opacity-0 group-hover:opacity-100"
+					>
+						<ChevronRight className="h-4 w-4" />
+					</button>
 
 					{/* Dots Navigation */}
-					<div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
+					<div 
+						className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5"
+						onClick={preventNavigation ? (e) => e.stopPropagation() : undefined}
+					>
 						{images.map((_, index) => (
 							<button
 								key={index}
-								onClick={(e) => {
-									e.stopPropagation()
-									onIndexChange ? onIndexChange(index) : setLocalCurrentIndex(index)
-								}}
+								onClick={(e) => handleDotClick(e, index)}
 								className={cn(
 									"w-1.5 h-1.5 rounded-full transition-all duration-200",
 									activeIndex === index

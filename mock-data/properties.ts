@@ -18,12 +18,11 @@ export const mockProperties: PropertyRow[] = [
 		latitude: 37.7929,
 		longitude: -122.3971,
 		images: [
-			"https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&auto=format&fit=crop&q=60", // Main view
-			"https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&auto=format&fit=crop&q=60", // Living room
-			"https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?w=800&auto=format&fit=crop&q=60", // Kitchen
-			"https://images.unsplash.com/photo-1560448082-4d5eb87d6d4b?w=800&auto=format&fit=crop&q=60", // Bedroom
-			"https://images.unsplash.com/photo-1560448075-bb485b067938?w=800&auto=format&fit=crop&q=60", // Bathroom
-			"https://images.unsplash.com/photo-1560448087-cfe556c9035d?w=800&auto=format&fit=crop&q=60", // Balcony
+			"https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&auto=format&fit=crop&q=60", // Modern apartment exterior
+			"https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=800&auto=format&fit=crop&q=60", // Living room
+			"https://images.unsplash.com/photo-1556912172-45b7abe8b7e1?w=800&auto=format&fit=crop&q=60", // Kitchen
+			"https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=800&auto=format&fit=crop&q=60", // Bedroom
+			"https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800&auto=format&fit=crop&q=60"  // Bathroom
 		],
 		features: ["Open Floor Plan", "Hardwood Floors", "Stainless Steel Appliances"],
 		property_type: "apartment",
@@ -67,13 +66,12 @@ export const mockProperties: PropertyRow[] = [
 		latitude: 37.8060,
 		longitude: -122.4103,
 		images: [
-			"https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format&fit=crop&q=60", // Front view
-			"https://images.unsplash.com/photo-1576941089067-2de3c901e126?w=800&auto=format&fit=crop&q=60", // Back yard
-			"https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&auto=format&fit=crop&q=60", // Living room
-			"https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&auto=format&fit=crop&q=60", // Kitchen
-			"https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800&auto=format&fit=crop&q=60", // Master bedroom
-			"https://images.unsplash.com/photo-1600566752734-2a0cd66c42cb?w=800&auto=format&fit=crop&q=60", // Bathroom
-			"https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=800&auto=format&fit=crop&q=60", // Garden
+			"https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=800&auto=format&fit=crop&q=60", // House exterior
+			"https://images.unsplash.com/photo-1505691938895-1758d7feb511?w=800&auto=format&fit=crop&q=60", // Living room
+			"https://images.unsplash.com/photo-1556911220-bff31c812dba?w=800&auto=format&fit=crop&q=60", // Kitchen
+			"https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=800&auto=format&fit=crop&q=60", // Master bedroom
+			"https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800&auto=format&fit=crop&q=60", // Bathroom
+			"https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&auto=format&fit=crop&q=60"  // Backyard
 		],
 		features: ["Updated Kitchen", "Master Suite", "Large Backyard"],
 		property_type: "house",
@@ -117,13 +115,12 @@ export const mockProperties: PropertyRow[] = [
 		latitude: 37.8010,
 		longitude: -122.4194,
 		images: [
-			"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=60", // Exterior view
-			"https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=800&auto=format&fit=crop&q=60", // Living area
-			"https://images.unsplash.com/photo-1600607687101-e53f41cb1d50?w=800&auto=format&fit=crop&q=60", // Kitchen
-			"https://images.unsplash.com/photo-1600607686527-6fb886090705?w=800&auto=format&fit=crop&q=60", // Master bedroom
-			"https://images.unsplash.com/photo-1600607687644-c7171b42498d?w=800&auto=format&fit=crop&q=60", // Bathroom
-			"https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&auto=format&fit=crop&q=60", // View
-			"https://images.unsplash.com/photo-1600607688969-a5bfcd646154?w=800&auto=format&fit=crop&q=60", // Wine room
+			"https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&auto=format&fit=crop&q=60", // Luxury living room with city view
+			"https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=800&auto=format&fit=crop&q=60", // Modern kitchen
+			"https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=800&auto=format&fit=crop&q=60", // Panoramic windows
+			"https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&auto=format&fit=crop&q=60", // Master bedroom
+			"https://images.unsplash.com/photo-1552321554-5fefe8c9ef14?w=800&auto=format&fit=crop&q=60", // Luxury bathroom - NEW
+			"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=60"  // Building exterior
 		],
 		features: ["Floor-to-Ceiling Windows", "Custom Cabinetry", "Wine Cellar"],
 		property_type: "condo",

@@ -19,25 +19,27 @@ import { LayoutGrid } from "lucide-react"
 import { notFound } from "next/navigation"
 import { useEffect, useState } from "react"
 import PropertyDetailsLoading from "./loading"
+import { usePropertyManager } from "@/hooks/properties/use-property-manager"
 
 export default function PropertyDetailsPage({ params }: { params: { id: string } }) {
 	const [property, setProperty] = useState<Property | null>(null)
 	const [nearbyProperties, setNearbyProperties] = useState<Property[]>([])
 	const [currentImageIndex, setCurrentImageIndex] = useState(0)
 	const [isGalleryOpen, setIsGalleryOpen] = useState(false)
+	const { properties } = usePropertyManager()
 
 	useEffect(() => {
-		const found = mockProperties.find((p) => p.id === params.id)
+		const found = properties?.find((p) => p.id === params.id) || mockProperties.find((p) => p.id === params.id)
 		if (!found) {
 			notFound()
 		}
 		setProperty(found)
 
-		const nearby = mockProperties
+		const nearby = (properties || mockProperties)
 			.filter((p) => p.id !== params.id && isNearby(found, p))
 			.slice(0, 10)
-		setNearbyProperties(nearby as Property[])
-	}, [params.id])
+		setNearbyProperties(nearby)
+	}, [params.id, properties])
 
 	if (!property) {
 		return <PropertyDetailsLoading />

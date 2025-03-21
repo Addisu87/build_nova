@@ -5,7 +5,8 @@ import { createPriceMarker } from '@/lib/mapbox'
 import type { Property } from '@/types'
 
 interface PropertyMapProps {
-  property?: Property
+  properties?: Property[]
+  property?: Property // for single property view
   nearbyProperties?: Property[]
   center?: [number, number]
   zoom?: number
@@ -15,6 +16,7 @@ interface PropertyMapProps {
 }
 
 export function PropertyMap({
+  properties,
   property,
   nearbyProperties = [],
   center,
@@ -53,7 +55,7 @@ export function PropertyMap({
     }
   }, [])
 
-  // Handle markers
+  // Update markers
   useEffect(() => {
     if (!map.current) return
 
@@ -61,46 +63,30 @@ export function PropertyMap({
     markers.current.forEach(marker => marker.remove())
     markers.current = []
 
-    // Add main property marker if it exists
-    if (property) {
-      const mainMarker = new mapboxgl.Marker({
-        element: createPriceMarker(property.price, true)
-      })
-        .setLngLat([property.longitude, property.latitude])
-        .addTo(map.current)
+    const allProperties = properties || (property ? [property, ...nearbyProperties] : [])
 
-      if (onMarkerClick) {
-        mainMarker.getElement().addEventListener('click', () => {
-          onMarkerClick(property.id)
-        })
-      }
-
-      markers.current.push(mainMarker)
-    }
-
-    // Add nearby properties markers
-    nearbyProperties.forEach(nearbyProperty => {
+    // Add markers for all properties
+    allProperties.forEach(prop => {
+      const isMain = prop.id === property?.id
       const marker = new mapboxgl.Marker({
-        element: createPriceMarker(nearbyProperty.price, false)
+        element: createPriceMarker(prop.price, isMain)
       })
-        .setLngLat([nearbyProperty.longitude, nearbyProperty.latitude])
+        .setLngLat([prop.longitude, prop.latitude])
         .addTo(map.current!)
 
       if (onMarkerClick) {
         marker.getElement().addEventListener('click', () => {
-          onMarkerClick(nearbyProperty.id)
+          onMarkerClick(prop.id)
         })
       }
 
       markers.current.push(marker)
     })
 
-    // Fit bounds to include all markers if there are multiple properties
-    if (property && nearbyProperties.length > 0) {
+    // Fit bounds to include all properties
+    if (allProperties.length > 0) {
       const bounds = new mapboxgl.LngLatBounds()
-      bounds.extend([property.longitude, property.latitude])
-      
-      nearbyProperties.forEach(prop => {
+      allProperties.forEach(prop => {
         bounds.extend([prop.longitude, prop.latitude])
       })
 
@@ -109,7 +95,7 @@ export function PropertyMap({
         maxZoom: 14
       })
     }
-  }, [property, nearbyProperties, onMarkerClick])
+  }, [properties, property, nearbyProperties, onMarkerClick])
 
   return (
     <div 
@@ -117,4 +103,19 @@ export function PropertyMap({
       className={`w-full ${height} rounded-lg overflow-hidden`}
     />
   )
+}
+
+function calculateCenter(properties: Property[]): [number, number] {
+  const total = properties.reduce(
+    (acc, prop) => ({
+      lat: acc.lat + prop.latitude,
+      lng: acc.lng + prop.longitude
+    }),
+    { lat: 0, lng: 0 }
+  )
+
+  return [
+    total.lng / properties.length,
+    total.lat / properties.length
+  ]
 }
