@@ -1,6 +1,6 @@
-import { useState } from "react"
-import { toast } from "react-hot-toast"
-import { supabase } from "@/lib/supabase/client"
+import { supabase } from "@/lib/supabase/client";
+import { useState } from "react";
+import { toast } from "react-hot-toast";
 
 interface ImageUploadResult {
 	url: string
@@ -8,14 +8,10 @@ interface ImageUploadResult {
 }
 
 export function usePropertyImages() {
-	const [isUploading, setIsUploading] =
-		useState(false)
-	const [error, setError] =
-		useState<Error | null>(null)
+	const [isUploading, setIsUploading] = useState(false)
+	const [error, setError] = useState<Error | null>(null)
 
-	const uploadImage = async (
-		file: File,
-	): Promise<ImageUploadResult> => {
+	const uploadImage = async (file: File): Promise<ImageUploadResult> => {
 		try {
 			setIsUploading(true)
 			setError(null)
@@ -27,23 +23,18 @@ export function usePropertyImages() {
 
 			// Validate file size (max 5MB)
 			if (file.size > 5 * 1024 * 1024) {
-				throw new Error(
-					"File size must be less than 5MB",
-				)
+				throw new Error("File size must be less than 5MB")
 			}
 
 			// Generate a unique file name
 			const fileExt = file.name.split(".").pop()
-			const fileName = `${Math.random()
-				.toString(36)
-				.substring(2)}.${fileExt}`
+			const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`
 			const filePath = `property-images/${fileName}`
 
 			// Upload file to Supabase Storage
-			const { error: uploadError, data } =
-				await supabase.storage
-					.from("properties")
-					.upload(filePath, file)
+			const { error: uploadError, data } = await supabase.storage
+				.from("properties")
+				.upload(filePath, file)
 
 			if (uploadError) {
 				throw uploadError
@@ -52,20 +43,14 @@ export function usePropertyImages() {
 			// Get the public URL
 			const {
 				data: { publicUrl },
-			} = supabase.storage
-				.from("properties")
-				.getPublicUrl(filePath)
+			} = supabase.storage.from("properties").getPublicUrl(filePath)
 
 			return {
 				url: publicUrl,
 				path: filePath,
 			}
 		} catch (err) {
-			setError(
-				err instanceof Error
-					? err
-					: new Error("Failed to upload image"),
-			)
+			setError(err instanceof Error ? err : new Error("Failed to upload image"))
 			toast.error("Failed to upload image")
 			throw err
 		} finally {
@@ -73,17 +58,14 @@ export function usePropertyImages() {
 		}
 	}
 
-	const deleteImage = async (
-		path: string,
-	): Promise<void> => {
+	const deleteImage = async (path: string): Promise<void> => {
 		try {
 			setIsUploading(true)
 			setError(null)
 
-			const { error: deleteError } =
-				await supabase.storage
-					.from("properties")
-					.remove([path])
+			const { error: deleteError } = await supabase.storage
+				.from("properties")
+				.remove([path])
 
 			if (deleteError) {
 				throw deleteError
@@ -91,11 +73,7 @@ export function usePropertyImages() {
 
 			toast.success("Image deleted successfully")
 		} catch (err) {
-			setError(
-				err instanceof Error
-					? err
-					: new Error("Failed to delete image"),
-			)
+			setError(err instanceof Error ? err : new Error("Failed to delete image"))
 			toast.error("Failed to delete image")
 			throw err
 		} finally {
@@ -103,27 +81,17 @@ export function usePropertyImages() {
 		}
 	}
 
-	const uploadMultipleImages = async (
-		files: File[],
-	): Promise<ImageUploadResult[]> => {
+	const uploadMultipleImages = async (files: File[]): Promise<ImageUploadResult[]> => {
 		try {
 			setIsUploading(true)
 			setError(null)
 
-			const uploadPromises = files.map((file) =>
-				uploadImage(file),
-			)
-			const results = await Promise.all(
-				uploadPromises,
-			)
+			const uploadPromises = files.map((file) => uploadImage(file))
+			const results = await Promise.all(uploadPromises)
 
 			return results
 		} catch (err) {
-			setError(
-				err instanceof Error
-					? err
-					: new Error("Failed to upload images"),
-			)
+			setError(err instanceof Error ? err : new Error("Failed to upload images"))
 			toast.error("Failed to upload images")
 			throw err
 		} finally {
@@ -131,17 +99,14 @@ export function usePropertyImages() {
 		}
 	}
 
-	const deleteMultipleImages = async (
-		paths: string[],
-	): Promise<void> => {
+	const deleteMultipleImages = async (paths: string[]): Promise<void> => {
 		try {
 			setIsUploading(true)
 			setError(null)
 
-			const { error: deleteError } =
-				await supabase.storage
-					.from("properties")
-					.remove(paths)
+			const { error: deleteError } = await supabase.storage
+				.from("properties")
+				.remove(paths)
 
 			if (deleteError) {
 				throw deleteError
@@ -149,11 +114,7 @@ export function usePropertyImages() {
 
 			toast.success("Images deleted successfully")
 		} catch (err) {
-			setError(
-				err instanceof Error
-					? err
-					: new Error("Failed to delete images"),
-			)
+			setError(err instanceof Error ? err : new Error("Failed to delete images"))
 			toast.error("Failed to delete images")
 			throw err
 		} finally {
