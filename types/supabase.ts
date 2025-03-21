@@ -27,7 +27,6 @@ export interface Database {
 					latitude: number
 					longitude: number
 					images: string[]
-					imageUrl: string
 					features: string[]
 					amenities: string[]
 					year_built: number

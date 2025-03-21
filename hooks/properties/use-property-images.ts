@@ -1,6 +1,6 @@
-import { supabase } from "@/lib/supabase/client";
-import { useState } from "react";
-import { toast } from "react-hot-toast";
+import { supabase } from "@/lib/supabase/client"
+import { useState } from "react"
+import { toast } from "sonner"
 
 interface ImageUploadResult {
 	url: string

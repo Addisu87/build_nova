@@ -45,7 +45,6 @@ export interface Property {
 	longitude: number
 	images: string[]
 	features: string[]
-	imageUrl: string
 	status: PropertyStatus
 	property_type: PropertyType
 	amenities: string[]

@@ -1,9 +1,8 @@
 "use client"
 
-import { useAuth } from "@/contexts/auth-context"
-import { usePropertyForm } from "@/hooks/properties/use-property-form"
-import { PropertyForm } from "@/components/properties/property-form"
+import { PropertyForm } from "@/components/features/properties/property-form"
 import { LoadingState } from "@/components/ui/loading-state"
+import { useAuth } from "@/contexts/auth-context"
 
 export default function NewPropertyPage() {
 	const { isLoading } = useAuth()
