@@ -1,3 +1,5 @@
+import { Database } from "./supabase"
+
 // Property Status and Types
 export type PropertyStatus = "for-sale" | "for-rent" | "sold" | "pending"
 
@@ -142,9 +144,15 @@ export const PROPERTY_TYPES: Record<PropertyType, string> = {
 	LAND: "Land",
 	FARM: "Farm",
 	FLAT: "Flat",
+	STUDIO: "Studio",
+	HOTEL: "Hotel",
+	MEDICAL: "Medical",
+	RESTAURANT: "Restaurant",
+	STORAGE: "Storage",
 	COMMERCIAL: "Commercial",
 	INDUSTRIAL: "Industrial",
 	VACATION_RENTAL: "Vacation Rental",
+	MIXED_USE: "Mixed use",
 	OTHER: "Other",
 } as const
 

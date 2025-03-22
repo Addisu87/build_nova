@@ -1,23 +1,26 @@
 "use client"
 
-import { PropertyListing } from "@/components/features/properties/property-listing"
 import { Hero } from "@/components/features/hero"
-import { mockProperties } from "@/mock-data/properties"
+import { PropertyListing } from "@/components/features/properties/property-listing"
+import { usePropertyManager } from "@/hooks/properties/use-property-manager"
 
 export default function HomePage() {
+	const { properties } = usePropertyManager()
+
 	return (
 		<div className="min-h-screen bg-background">
 			<main>
-				{/* Hero Section */}
 				<section>
 					<Hero />
 				</section>
 
-				{/* Properties Grid Section */}
 				<section className="container mx-auto px-4 py-16">
 					<PropertyListing
 						title="Latest Properties"
-						initialProperties={mockProperties}
+						initialProperties={properties || []}
+						pageSize={12}
+						viewType="grid"
+						showFilters={true}
 					/>
 				</section>
 			</main>

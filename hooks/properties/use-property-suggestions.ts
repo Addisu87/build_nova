@@ -1,21 +1,12 @@
-import {
-	useState,
-	useEffect,
-	useCallback,
-} from "react"
-import { toast } from "react-hot-toast"
-import { Database } from "@/types/supabase"
 import { supabase } from "@/lib/supabase/db"
+import { useCallback, useEffect, useState } from "react"
+import { toast } from "sonner"
 import { useDebounce } from "./use-debounce"
 
 interface Suggestion {
 	id: string
 	text: string
-	type:
-		| "location"
-		| "property_type"
-		| "feature"
-		| "amenity"
+	type: "location" | "property_type" | "feature" | "amenity"
 	count: number
 }
 
@@ -32,13 +23,9 @@ const MAX_SUGGESTIONS = 5
 
 export function usePropertySuggestions() {
 	const [query, setQuery] = useState("")
-	const [suggestions, setSuggestions] = useState<
-		Suggestion[]
-	>([])
-	const [isLoading, setIsLoading] =
-		useState(false)
-	const [cache, setCache] =
-		useState<SuggestionCache>({})
+	const [suggestions, setSuggestions] = useState<Suggestion[]>([])
+	const [isLoading, setIsLoading] = useState(false)
+	const [cache, setCache] = useState<SuggestionCache>({})
 	const debouncedQuery = useDebounce(query, 300)
 
 	const fetchSuggestions = useCallback(
@@ -50,11 +37,7 @@ export function usePropertySuggestions() {
 
 			// Check cache first
 			const cached = cache[searchQuery]
-			if (
-				cached &&
-				Date.now() - cached.timestamp <
-					CACHE_DURATION
-			) {
+			if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
 				setSuggestions(cached.suggestions)
 				return
 			}
@@ -63,10 +46,7 @@ export function usePropertySuggestions() {
 				setIsLoading(true)
 
 				// Fetch location suggestions
-				const {
-					data: locations,
-					error: locationError,
-				} = await supabase
+				const { data: locations, error: locationError } = await supabase
 					.from("locations")
 					.select("*")
 					.ilike("name", `%${searchQuery}%`)
@@ -77,10 +57,7 @@ export function usePropertySuggestions() {
 				}
 
 				// Fetch property type suggestions
-				const {
-					data: propertyTypes,
-					error: propertyTypeError,
-				} = await supabase
+				const { data: propertyTypes, error: propertyTypeError } = await supabase
 					.from("property_types")
 					.select("*")
 					.ilike("name", `%${searchQuery}%`)
@@ -91,10 +68,7 @@ export function usePropertySuggestions() {
 				}
 
 				// Fetch feature suggestions
-				const {
-					data: features,
-					error: featureError,
-				} = await supabase
+				const { data: features, error: featureError } = await supabase
 					.from("features")
 					.select("*")
 					.ilike("name", `%${searchQuery}%`)
@@ -105,10 +79,7 @@ export function usePropertySuggestions() {
 				}
 
 				// Fetch amenity suggestions
-				const {
-					data: amenities,
-					error: amenityError,
-				} = await supabase
+				const { data: amenities, error: amenityError } = await supabase
 					.from("amenities")
 					.select("*")
 					.ilike("name", `%${searchQuery}%`)
@@ -119,47 +90,37 @@ export function usePropertySuggestions() {
 				}
 
 				// Combine and format suggestions
-				const formattedSuggestions: Suggestion[] =
-					[
-						...(locations || []).map((loc) => ({
-							id: loc.id,
-							text: loc.name,
-							type: "location" as const,
-							count: loc.property_count || 0,
-						})),
-						...(propertyTypes || []).map(
-							(type) => ({
-								id: type.id,
-								text: type.name,
-								type: "property_type" as const,
-								count: type.property_count || 0,
-							}),
-						),
-						...(features || []).map(
-							(feature) => ({
-								id: feature.id,
-								text: feature.name,
-								type: "feature" as const,
-								count:
-									feature.property_count || 0,
-							}),
-						),
-						...(amenities || []).map(
-							(amenity) => ({
-								id: amenity.id,
-								text: amenity.name,
-								type: "amenity" as const,
-								count:
-									amenity.property_count || 0,
-							}),
-						),
-					]
+				const formattedSuggestions: Suggestion[] = [
+					...(locations || []).map((loc) => ({
+						id: loc.id,
+						text: loc.name,
+						type: "location" as const,
+						count: loc.property_count || 0,
+					})),
+					...(propertyTypes || []).map((type) => ({
+						id: type.id,
+						text: type.name,
+						type: "property_type" as const,
+						count: type.property_count || 0,
+					})),
+					...(features || []).map((feature) => ({
+						id: feature.id,
+						text: feature.name,
+						type: "feature" as const,
+						count: feature.property_count || 0,
+					})),
+					...(amenities || []).map((amenity) => ({
+						id: amenity.id,
+						text: amenity.name,
+						type: "amenity" as const,
+						count: amenity.property_count || 0,
+					})),
+				]
 
 				// Sort by count and limit total suggestions
-				const sortedSuggestions =
-					formattedSuggestions
-						.sort((a, b) => b.count - a.count)
-						.slice(0, MAX_SUGGESTIONS)
+				const sortedSuggestions = formattedSuggestions
+					.sort((a, b) => b.count - a.count)
+					.slice(0, MAX_SUGGESTIONS)
 
 				// Update cache
 				setCache((prev) => ({
@@ -172,10 +133,7 @@ export function usePropertySuggestions() {
 
 				setSuggestions(sortedSuggestions)
 			} catch (err) {
-				console.error(
-					"Failed to fetch suggestions:",
-					err,
-				)
+				console.error("Failed to fetch suggestions:", err)
 				toast.error("Failed to load suggestions")
 			} finally {
 				setIsLoading(false)
@@ -193,24 +151,16 @@ export function usePropertySuggestions() {
 		setQuery("")
 	}
 
-	const getSuggestionsByType = (
-		type: Suggestion["type"],
-	) => {
-		return suggestions.filter(
-			(suggestion) => suggestion.type === type,
-		)
+	const getSuggestionsByType = (type: Suggestion["type"]) => {
+		return suggestions.filter((suggestion) => suggestion.type === type)
 	}
 
-	const getTopSuggestions = (
-		limit: number = MAX_SUGGESTIONS,
-	) => {
+	const getTopSuggestions = (limit: number = MAX_SUGGESTIONS) => {
 		return suggestions.slice(0, limit)
 	}
 
 	const getPopularSuggestions = () => {
-		return suggestions
-			.sort((a, b) => b.count - a.count)
-			.slice(0, MAX_SUGGESTIONS)
+		return suggestions.sort((a, b) => b.count - a.count).slice(0, MAX_SUGGESTIONS)
 	}
 
 	return {

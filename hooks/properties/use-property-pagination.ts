@@ -17,16 +17,31 @@ const DEFAULT_PAGINATION: PaginationState = {
 	itemsPerPage: 12,
 }
 
-export function usePropertyPagination() {
+interface UsePropertyPaginationProps {
+	items?: any[]
+	defaultItemsPerPage?: number
+}
+
+export function usePropertyPagination({ 
+	items = [], 
+	defaultItemsPerPage = 12 
+}: UsePropertyPaginationProps = {}) {
 	const router = useRouter()
 	const searchParams = useSearchParams()
 	const { isLoading } = useAuth()
-	const [pagination, setPagination] = useState<PaginationState>(DEFAULT_PAGINATION)
+	const [pagination, setPagination] = useState<PaginationState>({
+		...DEFAULT_PAGINATION,
+		itemsPerPage: defaultItemsPerPage,
+		totalItems: items.length,
+		totalPages: Math.ceil(items.length / defaultItemsPerPage)
+	})
 
 	useEffect(() => {
 		// Parse search params into pagination state
 		const newPagination: PaginationState = {
-			...DEFAULT_PAGINATION,
+			...pagination,
+			totalItems: items.length,
+			totalPages: Math.ceil(items.length / pagination.itemsPerPage)
 		}
 
 		// Current page
@@ -34,7 +49,7 @@ export function usePropertyPagination() {
 		if (page) {
 			const parsedPage = parseInt(page)
 			if (!isNaN(parsedPage) && parsedPage > 0) {
-				newPagination.currentPage = parsedPage
+				newPagination.currentPage = Math.min(parsedPage, newPagination.totalPages)
 			}
 		}
 
@@ -44,16 +59,15 @@ export function usePropertyPagination() {
 			const parsedPerPage = parseInt(perPage)
 			if (!isNaN(parsedPerPage) && parsedPerPage > 0) {
 				newPagination.itemsPerPage = parsedPerPage
+				newPagination.totalPages = Math.ceil(items.length / parsedPerPage)
 			}
 		}
 
 		setPagination(newPagination)
-		setIsLoading(false)
-	}, [searchParams])
+	}, [searchParams, items])
 
 	const updatePagination = (updates: Partial<PaginationState>) => {
 		try {
-			setIsLoading(true)
 			const updatedPagination = {
 				...pagination,
 				...updates,
@@ -75,12 +89,10 @@ export function usePropertyPagination() {
 			}
 
 			const queryString = params.toString()
-			router.push(queryString ? `?${queryString}` : "/")
+			router.push(queryString ? `?${queryString}` : window.location.pathname)
 		} catch (err) {
 			toast.error("Failed to update pagination")
 			throw err
-		} finally {
-			setIsLoading(false)
 		}
 	}
 
@@ -109,34 +121,58 @@ export function usePropertyPagination() {
 		}
 		updatePagination({
 			itemsPerPage,
-			currentPage: 1, // Reset to first page when changing items per page
+			currentPage: 1,
+			totalPages: Math.ceil(pagination.totalItems / itemsPerPage)
 		})
 	}
 
 	const resetPagination = () => {
 		try {
-			setIsLoading(true)
 			const params = new URLSearchParams(searchParams.toString())
 			params.delete("page")
 			params.delete("perPage")
 			const queryString = params.toString()
-			router.push(queryString ? `?${queryString}` : "/")
+			router.push(queryString ? `?${queryString}` : window.location.pathname)
 		} catch (err) {
 			toast.error("Failed to reset pagination")
 			throw err
-		} finally {
-			setIsLoading(false)
 		}
+	}
+
+	// Calculate paginated items
+	const startIndex = (pagination.currentPage - 1) * pagination.itemsPerPage
+	const endIndex = startIndex + pagination.itemsPerPage
+	const paginatedItems = items.slice(startIndex, endIndex)
+
+	// Generate page numbers for pagination display
+	const getPageNumbers = () => {
+		const totalPages = pagination.totalPages
+		const currentPage = pagination.currentPage
+		let pages: (number | string)[] = []
+
+		if (totalPages <= 7) {
+			pages = Array.from({ length: totalPages }, (_, i) => i + 1)
+		} else {
+			if (currentPage <= 3) {
+				pages = [1, 2, 3, 4, '...', totalPages - 1, totalPages]
+			} else if (currentPage >= totalPages - 2) {
+				pages = [1, 2, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages]
+			} else {
+				pages = [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages]
+			}
+		}
+		return pages
 	}
 
 	return {
 		pagination,
+		paginatedItems,
 		isLoading,
-		updatePagination,
 		goToPage,
 		goToNextPage,
 		goToPreviousPage,
 		updateItemsPerPage,
 		resetPagination,
+		getPageNumbers
 	}
 }
