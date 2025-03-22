@@ -1,5 +1,6 @@
 "use client"
 
+import { LoadingState } from "@/components/ui/loading-state"
 import {
 	Pagination,
 	PaginationContent,
@@ -8,22 +9,24 @@ import {
 	PaginationLink,
 	PaginationNext,
 	PaginationPrevious,
-} from "@/components/ui/pagination";
-import { useAuth } from "@/contexts/auth-context";
-import { usePropertyPagination } from "@/hooks/properties/use-property-pagination";
-import { mockProperties } from "@/mock-data/properties";
-import { PropertyFilters } from "@/types";
-import { useEffect, useState } from "react";
-import { PropertyFilters as PropertyFiltersComponent } from "./property-filters";
-import { PropertiesGrid } from "./property-grid";
-import { PropertyMap } from "./property-map";
-import { ViewToggle } from "./view-toggle";
+} from "@/components/ui/pagination"
+import { useAuth } from "@/contexts/auth-context"
+import { usePropertyManager } from "@/hooks/properties/use-property-manager"
+import { usePropertyPagination } from "@/hooks/properties/use-property-pagination"
+import { PropertyFilters } from "@/types"
+import { useCallback, useEffect, useState } from "react"
+import { PropertyFilters as PropertyFiltersComponent } from "./property-filters"
+import { PropertiesGrid } from "./property-grid"
+import { PropertyMap } from "./property-map"
+import { ViewToggle } from "./view-toggle"
 
 interface PropertyListingProps {
 	title?: string
 	viewType?: "grid" | "map"
 	showFilters?: boolean
 	pageSize?: number
+	initialFilters?: PropertyFilters
+	listingType?: "buy" | "rent"
 }
 
 export function PropertyListing({
@@ -31,13 +34,20 @@ export function PropertyListing({
 	viewType = "grid",
 	showFilters = true,
 	pageSize = 12,
+	initialFilters = {},
+	listingType,
 }: PropertyListingProps) {
 	const { user } = useAuth()
 	const [currentView, setCurrentView] = useState<"grid" | "map">(viewType)
-	const [properties] = useState(mockProperties)
-	const [filteredProperties, setFilteredProperties] = useState(properties)
-	const [filters, setFilters] = useState<PropertyFilters>({})
+	const [filters, setFilters] = useState<PropertyFilters>(initialFilters)
 
+	// Use the property manager hook to handle data fetching and filtering
+	const { properties, isLoading, isError } = usePropertyManager({
+		...filters,
+		listingType,
+	})
+
+	// Use pagination hook with the properties from the manager
 	const {
 		pagination,
 		paginatedItems,
@@ -47,58 +57,18 @@ export function PropertyListing({
 		getPageNumbers,
 		resetPagination,
 	} = usePropertyPagination({
-		items: filteredProperties,
+		items: properties || [],
 		defaultItemsPerPage: pageSize,
 	})
 
-	const applyFilters = (filters: PropertyFilters) => {
-		let filtered = [...properties]
-
-		if (filters.minPrice) {
-			filtered = filtered.filter((property) => property.price >= filters.min_price!)
-		}
-
-		if (filters.maxPrice) {
-			filtered = filtered.filter((property) => property.price <= filters.max_price!)
-		}
-
-		if (filters.bedrooms) {
-			filtered = filtered.filter((property) => property.bedrooms >= filters.bedrooms!)
-		}
-
-		if (filters.bathrooms) {
-			filtered = filtered.filter((property) => property.bathrooms >= filters.bathrooms!)
-		}
-
-		if (filters.property_type) {
-			filtered = filtered.filter(
-				(property) => property.property_type === filters.property_type,
-			)
-		}
-
-		if (filters.location) {
-			const searchTerm = filters.location.toLowerCase()
-			filtered = filtered.filter(
-				(property) =>
-					property.city?.toLowerCase().includes(searchTerm) ||
-					property.state?.toLowerCase().includes(searchTerm) ||
-					property.zip_code?.toLowerCase().includes(searchTerm),
-			)
-		}
-
-		setFilteredProperties(filtered)
-		resetPagination()
-	}
-
-	const handleFiltersChange = (newFilters: PropertyFilters) => {
+	const handleFiltersChange = useCallback((newFilters: PropertyFilters) => {
 		setFilters(newFilters)
-		applyFilters(newFilters)
-	}
-
-	// Initial filter application
-	useEffect(() => {
-		applyFilters(filters)
 	}, [])
+
+	// Reset pagination when filters or properties change
+	useEffect(() => {
+		resetPagination()
+	}, [filters, properties, resetPagination])
 
 	return (
 		<div className="space-y-8">
@@ -116,12 +86,22 @@ export function PropertyListing({
 				</div>
 			</div>
 
-			<div>
-				{currentView === "grid" ? (
-					<div className="space-y-8">
-						<PropertiesGrid properties={paginatedItems} />
+			{isLoading ? (
+				<div className="flex justify-center py-12">
+					<LoadingState type="properties" />
+				</div>
+			) : isError ? (
+				<div className="text-center py-8">
+					<p className="text-red-500">
+						Error loading properties. Please try again later.
+					</p>
+				</div>
+			) : properties && properties.length > 0 ? (
+				<div>
+					{currentView === "grid" ? (
+						<div className="space-y-8">
+							<PropertiesGrid properties={paginatedItems} />
 
-						{filteredProperties.length > 0 && (
 							<Pagination>
 								<PaginationContent>
 									<PaginationItem>
@@ -145,6 +125,7 @@ export function PropertyListing({
 												<PaginationLink
 													onClick={() => goToPage(page as number)}
 													isActive={pagination.currentPage === page}
+													className="cursor-pointer"
 												>
 													{page}
 												</PaginationLink>
@@ -164,18 +145,16 @@ export function PropertyListing({
 									</PaginationItem>
 								</PaginationContent>
 							</Pagination>
-						)}
-
-						{filteredProperties.length === 0 && (
-							<div className="text-center py-8">
-								<p className="text-gray-500">No properties match your filters</p>
-							</div>
-						)}
-					</div>
-				) : (
-					<PropertyMap properties={filteredProperties} />
-				)}
-			</div>
+						</div>
+					) : (
+						<PropertyMap properties={properties} />
+					)}
+				</div>
+			) : (
+				<div className="text-center py-8">
+					<p className="text-gray-500">No properties match your filters</p>
+				</div>
+			)}
 		</div>
 	)
 }

@@ -2,38 +2,114 @@
 
 import { SearchBar } from "@/components/layout/search-bar"
 import { ImageCarousel } from "@/components/ui/image-carousel"
-import { LoadingState } from "@/components/ui/loading-state"
+import { Skeleton } from "@/components/ui/skeleton"
 import { useAuth } from "@/contexts/auth-context"
-
-// Optimize image URLs with specific sizes and formats
-const heroImages = [
-	"https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&w=2000&q=75",
-	"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&w=2000&q=75",
-	"https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&w=2000&q=75",
-	"https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&w=2000&q=75",
-] as const
+import { supabase } from "@/lib/supabase/client"
+import { useEffect, useState } from "react"
 
 export function Hero() {
-	const { isLoading } = useAuth()
+	const { isLoading: authIsLoading } = useAuth()
+	const [heroImages, setHeroImages] = useState<string[]>([])
+	const [isLoading, setIsLoading] = useState(true)
+	const [error, setError] = useState<Error | null>(null)
 
-	if (isLoading) {
-		return <LoadingState type="hero" />
+	useEffect(() => {
+		const fetchHeroImages = async () => {
+			try {
+				setIsLoading(true)
+				setError(null)
+
+				// Fetch file names from 'hero' folder in 'images' bucket
+				const { data: files, error: listError } = await supabase.storage
+					.from("images")
+					.list("hero", {
+						limit: 100,
+						sortBy: { column: "created_at", order: "desc" },
+					})
+
+				console.log("List response from 'hero':", { files, listError })
+
+				if (listError) {
+					console.error("List error:", listError)
+					throw listError
+				}
+
+				if (!files || files.length === 0) {
+					console.warn("No files found in images/hero/")
+					setHeroImages([])
+					return
+				}
+
+				// Base URL for hardcoded pattern
+				const baseUrl =
+					"https://sinvgquzrvfrusjtwzdf.supabase.co/storage/v1/object/public/images/hero/"
+
+				// Extract file names and construct URLs using the hardcoded pattern
+				const imageUrls = files
+					.filter((file) => /\.(jpg|jpeg|png|gif|avif)$/i.test(file.name))
+					.map((file) => {
+						const url = `${baseUrl}${file.name}`
+						console.log(`Constructed URL for ${file.name}:`, url)
+						return url
+					})
+
+				setHeroImages(imageUrls)
+			} catch (err) {
+				console.error("Error fetching hero images:", err)
+				setError(err instanceof Error ? err : new Error("Failed to fetch hero images"))
+				setHeroImages([])
+			} finally {
+				setIsLoading(false)
+			}
+		}
+
+		fetchHeroImages()
+	}, [])
+
+	if (authIsLoading || isLoading) {
+		return (
+			<div className="relative h-[600px] w-full">
+				<Skeleton className="absolute inset-0 rounded-none" />
+			</div>
+		)
+	}
+
+	if (error) {
+		return (
+			<div className="h-[600px] bg-gray-100 flex flex-col justify-center items-center">
+				<p className="text-red-500">Error loading hero images: {error.message}</p>
+				<button
+					onClick={() => window.location.reload()} // Simple retry via page reload
+					className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+				>
+					Retry
+				</button>
+			</div>
+		)
 	}
 
 	return (
 		<div className="relative">
-			<ImageCarousel
-				images={[...heroImages]}
-				aspectRatio="hero"
-				className="h-[600px]"
-				priority={true}
-				showControls={true}
-				fullWidth={true}
-				autoPlay={true}
-				interval={6000}
-			/>
-			{/* Dark gradient overlay - left to right */}
+			{heroImages.length > 0 ? (
+				<ImageCarousel
+					images={heroImages}
+					aspectRatio="hero"
+					className="h-[600px]"
+					priority={true}
+					showControls={true}
+					fullWidth={true}
+					autoPlay={true}
+					interval={6000}
+				/>
+			) : (
+				<div className="h-[600px] bg-gray-100 flex justify-center items-center">
+					<p className="text-gray-500">No hero images available</p>
+				</div>
+			)}
+
+			{/* Dark gradient overlay */}
 			<div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/20 pointer-events-none" />
+
 			{/* Content container */}
 			<div className="absolute inset-0 container mx-auto px-4">
 				<div className="h-full flex flex-col justify-center max-w-2xl">

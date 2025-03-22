@@ -1,32 +1,48 @@
 import { Skeleton } from "./skeleton"
 
 interface LoadingStateProps {
-	type?: "default" | "profile" | "property" | "properties" | "hero" | "map"
+	type?:
+		| "default"
+		| "profile"
+		| "property"
+		| "properties"
+		| "hero"
+		| "map"
 	className?: string
 	height?: string
 }
 
-export function LoadingState({ 
-	type = "default", 
+export function LoadingState({
+	type = "default",
 	className,
-	height = "h-[300px]"
+	height = "h-[300px]",
 }: LoadingStateProps) {
 	if (type === "map") {
 		return (
 			<div className="w-full rounded-lg overflow-hidden">
-				<Skeleton className={className || "h-[600px] w-full"} />
+				<Skeleton
+					className={
+						className || "h-[600px] w-full"
+					}
+				/>
 			</div>
 		)
 	}
 
 	if (type === "hero") {
 		return (
-			<div className="relative h-[500px] w-full overflow-hidden rounded-lg">
-				<Skeleton className="h-full w-full" />
-				<div className="absolute inset-0 p-8 md:p-12 lg:p-16 flex flex-col justify-center">
-					<Skeleton className="h-12 w-3/4 mb-4" />
-					<Skeleton className="h-6 w-1/2 mb-8" />
-					<Skeleton className="h-14 w-full max-w-2xl" />
+			<div className="relative animate-pulse">
+				<div className="min-h-[50vh] md:min-h-[75vh] bg-gray-300 w-full"></div>
+				<div className="absolute inset-0 bg-gradient-to-r from-gray-700/70 to-gray-500/20 pointer-events-none" />
+				<div className="absolute inset-0 container mx-auto px-4">
+					<div className="h-full flex flex-col justify-center max-w-2xl">
+						<div className="mb-8 space-y-4">
+							<div className="h-10 md:h-12 lg:h-14 bg-gray-400 rounded w-3/4"></div>
+							<div className="h-8 md:h-10 lg:h-12 bg-gray-400 rounded w-1/2"></div>
+							<div className="h-6 md:h-7 bg-gray-400 rounded w-full"></div>
+						</div>
+						<div className="w-full max-w-xl h-14 bg-gray-400 rounded-md"></div>
+					</div>
 				</div>
 			</div>
 		)
@@ -68,7 +84,10 @@ export function LoadingState({
 		return (
 			<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
 				{Array.from({ length: 6 }).map((_, i) => (
-					<div key={i} className="rounded-lg overflow-hidden">
+					<div
+						key={i}
+						className="rounded-lg overflow-hidden"
+					>
 						<Skeleton className="h-48 w-full" />
 						<div className="p-4 space-y-3">
 							<Skeleton className="h-6 w-3/4" />

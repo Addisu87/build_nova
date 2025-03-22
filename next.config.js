@@ -4,25 +4,25 @@ const nextConfig = {
 	images: {
 		remotePatterns: [
 			{
-				protocol: 'https',
-				hostname: '*.supabase.co',
-				pathname: '/storage/v1/object/public/**',
+				protocol: "https",
+				hostname: "sinvgquzrvfrusjtwzdf.supabase.co",
+				pathname: "/storage/v1/object/public/**",
 			},
 			{
-				protocol: 'https',
-				hostname: 'images.unsplash.com',
-				pathname: '/**',
+				protocol: "https",
+				hostname: "images.unsplash.com",
+				pathname: "/**",
 			},
 			{
-				protocol: 'https',
-				hostname: '*.cloudinary.com',
-				pathname: '/**',
+				protocol: "https",
+				hostname: "*.cloudinary.com",
+				pathname: "/**",
 			},
 			{
-				protocol: 'https',
-				hostname: '*.githubusercontent.com',
-				pathname: '/**',
-			}
+				protocol: "https",
+				hostname: "*.githubusercontent.com",
+				pathname: "/**",
+			},
 		],
 	},
 }

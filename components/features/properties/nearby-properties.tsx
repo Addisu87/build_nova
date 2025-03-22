@@ -9,7 +9,13 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Property } from "@/types"
-import { Building2, Car, Home, Ruler, Trees } from "lucide-react"
+import {
+	Building2,
+	Car,
+	Home,
+	Ruler,
+	Trees,
+} from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 
@@ -30,7 +36,10 @@ export function NearbyProperties({
 			: `$${(price / 1000).toFixed(0)}K`
 	}
 
-	const calculateDistance = (loc1: any, loc2: any) => {
+	const calculateDistance = (
+		loc1: any,
+		loc2: any,
+	) => {
 		// Implement actual distance calculation
 		return "0.5 mi away"
 	}
@@ -47,7 +56,10 @@ export function NearbyProperties({
 		<div className="flex items-center gap-2">
 			<Icon className="h-4 w-4 text-gray-500" />
 			<span className="text-sm text-gray-600">
-				{label}: <span className="font-medium text-gray-900">{value}</span>
+				{label}:{" "}
+				<span className="font-medium text-gray-900">
+					{value}
+				</span>
 			</span>
 		</div>
 	)
@@ -58,7 +70,11 @@ export function NearbyProperties({
 				Nearby Properties
 			</h3>
 			<div className="overflow-y-auto flex-1">
-				<Accordion type="single" collapsible className="divide-y">
+				<Accordion
+					type="single"
+					collapsible
+					className="divide-y"
+				>
 					{nearbyProperties.map((property) => (
 						<AccordionItem
 							key={property.id}
@@ -70,16 +86,24 @@ export function NearbyProperties({
 									{/* Property Image */}
 									<div className="relative h-32 w-40 flex-shrink-0">
 										<Image
-											src={property.images?.[0] || property.imageUrl}
+											src={property.images?.[0]}
 											alt={property.title}
 											fill
 											className="object-cover rounded-lg"
 										/>
 										<Badge
-											variant={property.status === "for-sale" ? "success" : "secondary"}
+											variant={
+												property.status ===
+												"for-sale"
+													? "success"
+													: "secondary"
+											}
 											className="absolute top-2 left-2"
 										>
-											{property.status === "for-sale" ? "For Sale" : "For Rent"}
+											{property.status ===
+											"for-sale"
+												? "For Sale"
+												: "For Rent"}
 										</Badge>
 									</div>
 
@@ -87,10 +111,15 @@ export function NearbyProperties({
 									<div className="flex-1 min-w-0">
 										<div className="flex items-baseline justify-between mb-1">
 											<h4 className="font-semibold text-lg text-gray-900">
-												{formatPrice(property.price)}
+												{formatPrice(
+													property.price,
+												)}
 											</h4>
 											<span className="text-sm text-gray-500">
-												{calculateDistance(currentProperty.location, property.location)}
+												{calculateDistance(
+													currentProperty.location,
+													property.location,
+												)}
 											</span>
 										</div>
 
@@ -103,18 +132,27 @@ export function NearbyProperties({
 										</p>
 
 										<div className="flex items-center gap-3 text-sm text-gray-600">
-											<span>{property.bedrooms} beds</span>
+											<span>
+												{property.bedrooms} beds
+											</span>
 											<span>•</span>
-											<span>{property.bathrooms} baths</span>
+											<span>
+												{property.bathrooms} baths
+											</span>
 											<span>•</span>
-											<span>{property.square_feet.toLocaleString()} sqft</span>
+											<span>
+												{property.square_feet.toLocaleString()}{" "}
+												sqft
+											</span>
 										</div>
 									</div>
 								</div>
 
 								{/* Accordion Trigger for Additional Details */}
 								<AccordionTrigger className="pt-2 pb-0">
-									<span className="text-sm text-gray-600">View Details</span>
+									<span className="text-sm text-gray-600">
+										View Details
+									</span>
 								</AccordionTrigger>
 							</div>
 
@@ -125,7 +163,9 @@ export function NearbyProperties({
 										<PropertyFeature
 											icon={Home}
 											label="Property Type"
-											value={property.property_type}
+											value={
+												property.property_type
+											}
 										/>
 										<PropertyFeature
 											icon={Building2}
@@ -135,23 +175,35 @@ export function NearbyProperties({
 										<PropertyFeature
 											icon={Car}
 											label="Parking"
-											value={property.parking_spaces || "N/A"}
+											value={
+												property.parking_spaces ||
+												"N/A"
+											}
 										/>
 										<PropertyFeature
 											icon={Ruler}
 											label="Lot Size"
-											value={`${property.lot_size?.toLocaleString() || "N/A"} sqft`}
+											value={`${
+												property.lot_size?.toLocaleString() ||
+												"N/A"
+											} sqft`}
 										/>
 										<PropertyFeature
 											icon={Trees}
 											label="Amenities"
-											value={property.amenities?.join(", ") || "None"}
+											value={
+												property.amenities?.join(
+													", ",
+												) || "None"
+											}
 										/>
 									</div>
 
 									{/* Description */}
 									<div>
-										<h6 className="font-medium text-sm mb-1">Description</h6>
+										<h6 className="font-medium text-sm mb-1">
+											Description
+										</h6>
 										<p className="text-sm text-gray-600 line-clamp-3">
 											{property.description}
 										</p>
@@ -159,7 +211,11 @@ export function NearbyProperties({
 
 									{/* View Property Button */}
 									<Button
-										onClick={() => router.push(`/properties/${property.id}`)}
+										onClick={() =>
+											router.push(
+												`/properties/${property.id}`,
+											)
+										}
 										className="w-full"
 									>
 										View Property
