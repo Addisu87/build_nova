@@ -6,14 +6,20 @@ export type PropertyType =
 	| "APARTMENT"
 	| "CONDO"
 	| "TOWNHOUSE"
+	| "STUDIO"
 	| "MULTI_FAMILY_HOME"
 	| "LAND"
 	| "COMMERCIAL"
 	| "VACATION_RENTAL"
 	| "FARM"
 	| "FLAT"
+	| "HOTEL"
+	| "MEDICAL"
+	| "RESTAURANT"
+	| "STORAGE"
 	| "INDUSTRIAL"
 	| "MOBILE_HOME"
+	| "MIXED_USE"
 	| "OTHER"
 
 // Sort Options
@@ -158,21 +164,21 @@ export const AMENITIES = [
 ] as const
 
 // Review Types
-export type Review = Database['public']['Tables']['reviews']['Row']
+export type Review = Database["public"]["Tables"]["reviews"]["Row"]
 
 export interface ReviewWithUser extends Review {
-  rating: any;
-  id: string;
-  user: {
-    name: string
-    avatar_url: string | null
-  }
+	rating: any
+	id: string
+	user: {
+		name: string
+		avatar_url: string | null
+	}
 }
 
 export interface ReviewStats {
-  averageRating: number
-  totalReviews: number
-  ratingDistribution: {
-    [key: number]: number
-  }
+	averageRating: number
+	totalReviews: number
+	ratingDistribution: {
+		[key: number]: number
+	}
 }

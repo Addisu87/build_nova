@@ -15,23 +15,27 @@ interface PropertySpecificationsProps {
 	property: Property
 }
 
-export function PropertySpecifications({ property }: PropertySpecificationsProps) {
+export function PropertySpecifications({
+	property,
+}: PropertySpecificationsProps) {
 	const specifications = [
 		{
 			label: "Property Type",
-			value: property.propertyType,
+			value: property.property_type,
 		},
 		{
 			label: "Year Built",
-			value: property.yearBuilt,
+			value: property.year_built,
 		},
 		{
 			label: "Square Footage",
-			value: `${property.area?.toLocaleString()} sqft`,
+			value: `${property.square_feet?.toLocaleString()} sqft`,
 		},
 		{
 			label: "Lot Size",
-			value: property.lotSize ? `${property.lotSize.toLocaleString()} sqft` : "N/A",
+			value: property.lot_size
+				? `${property.lot_size.toLocaleString()} sqft`
+				: "N/A",
 		},
 		{
 			label: "Bedrooms",
@@ -43,22 +47,17 @@ export function PropertySpecifications({ property }: PropertySpecificationsProps
 		},
 		{
 			label: "Parking Spaces",
-			value: property.parkingSpaces || "N/A",
+			value: property.parking_spaces || "N/A",
 		},
-		{
-			label: "Stories",
-			value: property.stories || "N/A",
-		},
-		{
-			label: "Outdoor Space",
-			value: property.outdoorSpace || "N/A",
-		},
+
 		{ label: "Status", value: property.status },
 	]
 
 	return (
 		<Card className="p-6">
-			<h2 className="text-2xl font-semibold mb-6">Property Specifications</h2>
+			<h2 className="text-2xl font-semibold mb-6">
+				Property Specifications
+			</h2>
 			<Table>
 				<TableHeader>
 					<TableRow>
@@ -69,8 +68,12 @@ export function PropertySpecifications({ property }: PropertySpecificationsProps
 				<TableBody>
 					{specifications.map((spec) => (
 						<TableRow key={spec.label}>
-							<TableCell className="font-medium">{spec.label}</TableCell>
-							<TableCell className="capitalize">{spec.value}</TableCell>
+							<TableCell className="font-medium">
+								{spec.label}
+							</TableCell>
+							<TableCell className="capitalize">
+								{spec.value}
+							</TableCell>
 						</TableRow>
 					))}
 				</TableBody>
