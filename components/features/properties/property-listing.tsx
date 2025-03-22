@@ -8,16 +8,16 @@ import {
 	PaginationLink,
 	PaginationNext,
 	PaginationPrevious,
-} from "@/components/ui/pagination"
-import { useAuth } from "@/contexts/auth-context"
-import { usePropertyPagination } from "@/hooks/properties/use-property-pagination"
-import { mockProperties } from "@/mock-data/properties"
-import { PropertyFilters } from "@/types"
-import { useEffect, useState } from "react"
-import { PropertyFilters as PropertyFiltersComponent } from "./property-filters"
-import { PropertiesGrid } from "./property-grid"
-import { PropertyMap } from "./property-map"
-import { ViewToggle } from "./view-toggle"
+} from "@/components/ui/pagination";
+import { useAuth } from "@/contexts/auth-context";
+import { usePropertyPagination } from "@/hooks/properties/use-property-pagination";
+import { mockProperties } from "@/mock-data/properties";
+import { PropertyFilters } from "@/types";
+import { useEffect, useState } from "react";
+import { PropertyFilters as PropertyFiltersComponent } from "./property-filters";
+import { PropertiesGrid } from "./property-grid";
+import { PropertyMap } from "./property-map";
+import { ViewToggle } from "./view-toggle";
 
 interface PropertyListingProps {
 	title?: string
@@ -55,11 +55,11 @@ export function PropertyListing({
 		let filtered = [...properties]
 
 		if (filters.minPrice) {
-			filtered = filtered.filter((property) => property.price >= filters.minPrice!)
+			filtered = filtered.filter((property) => property.price >= filters.min_price!)
 		}
 
 		if (filters.maxPrice) {
-			filtered = filtered.filter((property) => property.price <= filters.maxPrice!)
+			filtered = filtered.filter((property) => property.price <= filters.max_price!)
 		}
 
 		if (filters.bedrooms) {
