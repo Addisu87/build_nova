@@ -2,65 +2,60 @@
 
 import { SearchBar } from "@/components/layout/search-bar"
 import { ImageCarousel } from "@/components/ui/image-carousel"
-import { LoadingState } from "@/components/ui/loading-state"
-import { usePropertyImages } from "@/hooks/properties/use-property-images"
 import { useAuth } from "@/contexts/auth-context"
-import { useEffect, useState } from "react"
+import { usePropertyImages } from "@/hooks/properties/use-property-images"
+import { useCallback, useEffect, useState } from "react"
 
 export function Hero() {
-	const { user, isLoading: authLoading } = useAuth()
-	const { listImages } = usePropertyImages()
+	const { user } = useAuth()
+	const { listImages } = usePropertyImages() // Remove isLoading dependency
 	const [heroImages, setHeroImages] = useState<string[]>([])
-	const [isLoadingImages, setIsLoadingImages] = useState(true)
 
-	useEffect(() => {
-		const fetchHeroImages = async () => {
-			try {
-				setIsLoadingImages(true)
-				const images = await listImages("hero")
-				setHeroImages(images.map(img => img.url))
-			} catch (error) {
-				console.error("Error fetching hero images:", error)
-				setHeroImages([])
-			} finally {
-				setIsLoadingImages(false)
+	const fetchHeroImages = useCallback(async () => {
+		try {
+			const images = await listImages("hero")
+			if (images && images.length > 0) {
+				setHeroImages(images.map((img) => img.url))
+			} else {
+				setHeroImages([
+					// Add your default hero image URLs here
+					"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&w=2000&q=75",
+					"https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&w=2000&q=75",
+					"https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&w=2000&q=75",
+				])
 			}
+		} catch (error) {
+			console.error("Error fetching hero images:", error)
+			setHeroImages([])
 		}
-
-		fetchHeroImages()
 	}, [listImages])
 
-	// Only show loading state during initial load
-	if (authLoading || isLoadingImages) {
-		return <LoadingState type="hero" />
-	}
+	useEffect(() => {
+		fetchHeroImages()
+	}, [fetchHeroImages])
 
-	const welcomeMessage = user?.user_metadata?.full_name 
+	const welcomeMessage = user?.user_metadata?.full_name
 		? `Welcome ${user.user_metadata.full_name}`
-		: user 
-			? 'Welcome'
-			: 'Find Your Dream Home'
+		: user
+		? "Welcome"
+		: "Find Your Dream Home"
 
 	return (
 		<div className="relative">
-			{heroImages.length > 0 ? (
-				<ImageCarousel
-					images={heroImages}
-					aspectRatio="hero"
-					className="h-[600px]"
-					priority={true}
-					showControls={heroImages.length > 1}
-					fullWidth={true}
-					autoPlay={heroImages.length > 1}
-					interval={6000}
-				/>
-			) : (
-				<div className="h-[600px] bg-gray-100 dark:bg-gray-800 flex justify-center items-center">
-					<p className="text-gray-500 dark:text-gray-400">No hero images available</p>
-				</div>
-			)}
+			<ImageCarousel
+				images={heroImages}
+				aspectRatio="hero"
+				className="h-[600px]"
+				priority={true}
+				showControls={heroImages.length > 1}
+				fullWidth={true}
+				autoPlay={heroImages.length > 1}
+				interval={6000}
+				title="Hero Section"
+			/>
+
 			{/* Dark gradient overlay */}
-			<div 
+			<div
 				className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/20 pointer-events-none"
 				aria-hidden="true"
 			/>

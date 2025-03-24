@@ -32,19 +32,19 @@ export function LoadingState({
 	if (type === "hero") {
 		return (
 			<div className="relative">
-				<div className="h-[600px] bg-gray-200 dark:bg-gray-800 w-full"></div>
-				<div className="absolute inset-0 bg-gradient-to-r from-gray-700/70 to-gray-500/20 pointer-events-none" />
+				<div className="h-[600px] bg-gray-200 dark:bg-gray-800 w-full animate-pulse">
+					{/* Simulate image loading */}
+					<div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-900/50" />
+				</div>
+				<div className="absolute inset-0 bg-gradient-to-r from-gray-900/70 to-gray-700/20" />
 				<div className="absolute inset-0 container mx-auto px-4">
 					<div className="h-full flex flex-col justify-center max-w-2xl">
 						<div className="mb-8 space-y-4">
-							{/* Title - matches the h1 size in Hero */}
 							<div className="h-12 md:h-14 lg:h-16 bg-gray-300 dark:bg-gray-600 rounded-md w-2/3 animate-pulse" />
-							{/* Subtitle - matches the p size in Hero */}
-							<div className="h-6 md:h-7 lg:h-8 bg-gray-300 dark:bg-gray-600 rounded-md w-full animate-pulse" />
+							<div className="h-6 md:h-7 bg-gray-300 dark:bg-gray-600 rounded-md w-full animate-pulse" />
 						</div>
-						{/* Search bar placeholder */}
 						<div className="w-full max-w-xl">
-							<div className="h-14 bg-gray-300 dark:bg-gray-600 rounded-lg animate-pulse" />
+							<div className="h-12 bg-gray-300 dark:bg-gray-600 rounded-lg animate-pulse" />
 						</div>
 					</div>
 				</div>

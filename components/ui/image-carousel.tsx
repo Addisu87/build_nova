@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, ImageOff } from "lucide-react"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
 
@@ -34,26 +34,26 @@ const aspectRatioClasses = {
 }
 
 export function ImageCarousel({
-	images,
-	title = "",
+	images = [],
 	aspectRatio = "square",
-	priority = false,
-	showControls = false,
 	className,
+	showControls = true,
+	priority = false,
 	fullWidth = false,
-	currentIndex = 0,
-	onIndexChange,
 	autoPlay = false,
 	interval = 5000,
-	preventNavigation = false
+	title = "Image carousel",
+	currentIndex,
+	onIndexChange,
+	preventNavigation = true
 }: ImageCarouselProps) {
-	const [localCurrentIndex, setLocalCurrentIndex] = React.useState(currentIndex)
+	const [localCurrentIndex, setLocalCurrentIndex] = React.useState(0)
 	const [isHovered, setIsHovered] = React.useState(false)
+	const activeIndex = currentIndex ?? localCurrentIndex
 
-	const activeIndex = onIndexChange ? currentIndex : localCurrentIndex
-
+	// Always declare the useEffect hook, regardless of conditions
 	React.useEffect(() => {
-		if (!autoPlay || isHovered) return
+		if (!autoPlay || isHovered || !images.length) return
 
 		const timer = setInterval(() => {
 			const newIndex = activeIndex < images.length - 1 ? activeIndex + 1 : 0
@@ -86,14 +86,20 @@ export function ImageCarousel({
 	const heightClass = fullWidth ? "h-[550px]" : "h-[400px]"
 	const finalClassName = cn(className, fullWidth ? heightClass : '')
 
+	// If no images provided, show placeholder
 	if (!images?.length) {
 		return (
-			<div className={cn(
-				"relative bg-gray-200 flex items-center justify-center",
-				aspectRatioClasses[aspectRatio],
-				finalClassName
-			)}>
-				<p className="text-gray-500">No images available</p>
+			<div 
+				className={cn(
+					"relative bg-gray-200 dark:bg-gray-800 flex items-center justify-center",
+					aspectRatioClasses[aspectRatio],
+					className
+				)}
+			>
+				<div className="text-gray-500 dark:text-gray-400 flex flex-col items-center">
+					<ImageOff className="w-8 h-8 mb-2" />
+					<p>No images available</p>
+				</div>
 			</div>
 		)
 	}

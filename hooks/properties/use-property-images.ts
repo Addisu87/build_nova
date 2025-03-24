@@ -22,8 +22,8 @@ interface UsePropertyImagesHook {
 }
 
 export function usePropertyImages(): UsePropertyImagesHook {
-	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState<Error | null>(null)
+	const [isLoading, setIsLoading] = useState(false)
 	const { user } = useAuth()
 
 	const handleError = (err: unknown, defaultMessage: string) => {
@@ -43,31 +43,25 @@ export function usePropertyImages(): UsePropertyImagesHook {
 
 	const listImages = async (folderPath: string): Promise<ImageUploadResult[]> => {
 		try {
-			setIsLoading(true)
-			setError(null)
-
 			const { data, error: listError } = await supabase.storage
 				.from("images")
 				.list(folderPath)
 
 			if (listError) throw listError
 
-			const images =
-				data
-					?.filter((file) => file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i))
-					.map((file) => ({
-						url: supabase.storage
-							.from("images")
-							.getPublicUrl(`${folderPath}/${file.name}`).data.publicUrl,
-						path: `${folderPath}/${file.name}`,
-					})) || []
+			const images = data
+				?.filter((file) => file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i))
+				.map((file) => ({
+					url: supabase.storage
+						.from("images")
+						.getPublicUrl(`${folderPath}/${file.name}`).data.publicUrl,
+					path: `${folderPath}/${file.name}`,
+				})) || []
 
 			return images
 		} catch (err) {
 			handleError(err, "Failed to list images")
 			return []
-		} finally {
-			setIsLoading(false)
 		}
 	}
 
@@ -78,7 +72,6 @@ export function usePropertyImages(): UsePropertyImagesHook {
 		try {
 			validateAccess("upload")
 			setIsLoading(true)
-			setError(null)
 
 			// Validate file
 			if (!file.type.startsWith("image/")) {
@@ -123,7 +116,6 @@ export function usePropertyImages(): UsePropertyImagesHook {
 		try {
 			validateAccess("delete")
 			setIsLoading(true)
-			setError(null)
 
 			const { error: deleteError } = await supabase.storage
 				.from("images")
@@ -146,7 +138,6 @@ export function usePropertyImages(): UsePropertyImagesHook {
 		try {
 			validateAccess("upload")
 			setIsLoading(true)
-			setError(null)
 
 			const results = await Promise.all(
 				files.map((file) => uploadImage(file, folderPath)),
@@ -165,9 +156,10 @@ export function usePropertyImages(): UsePropertyImagesHook {
 		try {
 			validateAccess("delete")
 			setIsLoading(true)
-			setError(null)
 
-			const { error: deleteError } = await supabase.storage.from("images").remove(paths)
+			const { error: deleteError } = await supabase.storage
+				.from("images")
+				.remove(paths)
 
 			if (deleteError) throw deleteError
 
