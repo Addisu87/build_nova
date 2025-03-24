@@ -18,8 +18,12 @@ export function LoginForm() {
   const { handleSubmit, errors } = useAuthForm({
     schema: loginSchema,
     onSubmit: async (data) => {
-      await signIn(data.email, data.password)
-      redirectToHome()
+      try {
+        await signIn(data.email, data.password)
+        redirectToHome()
+      } catch (error) {
+        // Error handling is already done in useAuthForm
+      }
     },
   })
 

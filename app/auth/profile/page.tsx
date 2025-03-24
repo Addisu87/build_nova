@@ -1,11 +1,7 @@
 "use client"
 
 import { PropertiesGrid, PropertyCard } from "@/components/features/properties"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
+import { Card, Input, Button, Label, Separator } from "@/components/ui"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LoadingState } from "@/components/ui/loading-state"
 import { useAuth } from "@/contexts/auth-context"

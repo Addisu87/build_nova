@@ -1,18 +1,23 @@
 "use client"
 
-import { useEffect } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAuth } from "@/contexts/auth-context"
+import { useEffect } from "react"
 
 export default function AuthCallbackPage() {
-	const { session, redirectToHome, redirectToLogin } = useAuth()
+	const { session } = useAuth()
 
 	useEffect(() => {
-		if (session) {
-			redirectToHome()
-		} else {
-			redirectToLogin()
-		}
+		// Add a small delay to ensure the session state is updated
+		const timer = setTimeout(() => {
+			if (session) {
+				window.location.href = "/"
+			} else {
+				window.location.href = "/?auth=login"
+			}
+		}, 1000)
+
+		return () => clearTimeout(timer)
 	}, [session])
 
 	return (
