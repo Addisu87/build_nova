@@ -16,12 +16,13 @@ import { cn } from "@/lib/utils"
 import {
 	Heart,
 	HelpCircle,
-	KeyRound,
-	Lock,
+	Home,
+	LogIn,
 	LogOut,
-	Mail,
 	Search as SearchIcon,
+	Settings,
 	User,
+	UserPlus,
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
@@ -88,6 +89,55 @@ export function Navbar() {
 		}
 	}
 
+	const userNavItems = user
+		? [
+				{
+					label: "Profile",
+					icon: <User className="mr-2 h-4 w-4" />,
+					href: "/auth/profile",
+				},
+				{
+					label: "Saved Properties",
+					icon: <Heart className="mr-2 h-4 w-4" />,
+					href: "/favorites",
+				},
+				{
+					label: "My Listings",
+					icon: <Home className="mr-2 h-4 w-4" />,
+					href: "/properties/my-listings",
+				},
+				{
+					label: "Settings",
+					icon: <Settings className="mr-2 h-4 w-4" />,
+					href: "/settings",
+				},
+				{
+					label: "Sign Out",
+					icon: <LogOut className="mr-2 h-4 w-4" />,
+					onClick: () => signOut(),
+				},
+		  ]
+		: [
+				{
+					label: "Sign In",
+					icon: <LogIn className="mr-2 h-4 w-4" />,
+					href: "?auth=login",
+					shallow: true,
+					primary: true,
+				},
+				{
+					label: "Create Account",
+					icon: <UserPlus className="mr-2 h-4 w-4" />,
+					href: "?auth=signup",
+					shallow: true,
+				},
+				{
+					label: "Help",
+					icon: <HelpCircle className="mr-2 h-4 w-4" />,
+					href: "/help/auth",
+				},
+		  ]
+
 	return (
 		<>
 			<div className="sticky top-0 z-50 bg-white">
@@ -123,20 +173,14 @@ export function Navbar() {
 								</Button>
 							</Link>
 
-							{/* Favorites */}
-							{user && (
-								<Link href="/favorites">
-									<Button variant="ghost" size="icon">
-										<Heart className="h-5 w-5" />
-									</Button>
-								</Link>
-							)}
-
-							{/* Auth Dropdown - Simplified */}
-
+							{/* User Navigation Dropdown */}
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
-									<Button variant="ghost" className="hover:bg-accent rounded-full p-0">
+									<Button
+										variant="ghost"
+										className="hover:bg-accent rounded-full p-0"
+										aria-label="User menu"
+									>
 										<Avatar className="h-8 w-8">
 											{user ? (
 												<>
@@ -156,8 +200,9 @@ export function Navbar() {
 										</Avatar>
 									</Button>
 								</DropdownMenuTrigger>
-								<DropdownMenuContent align="end" className="w-64 mt-2">
-									{user ? (
+
+								<DropdownMenuContent align="end" className="w-56 mt-2">
+									{user && (
 										<>
 											<DropdownMenuLabel className="font-normal">
 												<div className="flex flex-col space-y-1">
@@ -168,60 +213,32 @@ export function Navbar() {
 												</div>
 											</DropdownMenuLabel>
 											<DropdownMenuSeparator />
-											<DropdownMenuGroup>
-												<Link href="/auth/profile">
-													<DropdownMenuItem>
-														<User className="mr-2 h-4 w-4" />
-														Profile
-													</DropdownMenuItem>
-												</Link>
-												<Link href="/favorites">
-													<DropdownMenuItem>
-														<Heart className="mr-2 h-4 w-4" />
-														Saved Properties
-													</DropdownMenuItem>
-												</Link>
-											</DropdownMenuGroup>
-											<DropdownMenuSeparator />
-											<DropdownMenuItem onClick={() => signOut()}>
-												<LogOut className="mr-2 h-4 w-4" />
-												Sign Out
-											</DropdownMenuItem>
-										</>
-									) : (
-										<>
-											<DropdownMenuGroup>
-												<Link href="?auth=login" shallow>
-													<DropdownMenuItem className="font-medium">
-														<KeyRound className="mr-2 h-4 w-4" />
-														Create account
-													</DropdownMenuItem>
-												</Link>
-											</DropdownMenuGroup>
-											<DropdownMenuSeparator />
-											<DropdownMenuGroup>
-												<Link href="?auth=verify-email" shallow>
-													<DropdownMenuItem>
-														<Mail className="mr-2 h-4 w-4" />
-														Verify email
-													</DropdownMenuItem>
-												</Link>
-												<Link href="?auth=reset-password" shallow>
-													<DropdownMenuItem>
-														<Lock className="mr-2 h-4 w-4" />
-														Reset password
-													</DropdownMenuItem>
-												</Link>
-											</DropdownMenuGroup>
-											<DropdownMenuSeparator />
-											<Link href="/help/auth">
-												<DropdownMenuItem>
-													<HelpCircle className="mr-2 h-4 w-4" />
-													Help with sign in
-												</DropdownMenuItem>
-											</Link>
 										</>
 									)}
+
+									<DropdownMenuGroup>
+										{userNavItems.map((item, index) =>
+											item.href ? (
+												<Link
+													key={item.label}
+													href={item.href}
+													{...(item.shallow ? { shallow: true } : {})}
+												>
+													<DropdownMenuItem
+														className={cn(item.primary && "font-medium text-primary")}
+													>
+														{item.icon}
+														{item.label}
+													</DropdownMenuItem>
+												</Link>
+											) : (
+												<DropdownMenuItem key={item.label} onClick={item.onClick}>
+													{item.icon}
+													{item.label}
+												</DropdownMenuItem>
+											),
+										)}
+									</DropdownMenuGroup>
 								</DropdownMenuContent>
 							</DropdownMenu>
 						</div>

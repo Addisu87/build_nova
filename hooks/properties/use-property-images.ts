@@ -1,7 +1,7 @@
+import { useAuth } from "@/contexts/auth-context"
 import { supabase } from "@/lib/supabase/client"
 import { useState } from "react"
 import { toast } from "sonner"
-import { useAuth } from "@/contexts/auth-context"
 
 interface ImageUploadResult {
 	url: string
@@ -13,7 +13,10 @@ interface UsePropertyImagesHook {
 	error: Error | null
 	uploadImage: (file: File, folderPath?: string) => Promise<ImageUploadResult>
 	deleteImage: (path: string) => Promise<void>
-	uploadMultipleImages: (files: File[], folderPath?: string) => Promise<ImageUploadResult[]>
+	uploadMultipleImages: (
+		files: File[],
+		folderPath?: string,
+	) => Promise<ImageUploadResult[]>
 	deleteMultipleImages: (paths: string[]) => Promise<void>
 	listImages: (folderPath: string) => Promise<ImageUploadResult[]>
 }
@@ -32,9 +35,9 @@ export function usePropertyImages(): UsePropertyImagesHook {
 
 	const validateAccess = (operation: string) => {
 		// Add specific operations that require authentication
-		const restrictedOperations = ['upload', 'delete']
+		const restrictedOperations = ["upload", "delete"]
 		if (restrictedOperations.includes(operation) && !user) {
-			throw new Error('Authentication required for this operation')
+			throw new Error("Authentication required for this operation")
 		}
 	}
 
@@ -49,12 +52,15 @@ export function usePropertyImages(): UsePropertyImagesHook {
 
 			if (listError) throw listError
 
-			const images = data
-				?.filter(file => file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i))
-				.map(file => ({
-					url: supabase.storage.from("images").getPublicUrl(`${folderPath}/${file.name}`).data.publicUrl,
-					path: `${folderPath}/${file.name}`
-				})) || []
+			const images =
+				data
+					?.filter((file) => file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i))
+					.map((file) => ({
+						url: supabase.storage
+							.from("images")
+							.getPublicUrl(`${folderPath}/${file.name}`).data.publicUrl,
+						path: `${folderPath}/${file.name}`,
+					})) || []
 
 			return images
 		} catch (err) {
@@ -67,10 +73,10 @@ export function usePropertyImages(): UsePropertyImagesHook {
 
 	const uploadImage = async (
 		file: File,
-		folderPath: string = "properties/default"
+		folderPath: string = "properties/default",
 	): Promise<ImageUploadResult> => {
 		try {
-			validateAccess('upload')
+			validateAccess("upload")
 			setIsLoading(true)
 			setError(null)
 
@@ -115,7 +121,7 @@ export function usePropertyImages(): UsePropertyImagesHook {
 
 	const deleteImage = async (path: string): Promise<void> => {
 		try {
-			validateAccess('delete')
+			validateAccess("delete")
 			setIsLoading(true)
 			setError(null)
 
@@ -135,15 +141,15 @@ export function usePropertyImages(): UsePropertyImagesHook {
 
 	const uploadMultipleImages = async (
 		files: File[],
-		folderPath: string = "properties/default"
+		folderPath: string = "properties/default",
 	): Promise<ImageUploadResult[]> => {
 		try {
-			validateAccess('upload')
+			validateAccess("upload")
 			setIsLoading(true)
 			setError(null)
 
 			const results = await Promise.all(
-				files.map((file) => uploadImage(file, folderPath))
+				files.map((file) => uploadImage(file, folderPath)),
 			)
 
 			return results
@@ -157,13 +163,11 @@ export function usePropertyImages(): UsePropertyImagesHook {
 
 	const deleteMultipleImages = async (paths: string[]): Promise<void> => {
 		try {
-			validateAccess('delete')
+			validateAccess("delete")
 			setIsLoading(true)
 			setError(null)
 
-			const { error: deleteError } = await supabase.storage
-				.from("images")
-				.remove(paths)
+			const { error: deleteError } = await supabase.storage.from("images").remove(paths)
 
 			if (deleteError) throw deleteError
 
@@ -182,6 +186,6 @@ export function usePropertyImages(): UsePropertyImagesHook {
 		deleteImage,
 		uploadMultipleImages,
 		deleteMultipleImages,
-		listImages
+		listImages,
 	}
 }
