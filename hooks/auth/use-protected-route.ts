@@ -1,18 +1,22 @@
 "use client"
 
-import { useEffect } from "react"
 import { useAuth } from "@/contexts/auth-context"
+import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 
 export function useProtectedRoute(requireAdmin: boolean = false) {
-	const { isAuthenticated, isAdmin, isLoading, requireAuth } = useAuth()
+	const { isAuthenticated, isAdmin, isLoading, user } = useAuth()
+	const router = useRouter()
 
 	useEffect(() => {
-		if (requireAdmin) {
-			requireAdmin()
-		} else {
-			requireAuth()
+		if (!isLoading && !user) {
+			router.push("/auth/login")
 		}
-	}, [isAuthenticated, isLoading, requireAdmin])
+
+		if (requireAdmin && !isAdmin) {
+			router.push("/")
+		}
+	}, [isLoading, user, isAdmin, requireAdmin, router])
 
 	return {
 		isAuthenticated,
