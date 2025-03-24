@@ -47,7 +47,7 @@ export function Hero() {
 						const { data } = supabase.storage
 							.from("images")
 							.getPublicUrl(`hero/${file.name}`)
-						
+
 						console.log(`Generated URL for ${file.name}:`, data.publicUrl)
 						return data.publicUrl
 					})
