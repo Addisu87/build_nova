@@ -4,24 +4,30 @@ import { SearchBar } from "@/components/layout/search-bar"
 import { ImageCarousel } from "@/components/ui/image-carousel"
 import { Skeleton } from "@/components/ui/skeleton"
 import { usePropertyImages } from "@/hooks/properties/use-property-images"
+import { useAuth } from "@/contexts/auth-context"
 import { useEffect, useState } from "react"
 
 export function Hero() {
-	const { listImages, isLoading } = usePropertyImages()
+	const { listImages, isLoading: imagesLoading } = usePropertyImages()
+	const { user, isLoading: authLoading } = useAuth()
 	const [heroImages, setHeroImages] = useState<string[]>([])
 
 	useEffect(() => {
 		const fetchHeroImages = async () => {
 			try {
+				// Use a specific folder for hero images
 				const images = await listImages("hero")
 				setHeroImages(images.map((img) => img.url))
 			} catch (error) {
 				console.error("Error fetching hero images:", error)
+				setHeroImages([]) // Reset to empty array on error
 			}
 		}
 
 		fetchHeroImages()
 	}, [listImages])
+
+	const isLoading = imagesLoading || authLoading
 
 	if (isLoading) {
 		return (
@@ -57,7 +63,8 @@ export function Hero() {
 				<div className="h-full flex flex-col justify-center max-w-2xl">
 					<div className="mb-8">
 						<h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
-							Find Your Dream Home
+							{user ? `Welcome${user.user_metadata?.full_name ? ` ${user.user_metadata.full_name}` : ''}`
+								: 'Find Your Dream Home'}
 						</h1>
 						<p className="text-lg md:text-xl text-white/90">
 							Search through thousands of properties for sale and rent
