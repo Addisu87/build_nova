@@ -24,9 +24,6 @@ export function useStorageImages(): UseStorageImagesHook {
 	const [isUploading, setIsUploading] = useState(false)
 	const [error, setError] = useState<Error | null>(null)
 
-	const baseUrl =
-		"https://sinvgquzrvfrusjtwzdf.supabase.co/storage/v1/object/public/images/properties/"
-
 	const uploadImage = async (
 		file: File,
 		propertyType: string = "default", // Default folder if no property type is provided
@@ -63,11 +60,13 @@ export function useStorageImages(): UseStorageImagesHook {
 				throw uploadError
 			}
 
-			// Construct the hardcoded public URL
-			const publicUrl = `${baseUrl}${propertyType.toLowerCase()}/${fileName}`
+			// Get the public URL using Supabase's getPublicUrl method
+			const { data } = supabase.storage
+				.from("images")
+				.getPublicUrl(filePath)
 
 			return {
-				url: publicUrl,
+				url: data.publicUrl,
 				path: filePath,
 			}
 		} catch (err) {
@@ -188,11 +187,13 @@ export function useStorageImages(): UseStorageImagesHook {
 				throw uploadError
 			}
 
-			// Construct the hardcoded public URL
-			const publicUrl = `${baseUrl}${propertyType.toLowerCase()}/${fileName}`
+			// Get the public URL using Supabase's getPublicUrl method
+			const { data } = supabase.storage
+				.from("images")
+				.getPublicUrl(filePath)
 
 			return {
-				url: publicUrl,
+				url: data.publicUrl,
 				path: filePath,
 			}
 		} catch (err) {

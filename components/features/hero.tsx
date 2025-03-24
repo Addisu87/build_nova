@@ -40,17 +40,16 @@ export function Hero() {
 					return
 				}
 
-				// Base URL for hardcoded pattern
-				const baseUrl =
-					"https://sinvgquzrvfrusjtwzdf.supabase.co/storage/v1/object/public/images/hero/"
-
-				// Extract file names and construct URLs using the hardcoded pattern
+				// Extract file names and get public URLs using Supabase's getPublicUrl method
 				const imageUrls = files
 					.filter((file) => /\.(jpg|jpeg|png|gif|avif)$/i.test(file.name))
 					.map((file) => {
-						const url = `${baseUrl}${file.name}`
-						console.log(`Constructed URL for ${file.name}:`, url)
-						return url
+						const { data } = supabase.storage
+							.from("images")
+							.getPublicUrl(`hero/${file.name}`)
+						
+						console.log(`Generated URL for ${file.name}:`, data.publicUrl)
+						return data.publicUrl
 					})
 
 				setHeroImages(imageUrls)
