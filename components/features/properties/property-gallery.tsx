@@ -1,16 +1,36 @@
-import { useState } from 'react'
-import Image from 'next/image'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+"use client"
+
+import { useState, useEffect } from "react"
+import Image from "next/image"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import { usePropertyImages } from "@/hooks/properties/use-property-images"
 
 interface PropertyGalleryProps {
-  images: string[]
+  propertyId: string
+  propertyType: string
 }
 
-export function PropertyGallery({ images }: PropertyGalleryProps) {
+export function PropertyGallery({ propertyId, propertyType }: PropertyGalleryProps) {
+  const { listImages, isLoading } = usePropertyImages()
+  const [images, setImages] = useState<string[]>([])
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isModalOpen, setIsModalOpen] = useState(false)
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const folderPath = `properties/${propertyType.toLowerCase()}/${propertyId}`
+        const imageResults = await listImages(folderPath)
+        setImages(imageResults.map(img => img.url))
+      } catch (error) {
+        console.error("Error fetching property images:", error)
+      }
+    }
+
+    fetchImages()
+  }, [propertyId, propertyType, listImages])
 
   const showNext = () => {
     setCurrentImageIndex((prev) => 
@@ -24,12 +44,16 @@ export function PropertyGallery({ images }: PropertyGalleryProps) {
     )
   }
 
+  if (isLoading) {
+    return <div>Loading...</div>
+  }
+
   return (
     <>
       <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2 aspect-video relative rounded-lg overflow-hidden">
           <Image
-            src={images[0]}
+            src={images[0] || '/placeholder.jpg'}
             alt="Main property image"
             fill
             className="object-cover cursor-pointer"

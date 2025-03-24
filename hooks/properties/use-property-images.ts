@@ -7,28 +7,55 @@ interface ImageUploadResult {
 	path: string
 }
 
-interface UseStorageImagesHook {
-	isUploading: boolean
+interface UsePropertyImagesHook {
+	isLoading: boolean
 	error: Error | null
 	uploadImage: (file: File, folderPath?: string) => Promise<ImageUploadResult>
 	deleteImage: (path: string) => Promise<void>
-	uploadMultipleImages: (
-		files: File[],
-		folderPath?: string,
-	) => Promise<ImageUploadResult[]>
+	uploadMultipleImages: (files: File[], folderPath?: string) => Promise<ImageUploadResult[]>
 	deleteMultipleImages: (paths: string[]) => Promise<void>
+	listImages: (folderPath: string) => Promise<ImageUploadResult[]>
 }
 
-export function useStorageImages(): UseStorageImagesHook {
-	const [isUploading, setIsUploading] = useState(false)
+export function usePropertyImages(): UsePropertyImagesHook {
+	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState<Error | null>(null)
+
+	const listImages = async (folderPath: string): Promise<ImageUploadResult[]> => {
+		try {
+			setIsLoading(true)
+			setError(null)
+
+			const { data, error: listError } = await supabase.storage
+				.from("images")
+				.list(folderPath)
+
+			if (listError) throw listError
+
+			const images = data
+				.filter(file => file.name.match(/\.(jpg|jpeg|png|gif)$/i))
+				.map(file => ({
+					url: supabase.storage.from("images").getPublicUrl(`${folderPath}/${file.name}`).data.publicUrl,
+					path: `${folderPath}/${file.name}`
+				}))
+
+			return images
+		} catch (err) {
+			const errorMessage = err instanceof Error ? err.message : "Failed to list images"
+			setError(new Error(errorMessage))
+			toast.error(errorMessage)
+			throw err
+		} finally {
+			setIsLoading(false)
+		}
+	}
 
 	const uploadImage = async (
 		file: File,
-		folderPath: string = "properties/default",
+		folderPath: string = "properties/default"
 	): Promise<ImageUploadResult> => {
 		try {
-			setIsUploading(true)
+			setIsLoading(true)
 			setError(null)
 
 			if (!file.type.startsWith("image/")) {
@@ -64,13 +91,13 @@ export function useStorageImages(): UseStorageImagesHook {
 			toast.error(errorMessage)
 			throw err
 		} finally {
-			setIsUploading(false)
+			setIsLoading(false)
 		}
 	}
 
 	const deleteImage = async (path: string): Promise<void> => {
 		try {
-			setIsUploading(true)
+			setIsLoading(true)
 			setError(null)
 
 			const { error: deleteError } = await supabase.storage
@@ -86,61 +113,62 @@ export function useStorageImages(): UseStorageImagesHook {
 			toast.error(errorMessage)
 			throw err
 		} finally {
-			setIsUploading(false)
+			setIsLoading(false)
 		}
 	}
 
 	const uploadMultipleImages = async (
 		files: File[],
-		folderPath: string = "properties/default",
+		folderPath: string = "properties/default"
 	): Promise<ImageUploadResult[]> => {
 		try {
-			setIsUploading(true)
+			setIsLoading(true)
 			setError(null)
 
 			const results = await Promise.all(
-				files.map((file) => uploadImage(file, folderPath)),
+				files.map((file) => uploadImage(file, folderPath))
 			)
 
 			return results
 		} catch (err) {
-			const errorMessage =
-				err instanceof Error ? err.message : "Failed to upload images"
+			const errorMessage = err instanceof Error ? err.message : "Failed to upload images"
 			setError(new Error(errorMessage))
 			toast.error(errorMessage)
 			throw err
 		} finally {
-			setIsUploading(false)
+			setIsLoading(false)
 		}
 	}
 
 	const deleteMultipleImages = async (paths: string[]): Promise<void> => {
 		try {
-			setIsUploading(true)
+			setIsLoading(true)
 			setError(null)
 
-			const { error: deleteError } = await supabase.storage.from("images").remove(paths)
+			const { error: deleteError } = await supabase.storage
+				.from("images")
+				.remove(paths)
 
 			if (deleteError) throw deleteError
 
 			toast.success("Images deleted successfully")
 		} catch (err) {
-			const errorMessage =
-				err instanceof Error ? err.message : "Failed to delete images"
+			const errorMessage = err instanceof Error ? err.message : "Failed to delete images"
 			setError(new Error(errorMessage))
 			toast.error(errorMessage)
 			throw err
 		} finally {
-			setIsUploading(false)
+			setIsLoading(false)
 		}
 	}
 
 	return {
-		isUploading,
+		isLoading,
 		error,
 		uploadImage,
 		deleteImage,
 		uploadMultipleImages,
 		deleteMultipleImages,
+		listImages
 	}
 }

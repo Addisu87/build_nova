@@ -3,86 +3,30 @@
 import { SearchBar } from "@/components/layout/search-bar"
 import { ImageCarousel } from "@/components/ui/image-carousel"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useAuth } from "@/contexts/auth-context"
-import { supabase } from "@/lib/supabase/client"
+import { usePropertyImages } from "@/hooks/properties/use-property-images"
 import { useEffect, useState } from "react"
 
 export function Hero() {
-	const { isLoading: authIsLoading } = useAuth()
+	const { listImages, isLoading } = usePropertyImages()
 	const [heroImages, setHeroImages] = useState<string[]>([])
-	const [isLoading, setIsLoading] = useState(true)
-	const [error, setError] = useState<Error | null>(null)
 
 	useEffect(() => {
 		const fetchHeroImages = async () => {
 			try {
-				setIsLoading(true)
-				setError(null)
-
-				// Fetch file names from 'hero' folder in 'images' bucket
-				const { data: files, error: listError } = await supabase.storage
-					.from("images")
-					.list("hero", {
-						limit: 100,
-						sortBy: { column: "created_at", order: "desc" },
-					})
-
-				console.log("List response from 'hero':", { files, listError })
-
-				if (listError) {
-					console.error("List error:", listError)
-					throw listError
-				}
-
-				if (!files || files.length === 0) {
-					console.warn("No files found in images/hero/")
-					setHeroImages([])
-					return
-				}
-
-				// Extract file names and get public URLs using Supabase's getPublicUrl method
-				const imageUrls = files
-					.filter((file) => /\.(jpg|jpeg|png|gif|avif)$/i.test(file.name))
-					.map((file) => {
-						const { data } = supabase.storage
-							.from("images")
-							.getPublicUrl(`hero/${file.name}`)
-
-						console.log(`Generated URL for ${file.name}:`, data.publicUrl)
-						return data.publicUrl
-					})
-
-				setHeroImages(imageUrls)
-			} catch (err) {
-				console.error("Error fetching hero images:", err)
-				setError(err instanceof Error ? err : new Error("Failed to fetch hero images"))
-				setHeroImages([])
-			} finally {
-				setIsLoading(false)
+				const images = await listImages("hero")
+				setHeroImages(images.map((img) => img.url))
+			} catch (error) {
+				console.error("Error fetching hero images:", error)
 			}
 		}
 
 		fetchHeroImages()
-	}, [])
+	}, [listImages])
 
-	if (authIsLoading || isLoading) {
+	if (isLoading) {
 		return (
 			<div className="relative h-[600px] w-full">
 				<Skeleton className="absolute inset-0 rounded-none" />
-			</div>
-		)
-	}
-
-	if (error) {
-		return (
-			<div className="h-[600px] bg-gray-100 flex flex-col justify-center items-center">
-				<p className="text-red-500">Error loading hero images: {error.message}</p>
-				<button
-					onClick={() => window.location.reload()} // Simple retry via page reload
-					className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-				>
-					Retry
-				</button>
 			</div>
 		)
 	}
@@ -105,7 +49,6 @@ export function Hero() {
 					<p className="text-gray-500">No hero images available</p>
 				</div>
 			)}
-
 			{/* Dark gradient overlay */}
 			<div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/20 pointer-events-none" />
 

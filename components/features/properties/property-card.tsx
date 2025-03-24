@@ -1,11 +1,14 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { ImageCarousel } from "@/components/ui/image-carousel"
 import { useFavorites } from "@/hooks/favorites/use-favorites"
+import { usePropertyImages } from "@/hooks/properties/use-property-images"
 import { formatPrice } from "@/lib/utils"
 import { Database } from "@/types/supabase"
 import { Bath, Bed, Heart, Square } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 type Property = Database["public"]["Tables"]["properties"]["Row"]
 
@@ -16,8 +19,24 @@ interface PropertyCardProps {
 
 export function PropertyCard({ property, variant = "default" }: PropertyCardProps) {
 	const { isFavorite, addFavorite, removeFavorite, getFavoriteId } = useFavorites()
+	const { listImages } = usePropertyImages()
 	const [isHovered, setIsHovered] = useState(false)
 	const [currentImageIndex, setCurrentImageIndex] = useState(0)
+	const [propertyImages, setPropertyImages] = useState<string[]>([])
+
+	useEffect(() => {
+		const fetchPropertyImages = async () => {
+			try {
+				const folderPath = `properties/${property.property_type.toLowerCase()}/${property.id}`
+				const images = await listImages(folderPath)
+				setPropertyImages(images.map(img => img.url))
+			} catch (error) {
+				console.error("Error fetching property images:", error)
+			}
+		}
+
+		fetchPropertyImages()
+	}, [property.id, property.property_type, listImages])
 
 	const handleFavoriteClick = async (e: React.MouseEvent) => {
 		e.preventDefault()
@@ -57,9 +76,9 @@ export function PropertyCard({ property, variant = "default" }: PropertyCardProp
 				{/* Image Section */}
 				<div className="relative aspect-[4/3] overflow-hidden">
 					<ImageCarousel
-						images={property.images}
+						images={propertyImages}
 						aspectRatio="property"
-						showControls={isHovered && property.images.length > 1}
+						showControls={isHovered && propertyImages.length > 1}
 						autoPlay={false}
 						interval={3000}
 						currentIndex={currentImageIndex}
