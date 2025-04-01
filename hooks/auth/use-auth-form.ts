@@ -1,92 +1,86 @@
-import { useState } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { ZodSchema } from "zod"
 
-interface UseAuthFormOptions<T> {
+interface UseAuthFormOptions<T extends Record<string, any>> {
 	schema: ZodSchema<T>
 	onSubmit: (data: T) => Promise<void>
 	onSuccess?: () => void
 	onError?: (error: Error) => void
 }
 
-export function useAuthForm<T>({
+type FieldErrors<T> = {
+	[K in keyof T]?: string
+} & {
+	form?: string
+}
+
+export function useAuthForm<T extends Record<string, any>>({
 	schema,
 	onSubmit,
 	onSuccess,
 	onError,
 }: UseAuthFormOptions<T>) {
 	const router = useRouter()
-	const [isLoading, setIsLoading] =
-		useState(false)
-	const [errors, setErrors] = useState<
-		Record<string, string>
-	>({})
+	const [isLoading, setIsLoading] = useState(false)
+	const [serverErrors, setServerErrors] = useState<Record<string, string>>({})
 
-	const handleSubmit = async (
-		e: React.FormEvent<HTMLFormElement>,
-	) => {
-		e.preventDefault()
-		setErrors({})
+	const {
+		register,
+		handleSubmit: rhfHandleSubmit,
+		formState: { errors: formErrors, isSubmitting },
+	} = useForm<T>({
+		resolver: zodResolver(schema),
+		mode: "onChange",
+	})
+
+	const handleSubmit = rhfHandleSubmit(async (data) => {
+		setServerErrors({})
 		setIsLoading(true)
 
 		try {
-			const formData = new FormData(
-				e.currentTarget,
-			)
-			const data = Object.fromEntries(
-				formData.entries(),
-			)
-
-			// Validate form data
-			const validatedData = schema.parse(data)
-
-			// Submit form
-			await onSubmit(validatedData as T)
-
-			// Handle success
+			await onSubmit(data)
 			onSuccess?.()
 		} catch (error) {
 			if (error instanceof Error) {
-				setErrors({ form: error.message })
+				setServerErrors({ form: error.message })
 				onError?.(error)
-			} else if (error.errors) {
-				// Handle Zod validation errors
-				const zodErrors: Record<string, string> =
-					{}
-				error.errors.forEach((err: any) => {
-					zodErrors[err.path[0]] = err.message
-				})
-				setErrors(zodErrors)
-			} else {
-				const genericError = new Error(
-					"An unexpected error occurred",
-				)
-				setErrors({ form: genericError.message })
-				onError?.(genericError)
-			}
 
-			// Show error toast
-			toast({
-				title: "Error",
-				description:
-					error instanceof Error
-						? error.message
-						: "An error occurred. Please try again.",
-				variant: "destructive",
-			})
+				toast.error(error.message)
+			} else {
+				const genericError = new Error("An unexpected error occurred")
+				setServerErrors({ form: genericError.message })
+				onError?.(genericError)
+
+				toast.error("An error occurred. Please try again.")
+			}
 		} finally {
-			// Use setTimeout to ensure state updates don't cause UI flicker
 			setTimeout(() => {
 				setIsLoading(false)
 			}, 0)
 		}
+	})
+
+	// Combine Zod validation errors with server-side errors
+	const allErrors: FieldErrors<T> = {
+		...Object.keys(formErrors).reduce(
+			(acc, key) => ({
+				...acc,
+				[key]: formErrors[key]?.message || "",
+			}),
+			{} as FieldErrors<T>,
+		),
+		...serverErrors,
 	}
 
 	return {
 		handleSubmit,
-		isLoading,
-		errors,
-		setErrors,
+		register,
+		isLoading: isLoading || isSubmitting,
+		errors: allErrors,
+		setErrors: setServerErrors,
 	}
 }

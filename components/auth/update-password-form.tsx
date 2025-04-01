@@ -1,79 +1,58 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import {
-	Button,
-	Input,
-	Label,
-} from "@/components/ui"
+import { Button, Input, Label } from "@/components/ui"
 import { useAuth } from "@/contexts/auth-context"
 import { useAuthForm } from "@/hooks/auth/use-auth-form"
 import { updatePasswordSchema } from "@/lib/auth/auth-schemas"
+import type { z } from "zod"
 import { AuthForm } from "./auth-form"
 import { toast } from "sonner"
+
+type UpdatePasswordFormData = z.infer<typeof updatePasswordSchema>
 
 export function UpdatePasswordForm() {
 	const router = useRouter()
 	const { updatePassword } = useAuth()
 
-	const { handleSubmit, isLoading, errors } =
-		useAuthForm({
-			schema: updatePasswordSchema,
-			onSubmit: async (data) => {
-				try {
-					await updatePassword(data.password)
-					toast({
-						title: "Success",
-						description:
-							"Your password has been updated successfully.",
-					})
-					// Add a small delay before redirecting to ensure UI updates are visible
-					setTimeout(() => {
-						router.push("/")
-					}, 1000)
-				} catch (error) {
-					// Error handling is already done in useAuthForm
-				}
-			},
-		})
+	const { handleSubmit, register, errors, isLoading } = useAuthForm<UpdatePasswordFormData>({
+		schema: updatePasswordSchema,
+		onSubmit: async (data) => {
+			try {
+				await updatePassword(data.password)
+				toast({
+					title: "Success",
+					description: "Your password has been updated successfully.",
+				})
+				setTimeout(() => {
+					router.push("/")
+				}, 1000)
+			} catch (error) {
+				// Error handling is already done in useAuthForm
+			}
+		},
+	})
 
 	return (
 		<AuthForm
-			title="Update your password"
+			title="Update Password"
 			description="Enter your new password below"
 		>
-			<form
-				onSubmit={handleSubmit}
-				className="space-y-4"
-			>
-				{errors.form && (
-					<p className="text-sm text-red-600">
-						{errors.form}
-					</p>
-				)}
-
+			<form onSubmit={handleSubmit} className="space-y-4">
 				<div className="space-y-2">
-					<Label htmlFor="password">
-						New Password
-					</Label>
+					<Label htmlFor="password">New Password</Label>
 					<Input
 						id="password"
-						name="password"
 						type="password"
-						required
+						placeholder="••••••••"
 						autoComplete="new-password"
-						aria-invalid={!!errors.password}
-						aria-describedby={
-							errors.password
-								? "password-error"
-								: undefined
-						}
+						disabled={isLoading}
+						className="w-full"
+						{...register("password")}
+						aria-describedby={errors.password ? "password-error" : undefined}
 					/>
 					{errors.password && (
-						<p
-							id="password-error"
-							className="text-sm text-red-600"
-						>
+						<p id="password-error" className="text-sm text-destructive">
 							{errors.password}
 						</p>
 					)}
@@ -113,9 +92,7 @@ export function UpdatePasswordForm() {
 					className="w-full"
 					disabled={isLoading}
 				>
-					{isLoading
-						? "Updating password..."
-						: "Update Password"}
+					{isLoading ? "Updating password..." : "Update password"}
 				</Button>
 			</form>
 		</AuthForm>

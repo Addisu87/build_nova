@@ -1,13 +1,15 @@
+// components/auth/auth-form.tsx
 "use client"
 
 import { Button } from "@/components/ui"
-import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import type { AuthFormProps } from "@/types/auth"
 import { Chrome, Facebook } from "lucide-react"
 import Link from "next/link"
 
 export function AuthForm({
 	children,
+	title,
 	description,
 	linkText,
 	linkLabel,
@@ -17,7 +19,7 @@ export function AuthForm({
 	isLoading = false,
 }: AuthFormProps) {
 	const socialButtons = (onGoogleClick || onFacebookClick) && (
-		<div>
+		<div className="space-y-4">
 			<div className="grid grid-cols-2 gap-3">
 				{onGoogleClick && (
 					<Button
@@ -66,7 +68,7 @@ export function AuthForm({
 				<div className="text-center text-sm text-muted-foreground">
 					{linkText}{" "}
 					<Link
-						href={`?auth=${linkLabel.toLowerCase()}`}
+						href={`?auth=${linkLabel.toLowerCase().replace(" ", "-")}`}
 						className="underline hover:text-primary"
 						shallow={true}
 					>
@@ -87,13 +89,14 @@ export function AuthForm({
 	)
 
 	return (
-		<Card className="w-full border shadow-sm">
-			{description && (
-				<CardHeader>
-					<p className="text-center text-sm text-muted-foreground">{description}</p>
-				</CardHeader>
-			)}
-			<CardContent className="space-y-4 p-6">
+		<Card className="w-full border-0 shadow-none">
+			<CardHeader className="space-y-1 px-6 pt-6 pb-2">
+				<h2 className="text-2xl font-bold text-left">{title}</h2>
+				{description && (
+					<p className="text-left text-sm text-muted-foreground">{description}</p>
+				)}
+			</CardHeader>
+			<CardContent className="space-y-4 p-6 pt-2">
 				{socialButtons}
 				{children}
 			</CardContent>

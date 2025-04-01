@@ -1,32 +1,30 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import {
-	Button,
-	Input,
-	Label,
-} from "@/components/ui"
+import { Button, Input, Label } from "@/components/ui"
 import { useAuth } from "@/contexts/auth-context"
 import { useAuthForm } from "@/hooks/auth/use-auth-form"
 import { resetPasswordSchema } from "@/lib/auth/auth-schemas"
+import type { z } from "zod"
 import { AuthForm } from "./auth-form"
+
+type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>
 
 export function PasswordResetForm() {
 	const router = useRouter()
 	const { resetPassword } = useAuth()
 
-	const { handleSubmit, isLoading, errors } =
-		useAuthForm({
-			schema: resetPasswordSchema,
-			onSubmit: async (data) => {
-				try {
-					await resetPassword(data.email)
-					router.push("/auth/login")
-				} catch (error) {
-					// Error handling is already done in useAuthForm
-				}
-			},
-		})
+	const { handleSubmit, register, errors, isLoading } = useAuthForm<ResetPasswordFormData>({
+		schema: resetPasswordSchema,
+		onSubmit: async (data) => {
+			try {
+				await resetPassword(data.email)
+				router.push("/auth/login")
+			} catch (error) {
+				// Error handling is already done in useAuthForm
+			}
+		},
+	})
 
 	return (
 		<AuthForm
@@ -36,12 +34,9 @@ export function PasswordResetForm() {
 			linkHref="/auth/login"
 			linkLabel="Sign in"
 		>
-			<form
-				onSubmit={handleSubmit}
-				className="space-y-4"
-			>
+			<form onSubmit={handleSubmit} className="space-y-4">
 				{errors.form && (
-					<p className="text-sm text-red-600">
+					<p className="text-sm text-destructive">
 						{errors.form}
 					</p>
 				)}
@@ -50,22 +45,16 @@ export function PasswordResetForm() {
 					<Label htmlFor="email">Email</Label>
 					<Input
 						id="email"
-						name="email"
 						type="email"
-						required
+						placeholder="name@example.com"
 						autoComplete="email"
-						aria-invalid={!!errors.email}
-						aria-describedby={
-							errors.email
-								? "email-error"
-								: undefined
-						}
+						disabled={isLoading}
+						className="w-full"
+						{...register("email")}
+						aria-describedby={errors.email ? "email-error" : undefined}
 					/>
 					{errors.email && (
-						<p
-							id="email-error"
-							className="text-sm text-red-600"
-						>
+						<p id="email-error" className="text-sm text-destructive">
 							{errors.email}
 						</p>
 					)}
@@ -76,9 +65,7 @@ export function PasswordResetForm() {
 					className="w-full"
 					disabled={isLoading}
 				>
-					{isLoading
-						? "Sending reset link..."
-						: "Send Reset Link"}
+					{isLoading ? "Sending reset link..." : "Send reset link"}
 				</Button>
 			</form>
 		</AuthForm>
