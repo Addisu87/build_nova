@@ -24,7 +24,7 @@ export function SignupForm() {
 
   return (
     <AuthForm
-      title="Create an account"
+      description="Create an account to get started"
       linkText="Already have an account?"
       linkLabel="Sign in"
       onGoogleClick={signInWithGoogle}
@@ -33,40 +33,40 @@ export function SignupForm() {
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {errors.form && (
-          <p className="text-sm text-red-600">{errors.form}</p>
+          <p className="text-sm text-destructive text-center">{errors.form}</p>
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email" className="text-sm font-medium">Email</Label>
           <Input
             id="email"
             name="email"
             type="email"
             required
-            placeholder="Enter your email"
+            placeholder="name@example.com"
             className="w-full"
             aria-invalid={!!errors.email}
             aria-describedby={errors.email ? "email-error" : undefined}
           />
           {errors.email && (
-            <p id="email-error" className="text-sm text-red-600">{errors.email}</p>
+            <p id="email-error" className="text-sm text-destructive">{errors.email}</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password" className="text-sm font-medium">Password</Label>
           <Input
             id="password"
             name="password"
             type="password"
             required
-            placeholder="Create a password"
+            placeholder="••••••••"
             className="w-full"
             aria-invalid={!!errors.password}
             aria-describedby={errors.password ? "password-error" : undefined}
           />
           {errors.password && (
-            <p id="password-error" className="text-sm text-red-600">{errors.password}</p>
+            <p id="password-error" className="text-sm text-destructive">{errors.password}</p>
           )}
         </div>
 
@@ -75,7 +75,7 @@ export function SignupForm() {
           className="w-full"
           disabled={isProcessing('signup')}
         >
-          {isProcessing('signup') ? "Creating account..." : "Sign up"}
+          {isProcessing('signup') ? "Creating account..." : "Create account"}
         </Button>
       </form>
     </AuthForm>
