@@ -20,7 +20,7 @@ export interface LoginFormData {
 export interface SignupFormData {
 	email: string
 	password: string
-	fullName: string
+	confirmPassword: string
 }
 
 export interface ResetPasswordFormData {

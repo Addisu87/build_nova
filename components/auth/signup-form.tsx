@@ -16,7 +16,6 @@ export function SignupForm() {
 		schema: signupSchema,
 		onSubmit: async (data) => {
 			await signUp(data.email, data.password)
-			window.location.href = "/auth/verify-email"
 		},
 	})
 
@@ -71,6 +70,27 @@ export function SignupForm() {
 					{errors.password && (
 						<p id="password-error" className="text-sm text-destructive">
 							{errors.password}
+						</p>
+					)}
+				</div>
+
+				<div className="space-y-2">
+					<Label htmlFor="confirmPassword" className="text-sm font-medium">
+						Confirm Password
+					</Label>
+					<Input
+						id="confirmPassword"
+						type="password"
+						placeholder="••••••••"
+						autoComplete="new-password"
+						disabled={isLoading || isProcessing("signup")}
+						className="w-full"
+						{...register("confirmPassword")}
+						aria-describedby={errors.confirmPassword ? "confirm-password-error" : undefined}
+					/>
+					{errors.confirmPassword && (
+						<p id="confirm-password-error" className="text-sm text-destructive">
+							{errors.confirmPassword}
 						</p>
 					)}
 				</div>

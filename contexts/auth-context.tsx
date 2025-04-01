@@ -22,7 +22,7 @@ interface AuthState {
 
 interface AuthContextType extends AuthState {
 	// Auth methods
-	signUp: (email: string, password: string, fullName: string) => Promise<void>
+	signUp: (email: string, password: string) => Promise<void>
 	signIn: (email: string, password: string) => Promise<void>
 	signInWithGoogle: () => Promise<void>
 	signInWithFacebook: () => Promise<void>
@@ -240,7 +240,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	}
 
 	// Auth methods with processing states
-	const signUp = async (email: string, password: string, fullName: string) => {
+	const signUp = async (email: string, password: string) => {
 		await withProcessing("signup", async () => {
 			try {
 				if (!canSendEmail()) {
@@ -250,10 +250,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 				const { error } = await supabase.auth.signUp({
 					email,
-					password,
-					options: {
-						data: { full_name: fullName },
-					},
+					password
 				})
 
 				if (error) {
