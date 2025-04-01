@@ -25,7 +25,7 @@ export function AuthModal() {
 	const AuthComponent = componentKey ? AUTH_COMPONENTS[componentKey] : null
 
 	const onClose = () => {
-		router.back()
+		router.push(window.location.pathname, { scroll: false })
 	}
 
 	if (!AuthComponent) return null

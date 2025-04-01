@@ -24,7 +24,7 @@ export function SignupForm() {
 			title="Sign Up"
 			description="Create an account to get started"
 			linkText="Already have an account?"
-			linkLabel="Sign in"
+			linkLabel="login"
 			onGoogleClick={signInWithGoogle}
 			onFacebookClick={signInWithFacebook}
 			isLoading={isLoading || isProcessing("signup")}

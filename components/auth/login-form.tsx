@@ -24,7 +24,7 @@ export function LoginForm() {
 			title="Log in"
 			description="Welcome back! Please enter your details."
 			linkText="Don't have an account?"
-			linkLabel="Sign up"
+			linkLabel="signup"
 			showForgotPassword={true}
 			onGoogleClick={signInWithGoogle}
 			onFacebookClick={signInWithFacebook}
