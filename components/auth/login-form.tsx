@@ -32,50 +32,42 @@ export function LoginForm() {
 		>
 			<form onSubmit={handleSubmit} className="space-y-4">
 				<div className="space-y-2">
-					<Label className="text-sm font-medium" htmlFor="email">
-						Email
-					</Label>
+					<Label htmlFor="email">Email</Label>
 					<Input
 						id="email"
 						type="email"
 						placeholder="name@example.com"
 						autoComplete="email"
 						disabled={isLoading || isProcessing("signin")}
-						className="w-full"
+						className="h-10"
 						{...register("email")}
 						aria-describedby={errors.email ? "email-error" : undefined}
 					/>
 					{errors.email && (
-						<p id="email-error" className="text-sm font-medium text-destructive">
-							{errors.email}
-						</p>
+						<p id="email-error" className="text-sm text-destructive">{errors.email.message}</p>
 					)}
 				</div>
 
 				<div className="space-y-2">
-					<Label className="text-sm font-medium" htmlFor="password">
-						Password
-					</Label>
+					<Label htmlFor="password">Password</Label>
 					<Input
 						id="password"
 						type="password"
 						placeholder="••••••••"
 						autoComplete="current-password"
 						disabled={isLoading || isProcessing("signin")}
-						className="w-full"
+						className="h-10"
 						{...register("password")}
 						aria-describedby={errors.password ? "password-error" : undefined}
 					/>
 					{errors.password && (
-						<p id="password-error" className="text-sm font-medium text-destructive">
-							{errors.password}
-						</p>
+						<p id="password-error" className="text-sm text-destructive">{errors.password.message}</p>
 					)}
 				</div>
 
 				<Button
 					type="submit"
-					className="w-full"
+					className="w-full h-10"
 					disabled={isLoading || isProcessing("signin")}
 				>
 					{isLoading || isProcessing("signin") ? "Signing in..." : "Sign in"}

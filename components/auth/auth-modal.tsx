@@ -32,8 +32,8 @@ export function AuthModal() {
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
-			<DialogContent className="overflow-hidden sm:max-w-[400px] p-0 gap-0">
-				<div className="px-4 py-8">
+			<DialogContent className="overflow-hidden sm:max-w-[425px] md:max-w-[450px] p-0 gap-0">
+				<div className="px-6 py-8">
 					<AuthComponent />
 				</div>
 			</DialogContent>
