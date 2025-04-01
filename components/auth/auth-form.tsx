@@ -17,7 +17,7 @@ export function AuthForm({
 	isLoading = false,
 }: AuthFormProps) {
 	const socialButtons = (onGoogleClick || onFacebookClick) && (
-		<>
+		<div>
 			<div className="grid grid-cols-2 gap-3">
 				{onGoogleClick && (
 					<Button
@@ -53,31 +53,31 @@ export function AuthForm({
 				</div>
 				<div className="relative flex justify-center text-xs uppercase">
 					<span className="bg-background px-2 text-muted-foreground">
-						or continue with
+						Or continue with
 					</span>
 				</div>
 			</div>
-		</>
+		</div>
 	)
 
 	const footerLinks = (
-		<CardFooter className="flex flex-col space-y-2 px-6 pb-6 pt-2">
+		<CardFooter className="flex flex-col space-y-4 px-6 pb-6 pt-2">
 			{linkText && linkLabel && (
-				<p className="text-sm text-center text-muted-foreground">
+				<div className="text-center text-sm text-muted-foreground">
 					{linkText}{" "}
 					<Link
 						href={`?auth=${linkLabel.toLowerCase()}`}
-						className="font-medium text-primary hover:text-primary/80 hover:underline"
+						className="underline hover:text-primary"
 						shallow={true}
 					>
 						{linkLabel}
 					</Link>
-				</p>
+				</div>
 			)}
 			{showForgotPassword && (
 				<Link
 					href="?auth=reset-password"
-					className="text-sm font-medium text-primary hover:text-primary/80 hover:underline text-center"
+					className="text-center text-sm text-muted-foreground underline hover:text-primary"
 					shallow={true}
 				>
 					Forgot password?
@@ -87,19 +87,17 @@ export function AuthForm({
 	)
 
 	return (
-		<Card className="border-none shadow-none">
+		<Card className="w-full border shadow-sm">
 			{description && (
-				<CardHeader className="px-6 pb-2">
+				<CardHeader>
 					<p className="text-center text-sm text-muted-foreground">{description}</p>
 				</CardHeader>
 			)}
-			<CardContent className="px-6">
-				<div className="space-y-4">
-					{socialButtons}
-					{children}
-				</div>
+			<CardContent className="space-y-4 p-6">
+				{socialButtons}
+				{children}
 			</CardContent>
-			{footerLinks}
+			{(linkText || showForgotPassword) && footerLinks}
 		</Card>
 	)
 }

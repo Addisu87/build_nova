@@ -29,50 +29,64 @@ export function LoginForm() {
 
   return (
     <AuthForm
-      title="Welcome back"
+      description="Enter your email below to create your account"
       linkText="Don't have an account?"
       linkLabel="Sign up"
-      forgotPasswordLink={true}
+      showForgotPassword={true}
       onGoogleClick={signInWithGoogle}
       onFacebookClick={signInWithFacebook}
       isLoading={isProcessing('signin')}
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {errors.form && (
-          <p className="text-sm text-red-600">{errors.form}</p>
+          <div className="text-sm text-destructive text-center bg-destructive/10 p-3 rounded-md">
+            {errors.form}
+          </div>
         )}
 
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label className="text-sm font-medium" htmlFor="email">
+            Email
+          </Label>
           <Input
             id="email"
             name="email"
             type="email"
-            required
-            placeholder="Enter your email"
+            placeholder="name@example.com"
+            autoCapitalize="none"
+            autoComplete="email"
+            autoCorrect="off"
+            disabled={isProcessing('signin')}
             className="w-full"
             aria-invalid={!!errors.email}
             aria-describedby={errors.email ? "email-error" : undefined}
           />
           {errors.email && (
-            <p id="email-error" className="text-sm text-red-600">{errors.email}</p>
+            <p id="email-error" className="text-sm font-medium text-destructive">
+              {errors.email}
+            </p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label className="text-sm font-medium" htmlFor="password">
+            Password
+          </Label>
           <Input
             id="password"
             name="password"
             type="password"
-            required
-            placeholder="Enter your password"
+            placeholder="••••••••"
+            autoComplete="current-password"
+            disabled={isProcessing('signin')}
             className="w-full"
             aria-invalid={!!errors.password}
             aria-describedby={errors.password ? "password-error" : undefined}
           />
           {errors.password && (
-            <p id="password-error" className="text-sm text-red-600">{errors.password}</p>
+            <p id="password-error" className="text-sm font-medium text-destructive">
+              {errors.password}
+            </p>
           )}
         </div>
 
