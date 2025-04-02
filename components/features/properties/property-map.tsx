@@ -23,7 +23,7 @@ export function PropertyMap({
   zoom = 14,
   height = "h-[400px]",
   isSelected = false,
-  onMarkerClick
+  onMarkerClick,
 }: PropertyMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
@@ -41,15 +41,30 @@ export function PropertyMap({
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
+      style: 'mapbox://styles/mapbox/streets-v12',  // You might want to use a darker style for dark mode
       center: initialCenter,
       zoom: zoom
     })
+
+    // Add dark mode detection and style switching
+    const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    const updateMapStyle = (e: MediaQueryListEvent | MediaQueryList) => {
+      if (map.current) {
+        map.current.setStyle(e.matches ? 
+          'mapbox://styles/mapbox/dark-v11' : 
+          'mapbox://styles/mapbox/streets-v12'
+        )
+      }
+    }
+
+    updateMapStyle(darkModeMediaQuery)
+    darkModeMediaQuery.addListener(updateMapStyle)
 
     const nav = new mapboxgl.NavigationControl()
     map.current.addControl(nav, 'top-right')
 
     return () => {
+      darkModeMediaQuery.removeListener(updateMapStyle)
       markers.current.forEach(marker => marker.remove())
       map.current?.remove()
     }
@@ -100,7 +115,7 @@ export function PropertyMap({
   return (
     <div 
       ref={mapContainer} 
-      className={`w-full ${height} rounded-lg overflow-hidden`}
+      className={`${height} w-full rounded-lg overflow-hidden border dark:border-border`}
     />
   )
 }

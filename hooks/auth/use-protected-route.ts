@@ -9,14 +9,21 @@ export function useProtectedRoute(requireAdmin: boolean = false) {
 	const router = useRouter()
 
 	useEffect(() => {
-		if (!isLoading && !user) {
+		// Wait until authentication state is loaded
+		if (isLoading) return
+
+		// If no user is logged in, redirect to login
+		if (!user) {
 			router.push("/auth/login")
+			return
 		}
 
-		if (requireAdmin && !isAdmin) {
+		// If admin is required but user is not admin, redirect to home
+		if (requireAdmin && user.user_metadata?.role !== "admin") {
 			router.push("/")
+			return
 		}
-	}, [isLoading, user, isAdmin, requireAdmin, router])
+	}, [isLoading, user, requireAdmin, router])
 
 	return {
 		isAuthenticated,

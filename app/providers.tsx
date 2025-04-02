@@ -2,9 +2,9 @@
 
 import { Toaster } from "@/components/ui/sonner"
 import { AuthProvider } from "@/contexts/auth-context"
+import { ThemeProvider } from "@/lib/theme/theme-provider"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { ThemeProvider } from "next-themes"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 // Default query client options
 const defaultQueryClientOptions = {
@@ -21,7 +21,17 @@ const defaultQueryClientOptions = {
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
+	const [mounted, setMounted] = useState(false)
 	const [queryClient] = useState(() => new QueryClient(defaultQueryClientOptions))
+
+	// Prevent theme flash on load
+	useEffect(() => {
+		setMounted(true)
+	}, [])
+
+	if (!mounted) {
+		return null
+	}
 
 	return (
 		<QueryClientProvider client={queryClient}>

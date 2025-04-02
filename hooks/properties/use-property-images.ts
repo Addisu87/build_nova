@@ -42,9 +42,13 @@ export function usePropertyImages(): UsePropertyImagesHook {
 	}
 
 	const validateAccess = (operation: string) => {
-		const restrictedOperations = ["upload", "delete"]
-		if (restrictedOperations.includes(operation) && !user) {
+		if (!user) {
 			throw new Error("Authentication required for this operation")
+		}
+		
+		// Make sure user has admin role for upload/delete operations
+		if (user.user_metadata?.role !== "admin") {
+			throw new Error("Admin access required for this operation")
 		}
 	}
 
@@ -92,7 +96,15 @@ export function usePropertyImages(): UsePropertyImagesHook {
 			const fileName = `${crypto.randomUUID()}.${fileExt}`
 			const filePath = `${folderPath}/${fileName}`
 
-			const { error: uploadError } = await supabase.storage
+			// Add logging for debugging
+			console.log("Uploading file:", {
+				fileName,
+				filePath,
+				fileType: file.type,
+				fileSize: file.size
+			})
+
+			const { error: uploadError, data } = await supabase.storage
 				.from("images")
 				.upload(filePath, file, {
 					upsert: false,
@@ -100,17 +112,23 @@ export function usePropertyImages(): UsePropertyImagesHook {
 					cacheControl: "3600",
 				})
 
-			if (uploadError) throw uploadError
+			if (uploadError) {
+				console.error("Upload error:", uploadError)
+				throw uploadError
+			}
 
-			const { data } = supabase.storage.from("images").getPublicUrl(filePath)
+			const { data: urlData } = supabase.storage
+				.from("images")
+				.getPublicUrl(filePath)
 
 			return {
-				url: data.publicUrl,
+				url: urlData.publicUrl,
 				path: filePath,
 			}
 		} catch (err) {
+			console.error("Upload error details:", err)
 			handleError(err, "Failed to upload image")
-			throw err // Re-throw to allow caller to handle
+			throw err
 		}
 	}
 

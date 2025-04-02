@@ -1,7 +1,8 @@
+import { cn } from "@/lib/utils"
 import { Skeleton } from "./skeleton"
 
 interface LoadingStateProps {
-	type?: "default" | "profile" | "property" | "properties" | "hero" | "map"
+	type?: "default" | "profile" | "property" | "properties" | "hero" | "map" | "imageUpload"
 	className?: string
 	height?: string
 }
@@ -11,6 +12,63 @@ export function LoadingState({
 	className,
 	height = "h-[300px]",
 }: LoadingStateProps) {
+	// Helper function for repeated patterns
+	const createImageGrid = (count: number, aspectRatio = "aspect-video") => (
+		<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+			{Array.from({ length: count }).map((_, i) => (
+				<Skeleton key={i} className={cn(aspectRatio, "rounded-lg")} />
+			))}
+		</div>
+	)
+
+	if (type === "imageUpload") {
+		return (
+			<div className="space-y-8">
+				{/* Header skeleton */}
+				<div className="flex items-center justify-between">
+					<Skeleton className="h-9 w-48" /> {/* Admin Dashboard text */}
+					<Skeleton className="h-5 w-64" /> {/* Logged in as text */}
+				</div>
+
+				<div className="grid gap-6">
+					<div className="p-6 border rounded-lg space-y-6">
+						{/* Section title */}
+						<Skeleton className="h-7 w-40" /> {/* Image Management text */}
+
+						{/* Property type selector */}
+						<div className="space-y-2">
+							<Skeleton className="h-5 w-24" /> {/* Label */}
+							<Skeleton className="h-10 w-full rounded-md" /> {/* Select input */}
+						</div>
+
+						{/* Upload section */}
+						<div className="p-4 space-y-4 border rounded-lg">
+							{/* Upload path text */}
+							<Skeleton className="h-5 w-48" />
+
+							{/* File input */}
+							<div className="space-y-2">
+								<Skeleton className="h-5 w-24" /> {/* Label */}
+								<Skeleton className="h-10 w-full rounded-md" /> {/* Input */}
+								<Skeleton className="h-4 w-96" /> {/* Helper text */}
+							</div>
+
+							{/* Preview grid */}
+							<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+								{Array.from({ length: 4 }).map((_, i) => (
+									<Skeleton key={i} className="aspect-square rounded-lg" />
+								))}
+							</div>
+
+							{/* Upload button */}
+							<Skeleton className="h-10 w-full rounded-md" />
+						</div>
+					</div>
+				</div>
+			</div>
+		)
+	}
+
 	if (type === "map") {
 		return (
 			<div className="w-full rounded-lg overflow-hidden">
@@ -49,11 +107,7 @@ export function LoadingState({
 				<Skeleton className="h-[500px] w-full rounded-xl" />
 
 				{/* Image thumbnails */}
-				<div className="grid grid-cols-4 gap-4">
-					{Array.from({ length: 4 }).map((_, i) => (
-						<Skeleton key={i} className="aspect-video rounded-lg" />
-					))}
-				</div>
+				{createImageGrid(4)}
 
 				{/* Content grid */}
 				<div className="grid gap-8 lg:grid-cols-3">

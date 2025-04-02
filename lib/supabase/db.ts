@@ -3,7 +3,7 @@ import { Database } from "@/types/supabase"
 import { supabase } from "./client"
 
 export class DatabaseError extends Error {
-	constructor(message: string, public originalError?: any) {
+	constructor(message: string, public originalError?: unknown) {
 		super(message)
 		this.name = "DatabaseError"
 	}
@@ -12,13 +12,16 @@ export class DatabaseError extends Error {
 export async function handleSupabaseError<T>(
 	operation: () => Promise<{
 		data: T | null
-		error: any
+		error: unknown
 	}>,
 ): Promise<T> {
 	const { data, error } = await operation()
 
 	if (error) {
-		throw new DatabaseError(error.message, error)
+		throw new DatabaseError(
+			error instanceof Error ? error.message : "Unknown error",
+			error,
+		)
 	}
 
 	if (!data) {
@@ -34,23 +37,17 @@ export async function getProperty(id: string): Promise<Property> {
 	)
 }
 
-export async function getProperties(filters = {}) {
+export async function getProperties(filters: Partial<Property> = {}) {
 	let query = supabase.from("properties").select("*")
 
 	// Apply filters if any
 	Object.entries(filters).forEach(([key, value]) => {
-		if (value) {
+		if (value !== undefined && value !== null) {
 			query = query.eq(key, value)
 		}
 	})
 
-	const { data, error } = await query
-
-	if (error) {
-		throw error
-	}
-
-	return data
+	return handleSupabaseError(() => query)
 }
 
 export async function createProperty(
@@ -63,7 +60,7 @@ export async function createProperty(
 
 export async function updateProperty(
 	id: string,
-	property: Partial<Property>,
+	property: Partial<Omit<Property, "id" | "created_at" | "updated_at">>,
 ): Promise<Property> {
 	return handleSupabaseError(() =>
 		supabase.from("properties").update(property).eq("id", id).select().single(),
@@ -123,12 +120,12 @@ export async function getReservations(userId: string) {
 	)
 }
 
-export async function createReservation(
-	reservation: Omit<
-		Database["public"]["Tables"]["reservations"]["Row"],
-		"id" | "created_at"
-	>,
-) {
+type ReservationInput = Omit<
+	Database["public"]["Tables"]["reservations"]["Row"],
+	"id" | "created_at"
+>
+
+export async function createReservation(reservation: ReservationInput) {
 	return handleSupabaseError(() =>
 		supabase.from("reservations").insert(reservation).select().single(),
 	)
@@ -136,7 +133,7 @@ export async function createReservation(
 
 export async function updateReservation(
 	id: string,
-	reservation: Partial<Database["public"]["Tables"]["reservations"]["Row"]>,
+	reservation: Partial<ReservationInput>,
 ) {
 	return handleSupabaseError(() =>
 		supabase.from("reservations").update(reservation).eq("id", id).select().single(),

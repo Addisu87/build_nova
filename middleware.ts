@@ -1,81 +1,50 @@
 import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs"
-import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { NextResponse } from "next/server"
 
 // Move these to a shared config file that can be imported by both middleware and auth context
 export const AUTH_ROUTES = {
-  public: [
-    "/",
-    "/properties",
-    "/search",
-    "/auth/login",
-    "/auth/signup",
-    "/auth/reset-password",
-  ],
-  protected: [
-    "/favorites",
-    "/auth/profile",
-    "/properties/create",
-    "/properties/edit",
-  ],
-  admin: ["/admin"]
+	public: [
+		"/",
+		"/properties",
+		"/search",
+		"/auth/login",
+		"/auth/signup",
+		"/auth/reset-password",
+	],
+	protected: ["/favorites", "/auth/profile", "/properties/create", "/properties/edit"],
+	admin: ["/auth/admin"], // Make sure this is correct
 } as const
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next()
-  const supabase = createMiddlewareClient({ req, res })
-  const { data: { session } } = await supabase.auth.getSession()
+	const res = NextResponse.next()
+	const supabase = createMiddlewareClient({ req, res })
+	const { data: { session } } = await supabase.auth.getSession()
 
-  const path = req.nextUrl.pathname
+	const path = req.nextUrl.pathname
 
-  // Allow public routes without authentication
-  if (AUTH_ROUTES.public.some((route) => path.startsWith(route))) {
-    return res
-  }
-
-  // Check if the current path is a protected route
-  const isProtectedRoute = AUTH_ROUTES.protected.some(
-    (route) => path.startsWith(route)
-  )
-
-  // Check if the current path is an admin route
-  const isAdminRoute = AUTH_ROUTES.admin.some(
-    (route) => path.startsWith(route)
-  )
-
-  // If user is not signed in and trying to access a protected route,
-	// redirect to login
-	if (!session && isProtectedRoute) {
-		const redirectUrl = new URL(
-			"/auth/login",
-			req.url,
+	// If trying to access admin route without auth, redirect to login
+	if (path.startsWith("/auth/admin") && !session) {
+		return NextResponse.redirect(
+			new URL(`/auth/login?returnTo=${encodeURIComponent("/auth/admin")}`, req.url)
 		)
-		redirectUrl.searchParams.set(
-			"redirectedFrom",
-			path,
-		)
-		return NextResponse.redirect(redirectUrl)
 	}
 
 	// If user is not an admin and trying to access admin routes,
 	// redirect to home page
-	if (isAdminRoute && session) {
-		const {
-			data: { user },
-		} = await supabase.auth.getUser()
-		const isAdmin =
-			user?.user_metadata?.role === "admin"
+	if (path.startsWith("/auth/admin") && session) {
+		const { data: { user } } = await supabase.auth.getUser()
+		const isAdmin = user?.user_metadata?.role === "admin"
+		
 		if (!isAdmin) {
-			return NextResponse.redirect(
-				new URL("/", req.url),
-			)
+			return NextResponse.redirect(new URL("/", req.url))
 		}
 	}
 
 	return res
 }
 
-// Configure which routes to run middleware on
+// Update the matcher configuration to explicitly include admin routes
 export const config = {
 	matcher: [
 		/*
@@ -87,5 +56,6 @@ export const config = {
 		 * - api routes that should be public
 		 */
 		"/((?!_next/static|_next/image|favicon.ico|public|api/public).*)",
+		"/auth/admin"
 	],
 }

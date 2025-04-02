@@ -1,4 +1,4 @@
-export type AuthMode = "login" | "signup" | "verify-email" | "reset-password"
+export type AuthMode = "login" | "signup" | "verify-email" | "reset-password" | "admin"
 
 export interface AuthFormProps {
 	children: React.ReactNode

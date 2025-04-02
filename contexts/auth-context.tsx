@@ -1,5 +1,6 @@
 "use client"
 
+import { isFirstUser, setAdminRole } from "@/lib/supabase/admin"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import type { Session, User } from "@supabase/supabase-js"
 import { useRouter } from "next/navigation"
@@ -248,9 +249,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 					throw new Error(`Please wait ${timeLeft} seconds before trying again.`)
 				}
 
-				const { error } = await supabase.auth.signUp({
+				// Check if this is the first user
+				const firstUser = await isFirstUser()
+
+				const { data, error } = await supabase.auth.signUp({
 					email,
-					password
+					password,
+					options: {
+						data: {
+							role: firstUser ? "admin" : "user",
+						},
+					},
 				})
 
 				if (error) {
@@ -260,6 +269,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 						)
 					}
 					throw error
+				}
+
+				if (firstUser && data.user) {
+					await setAdminRole(data.user.id)  // Changed from makeUserAdmin to setAdminRole
 				}
 
 				handleEmailRateLimit()
@@ -411,8 +424,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
 	const context = useContext(AuthContext)
-	if (context === undefined) {
+	if (!context) {
 		throw new Error("useAuth must be used within an AuthProvider")
 	}
-	return context
+	return {
+		...context,
+		isAdmin: context.user?.user_metadata?.role === "admin"
+	}
 }

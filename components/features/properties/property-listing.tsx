@@ -123,47 +123,51 @@ export function PropertyListing({
 	)
 
 	return (
-		<div className="space-y-8">
-			<div className="flex items-center justify-between">
-				<h2 className="text-2xl font-bold">{title}</h2>
-
+		<div className="space-y-6">
+			<div className="flex items-center justify-between w-full">
 				<div className="flex items-center gap-4">
-					{showFilters && (
-						<PropertyFilters
-							onFiltersChange={handleFiltersChange}
-							initialFilters={filters}
-						/>
-					)}
-					<ViewToggle view={currentView} onChange={setCurrentView} />
+					{title && <h2 className="text-2xl font-bold">{title}</h2>}
 				</div>
+				
+				<ViewToggle 
+					view={currentView} 
+					onChange={setCurrentView}
+					showFilters={showFilters}
+					onFiltersChange={handleFiltersChange}
+					initialFilters={filters}
+				/>
 			</div>
 
-			{isLoading ? (
-				<div className="flex justify-center py-12">
-					<LoadingState type="properties" />
-				</div>
-			) : isError ? (
-				<div className="text-center py-8">
-					<p className="text-red-500">
-						Error loading properties. Please try again later.
-					</p>
-				</div>
-			) : properties?.length ?? 0 > 0 ? (
-				<div>
-					{currentView === "grid" ? (
-						<div className="space-y-8">
-							<PropertiesGrid properties={paginatedItems} />
-							{renderPagination()}
+			<div className={`grid grid-cols-1 ${showFilters ? 'lg:grid-cols-4' : ''} gap-6`}>
+				<div className={showFilters ? "lg:col-span-4" : "w-full"}>
+					{isLoading ? (
+						<div className="flex justify-center py-12">
+							<LoadingState type="properties" />
+						</div>
+					) : isError ? (
+						<div className="text-center py-8">
+							<p className="text-destructive">
+								Error loading properties. Please try again later.
+							</p>
+						</div>
+					) : properties?.length ? (
+						<div>
+							{currentView === "grid" ? (
+								<div className="space-y-8">
+									<PropertiesGrid properties={paginatedItems} />
+									{renderPagination()}
+								</div>
+							) : (
+								<PropertyMap properties={paginatedItems} />
+							)}
 						</div>
 					) : (
-						<PropertyMap properties={paginatedItems} />
+						<div className="text-center py-8">
+							<p className="text-muted-foreground">No properties found</p>
+						</div>
 					)}
 				</div>
-			) : (
-				<div className="text-center py-8">
-					<p className="text-gray-500">No properties match your filters</p>
-				</div>
-			)}
+			</div>
 		</div>
 	)
 }
