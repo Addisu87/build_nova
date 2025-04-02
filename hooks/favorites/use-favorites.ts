@@ -119,24 +119,31 @@ export function useFavorites() {
 		}
 	}
 
-	const removeFavorite = async (favoriteId: string) => {
+	const removeFavorite = async (propertyId: string) => {
 		try {
 			if (user) {
 				// Remove favorite for authenticated user
-				const { error } = await supabase.from("favorites").delete().eq("id", favoriteId)
+				const { error } = await supabase
+					.from("favorites")
+					.delete()
+					.eq("user_id", user.id)
+					.eq("property_id", propertyId)
 
 				if (error) throw error
+
+				setFavorites((prev) => prev.filter((favorite) => favorite.id !== propertyId))
+			} else {
+				// Remove from guest favorites
+				setFavorites((prev) => prev.filter((favorite) => favorite.id !== propertyId))
+				// Update localStorage
+				const updatedFavorites = favorites.filter(
+					(favorite) => favorite.id !== propertyId,
+				)
+				localStorage.setItem(GUEST_FAVORITES_KEY, JSON.stringify(updatedFavorites))
 			}
-
-			setFavorites((prev) =>
-				prev.filter((favorite) => favorite.favoriteId !== favoriteId),
-			)
-
-			toast.success("Removed from favorites")
-		} catch (err) {
-			console.error("Failed to remove favorite:", err)
-			toast.error("Failed to remove from favorites")
-			throw err
+		} catch (error) {
+			console.error("Error removing favorite:", error)
+			throw error
 		}
 	}
 

@@ -1,23 +1,28 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { ImageCarousel } from "@/components/ui/image-carousel"
-import { useFavorites } from "@/hooks/favorites/use-favorites"
-import { usePropertyImages } from "@/hooks/properties/use-property-images"
-import { formatPrice } from "@/lib/utils"
-import { Database } from "@/types/supabase"
-import { Bath, Bed, Heart, Square } from "lucide-react"
-import Link from "next/link"
-import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button";
+import { ImageCarousel } from "@/components/ui/image-carousel";
+import { useFavorites } from "@/hooks/favorites/use-favorites";
+import { usePropertyImages } from "@/hooks/properties/use-property-images";
+import { formatPrice } from "@/lib/utils";
+import { Database } from "@/types/supabase";
+import { Bath, Bed, Heart, Square } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 type Property = Database["public"]["Tables"]["properties"]["Row"]
 
 interface PropertyCardProps {
 	property: Property
 	variant?: "default" | "compact"
+	onFavoriteToggle?: () => void
 }
 
-export function PropertyCard({ property, variant = "default" }: PropertyCardProps) {
+export function PropertyCard({ 
+	property, 
+	variant = "default",
+	onFavoriteToggle 
+}: PropertyCardProps) {
 	const { isFavorite, addFavorite, removeFavorite, getFavoriteId } = useFavorites()
 	const { listImages } = usePropertyImages()
 	const [isHovered, setIsHovered] = useState(false)
@@ -42,15 +47,19 @@ export function PropertyCard({ property, variant = "default" }: PropertyCardProp
 		e.preventDefault()
 		e.stopPropagation()
 
-		try {
-			const favoriteId = getFavoriteId(property.id)
-			if (favoriteId) {
-				await removeFavorite(favoriteId)
-			} else {
-				await addFavorite(property)
+		if (onFavoriteToggle) {
+			onFavoriteToggle()
+		} else {
+			try {
+				const favoriteId = getFavoriteId(property.id)
+				if (favoriteId) {
+					await removeFavorite(favoriteId)
+				} else {
+					await addFavorite(property)
+				}
+			} catch (err) {
+				console.error("Failed to toggle favorite:", err)
 			}
-		} catch (err) {
-			console.error("Failed to toggle favorite:", err)
 		}
 	}
 

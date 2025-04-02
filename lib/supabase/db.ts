@@ -1,4 +1,4 @@
-import { Property, PropertyFilters } from "@/types"
+import { Property } from "@/types"
 import { Database } from "@/types/supabase"
 import { supabase } from "./client"
 
@@ -34,36 +34,23 @@ export async function getProperty(id: string): Promise<Property> {
 	)
 }
 
-export async function getProperties(filters?: PropertyFilters): Promise<Property[]> {
+export async function getProperties(filters = {}) {
 	let query = supabase.from("properties").select("*")
 
-	if (filters) {
-		if (filters.min_price) {
-			query = query.gte("price", filters.min_price)
+	// Apply filters if any
+	Object.entries(filters).forEach(([key, value]) => {
+		if (value) {
+			query = query.eq(key, value)
 		}
-		if (filters.max_price) {
-			query = query.lte("price", filters.max_price)
-		}
-		if (filters.bedrooms) {
-			query = query.eq("bedrooms", filters.bedrooms)
-		}
-		if (filters.bathrooms) {
-			query = query.eq("bathrooms", filters.bathrooms)
-		}
-		if (filters.property_type) {
-			query = query.eq("property_type", filters.property_type)
-		}
-		if (filters.location) {
-			query = query.ilike("location", `%${filters.location}%`)
-		}
+	})
+
+	const { data, error } = await query
+
+	if (error) {
+		throw error
 	}
 
-	return handleSupabaseError(() =>
-		query.then((result) => ({
-			data: result.data as Property[],
-			error: result.error,
-		})),
-	)
+	return data
 }
 
 export async function createProperty(
