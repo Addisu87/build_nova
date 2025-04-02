@@ -23,7 +23,7 @@ export function SignupForm() {
 		<AuthForm
 			description="Create an account to get started."
 			linkText="Already have an account?"
-			linkLabel="login"
+			linkLabel="Log In"
 			onGoogleClick={signInWithGoogle}
 			onFacebookClick={signInWithFacebook}
 			isLoading={isLoading || isProcessing("signup")}
@@ -85,7 +85,9 @@ export function SignupForm() {
 						disabled={isLoading || isProcessing("signup")}
 						className="w-full"
 						{...register("confirmPassword")}
-						aria-describedby={errors.confirmPassword ? "confirm-password-error" : undefined}
+						aria-describedby={
+							errors.confirmPassword ? "confirm-password-error" : undefined
+						}
 					/>
 					{errors.confirmPassword && (
 						<p id="confirm-password-error" className="text-sm text-destructive">

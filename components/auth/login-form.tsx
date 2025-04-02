@@ -23,7 +23,7 @@ export function LoginForm() {
 		<AuthForm
 			description="Welcome back! Please enter your details."
 			linkText="Don't have an account?"
-			linkLabel="signup"
+			linkLabel="Sign Up"
 			showForgotPassword={true}
 			onGoogleClick={signInWithGoogle}
 			onFacebookClick={signInWithFacebook}

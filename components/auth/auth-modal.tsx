@@ -18,7 +18,7 @@ const MODAL_TITLES = {
 	login: "Log in",
 	signup: "Sign Up",
 	"verify-email": "Check your email",
-	"reset-password": "Reset your password"
+	"reset-password": "Reset your password",
 } as const
 
 type AuthComponentKey = keyof typeof AUTH_COMPONENTS
