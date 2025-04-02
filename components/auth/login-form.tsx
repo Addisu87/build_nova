@@ -21,7 +21,6 @@ export function LoginForm() {
 
 	return (
 		<AuthForm
-			title="Log in"
 			description="Welcome back! Please enter your details."
 			linkText="Don't have an account?"
 			linkLabel="signup"
@@ -44,7 +43,9 @@ export function LoginForm() {
 						aria-describedby={errors.email ? "email-error" : undefined}
 					/>
 					{errors.email && (
-						<p id="email-error" className="text-sm text-destructive">{errors.email.message}</p>
+						<p id="email-error" className="text-sm text-destructive">
+							{errors.email.message}
+						</p>
 					)}
 				</div>
 
@@ -61,7 +62,9 @@ export function LoginForm() {
 						aria-describedby={errors.password ? "password-error" : undefined}
 					/>
 					{errors.password && (
-						<p id="password-error" className="text-sm text-destructive">{errors.password.message}</p>
+						<p id="password-error" className="text-sm text-destructive">
+							{errors.password.message}
+						</p>
 					)}
 				</div>
 

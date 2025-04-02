@@ -1,6 +1,6 @@
 "use client"
 
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { useRouter, useSearchParams } from "next/navigation"
 import { LoginForm } from "./login-form"
 import { PasswordResetForm } from "./password-reset-form"
@@ -14,6 +14,13 @@ const AUTH_COMPONENTS = {
 	"reset-password": PasswordResetForm,
 } as const
 
+const MODAL_TITLES = {
+	login: "Log in",
+	signup: "Sign Up",
+	"verify-email": "Check your email",
+	"reset-password": "Reset your password"
+} as const
+
 type AuthComponentKey = keyof typeof AUTH_COMPONENTS
 
 export function AuthModal() {
@@ -23,6 +30,7 @@ export function AuthModal() {
 
 	const isOpen = componentKey !== null && componentKey in AUTH_COMPONENTS
 	const AuthComponent = componentKey ? AUTH_COMPONENTS[componentKey] : null
+	const modalTitle = componentKey ? MODAL_TITLES[componentKey] : ""
 
 	const onClose = () => {
 		router.push(window.location.pathname, { scroll: false })
@@ -33,6 +41,9 @@ export function AuthModal() {
 	return (
 		<Dialog open={isOpen} onOpenChange={onClose}>
 			<DialogContent className="overflow-hidden sm:max-w-[425px] md:max-w-[450px] p-0 gap-0">
+				<DialogTitle className="px-6 pt-8 text-2xl font-semibold tracking-tight">
+					{modalTitle}
+				</DialogTitle>
 				<div className="px-6 py-8">
 					<AuthComponent />
 				</div>

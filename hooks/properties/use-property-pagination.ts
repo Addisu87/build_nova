@@ -1,194 +1,85 @@
-import { useAuth } from "@/contexts/auth-context"
-import { useRouter, useSearchParams } from "next/navigation"
-import { useCallback, useEffect, useState } from "react"
-import { toast } from "sonner"
+import { useEffect, useState } from "react"
 
-export interface PaginationState {
-	currentPage: number
-	totalPages: number
-	totalItems: number
-	itemsPerPage: number
+interface PaginationOptions<T> {
+	items: T[]
+	defaultItemsPerPage: number
+	resetOnItemsChange?: boolean
 }
 
-const DEFAULT_PAGINATION: PaginationState = {
-	currentPage: 1,
-	totalPages: 1,
-	totalItems: 0,
-	itemsPerPage: 12,
-}
+export function usePropertyPagination<T>({
+	items,
+	defaultItemsPerPage,
+	resetOnItemsChange = false,
+}: PaginationOptions<T>) {
+	const [currentPage, setCurrentPage] = useState(1)
+	const [itemsPerPage] = useState(defaultItemsPerPage)
 
-interface UsePropertyPaginationProps {
-	items?: any[]
-	defaultItemsPerPage?: number
-}
-
-export function usePropertyPagination({
-	items = [],
-	defaultItemsPerPage = 12,
-}: UsePropertyPaginationProps = {}) {
-	const router = useRouter()
-	const searchParams = useSearchParams()
-	const { isLoading } = useAuth()
-	const [pagination, setPagination] = useState<PaginationState>({
-		...DEFAULT_PAGINATION,
-		itemsPerPage: defaultItemsPerPage,
-		totalItems: items.length,
-		totalPages: Math.ceil(items.length / defaultItemsPerPage),
-	})
-
+	// Reset to first page when items change if resetOnItemsChange is true
 	useEffect(() => {
-		// Parse search params into pagination state
-		const newPagination: PaginationState = {
-			...pagination,
-			totalItems: items.length,
-			totalPages: Math.ceil(items.length / pagination.itemsPerPage),
+		if (resetOnItemsChange) {
+			setCurrentPage(1)
 		}
+	}, [items, resetOnItemsChange])
 
-		// Current page
-		const page = searchParams.get("page")
-		if (page) {
-			const parsedPage = parseInt(page)
-			if (!isNaN(parsedPage) && parsedPage > 0) {
-				newPagination.currentPage = Math.min(parsedPage, newPagination.totalPages)
-			}
-		}
-
-		// Items per page
-		const perPage = searchParams.get("perPage")
-		if (perPage) {
-			const parsedPerPage = parseInt(perPage)
-			if (!isNaN(parsedPerPage) && parsedPerPage > 0) {
-				newPagination.itemsPerPage = parsedPerPage
-				newPagination.totalPages = Math.ceil(items.length / parsedPerPage)
-			}
-		}
-
-		setPagination(newPagination)
-	}, [searchParams, items])
-
-	const updatePagination = (updates: Partial<PaginationState>) => {
-		try {
-			const updatedPagination = {
-				...pagination,
-				...updates,
-			}
-			const params = new URLSearchParams(searchParams.toString())
-
-			// Update page parameter
-			if (updatedPagination.currentPage > 1) {
-				params.set("page", updatedPagination.currentPage.toString())
-			} else {
-				params.delete("page")
-			}
-
-			// Update items per page parameter
-			if (updatedPagination.itemsPerPage !== DEFAULT_PAGINATION.itemsPerPage) {
-				params.set("perPage", updatedPagination.itemsPerPage.toString())
-			} else {
-				params.delete("perPage")
-			}
-
-			const queryString = params.toString()
-			router.push(queryString ? `?${queryString}` : window.location.pathname)
-		} catch (err) {
-			toast.error("Failed to update pagination")
-			throw err
-		}
-	}
+	const totalPages = Math.ceil(items.length / itemsPerPage)
+	const startIndex = (currentPage - 1) * itemsPerPage
+	const paginatedItems = items.slice(startIndex, startIndex + itemsPerPage)
 
 	const goToPage = (page: number) => {
-		if (page < 1 || page > pagination.totalPages) {
-			return
+		if (page >= 1 && page <= totalPages) {
+			setCurrentPage(page)
 		}
-		updatePagination({ currentPage: page })
 	}
 
 	const goToNextPage = () => {
-		if (pagination.currentPage < pagination.totalPages) {
-			goToPage(pagination.currentPage + 1)
+		if (currentPage < totalPages) {
+			setCurrentPage((prev) => prev + 1)
 		}
 	}
 
 	const goToPreviousPage = () => {
-		if (pagination.currentPage > 1) {
-			goToPage(pagination.currentPage - 1)
+		if (currentPage > 1) {
+			setCurrentPage((prev) => prev - 1)
 		}
 	}
 
-	const updateItemsPerPage = (itemsPerPage: number) => {
-		if (itemsPerPage < 1) {
-			return
-		}
-		updatePagination({
-			itemsPerPage,
-			currentPage: 1,
-			totalPages: Math.ceil(pagination.totalItems / itemsPerPage),
-		})
-	}
-
-	const resetPagination = useCallback(() => {
-		try {
-			const params = new URLSearchParams(searchParams.toString())
-			params.delete("page")
-			params.delete("perPage")
-			const queryString = params.toString()
-			router.push(queryString ? `?${queryString}` : window.location.pathname)
-		} catch (err) {
-			toast.error("Failed to reset pagination")
-			throw err
-		}
-	}, [searchParams, router])
-
-	// Calculate paginated items
-	const startIndex = (pagination.currentPage - 1) * pagination.itemsPerPage
-	const endIndex = startIndex + pagination.itemsPerPage
-	const paginatedItems = items.slice(startIndex, endIndex)
-
-	// Generate page numbers for pagination display
 	const getPageNumbers = () => {
-		const totalPages = pagination.totalPages
-		const currentPage = pagination.currentPage
-		let pages: (number | string)[] = []
+		const pages: (number | string)[] = []
+		const maxVisiblePages = 5
 
-		if (totalPages <= 7) {
-			pages = Array.from({ length: totalPages }, (_, i) => i + 1)
-		} else {
-			if (currentPage <= 3) {
-				pages = [1, 2, 3, 4, "...", totalPages - 1, totalPages]
-			} else if (currentPage >= totalPages - 2) {
-				pages = [
-					1,
-					2,
-					"...",
-					totalPages - 3,
-					totalPages - 2,
-					totalPages - 1,
-					totalPages,
-				]
-			} else {
-				pages = [
-					1,
-					"...",
-					currentPage - 1,
-					currentPage,
-					currentPage + 1,
-					"...",
-					totalPages,
-				]
-			}
+		if (totalPages <= maxVisiblePages) {
+			return Array.from({ length: totalPages }, (_, i) => i + 1)
 		}
+
+		// Always show first page
+		pages.push(1)
+
+		// Calculate middle pages
+		const leftBound = Math.max(2, currentPage - 1)
+		const rightBound = Math.min(totalPages - 1, currentPage + 1)
+
+		if (leftBound > 2) pages.push("...")
+		for (let i = leftBound; i <= rightBound; i++) {
+			pages.push(i)
+		}
+		if (rightBound < totalPages - 1) pages.push("...")
+
+		// Always show last page
+		pages.push(totalPages)
+
 		return pages
 	}
 
 	return {
-		pagination,
+		pagination: {
+			currentPage,
+			totalPages,
+			itemsPerPage,
+		},
 		paginatedItems,
-		isLoading,
 		goToPage,
 		goToNextPage,
 		goToPreviousPage,
-		updateItemsPerPage,
-		resetPagination,
 		getPageNumbers,
 	}
 }

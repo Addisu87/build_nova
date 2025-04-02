@@ -1,6 +1,4 @@
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Button, Input, Label } from "@/components/ui"
 import {
 	Select,
 	SelectContent,
@@ -15,10 +13,10 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from "@/components/ui/sheet"
-import { PropertyFilterOptions, PropertyType, PROPERTY_TYPES } from "@/types"
 import { createEmptyFilters } from "@/hooks/search/use-property-filters"
+import { PROPERTY_TYPES, PropertyFilterOptions } from "@/types"
 import { SlidersHorizontal } from "lucide-react"
-import { useState, useCallback, useEffect } from "react"
+import { useCallback, useState } from "react"
 
 interface PropertyFiltersProps {
 	onFiltersChange: (filters: PropertyFilterOptions) => void
@@ -29,7 +27,6 @@ export function PropertyFilters({
 	onFiltersChange,
 	initialFilters,
 }: PropertyFiltersProps) {
-	// Use a ref to track if this is the first render
 	const [filters, setFilters] = useState<PropertyFilterOptions>(
 		() => initialFilters || createEmptyFilters(),
 	)
@@ -38,7 +35,6 @@ export function PropertyFilters({
 	const handleFilterChange = useCallback(
 		(key: keyof PropertyFilterOptions, value: any) => {
 			setFilters((prev) => {
-				// If value is empty, remove the key from filters
 				const newFilters = { ...prev }
 				if (value === "" || value === null || value === undefined) {
 					delete newFilters[key]
@@ -51,23 +47,23 @@ export function PropertyFilters({
 		[],
 	)
 
+	const handleReset = useCallback(() => {
+		const emptyFilters = createEmptyFilters()
+		setFilters(emptyFilters)
+		onFiltersChange(emptyFilters)
+		setIsOpen(false)
+	}, [onFiltersChange])
+
 	const handleApplyFilters = useCallback(() => {
 		onFiltersChange(filters)
 		setIsOpen(false)
 	}, [filters, onFiltersChange])
 
-	const handleReset = useCallback(() => {
-		const newFilters = createEmptyFilters()
-		setFilters(newFilters)
-		onFiltersChange(newFilters)
-		setIsOpen(false)
-	}, [onFiltersChange])
-
 	return (
 		<Sheet open={isOpen} onOpenChange={setIsOpen}>
 			<SheetTrigger asChild>
 				<Button variant="outline" size="sm">
-					<SlidersHorizontal className="mr-2 h-4 w-4" />
+					<SlidersHorizontal className="h-4 w-4 mr-2" />
 					Filters
 				</Button>
 			</SheetTrigger>

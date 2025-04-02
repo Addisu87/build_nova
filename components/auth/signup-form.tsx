@@ -21,8 +21,7 @@ export function SignupForm() {
 
 	return (
 		<AuthForm
-			title="Sign Up"
-			description="Create an account to get started"
+			description="Create an account to get started."
 			linkText="Already have an account?"
 			linkLabel="login"
 			onGoogleClick={signInWithGoogle}

@@ -13,8 +13,9 @@ import {
 import { useAuth } from "@/contexts/auth-context"
 import { usePropertyManager } from "@/hooks/properties/use-property-manager"
 import { usePropertyPagination } from "@/hooks/properties/use-property-pagination"
-import { PropertyFilterOptions } from "@/types"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { createEmptyFilters } from "@/hooks/search/use-property-filters"
+import { Property, PropertyFilterOptions } from "@/types"
+import { useCallback, useMemo, useState } from "react"
 import { PropertyFilters } from "./property-filters"
 import { PropertiesGrid } from "./property-grid"
 import { PropertyMap } from "./property-map"
@@ -39,9 +40,10 @@ export function PropertyListing({
 }: PropertyListingProps) {
 	const { user } = useAuth()
 	const [currentView, setCurrentView] = useState<"grid" | "map">(viewType)
-	const [filters, setFilters] = useState<PropertyFilterOptions>(
-		() => initialFilters || {},
-	)
+	const [filters, setFilters] = useState<PropertyFilterOptions>(() => ({
+		...createEmptyFilters(),
+		...initialFilters,
+	}))
 
 	const queryParams = useMemo(
 		() => ({
@@ -51,13 +53,16 @@ export function PropertyListing({
 		[filters, listingType],
 	)
 
-	const { properties, isLoading, isError } = usePropertyManager(queryParams)
+	const { properties, isLoading, isError } = usePropertyManager(queryParams) as {
+		properties: Property[]
+		isLoading: boolean
+		isError: boolean
+	}
 
 	const handleFiltersChange = useCallback((newFilters: PropertyFilterOptions) => {
 		setFilters(newFilters)
 	}, [])
 
-	// Use pagination hook with the properties from the manager
 	const {
 		pagination,
 		paginatedItems,
@@ -65,16 +70,57 @@ export function PropertyListing({
 		goToNextPage,
 		goToPreviousPage,
 		getPageNumbers,
-		resetPagination,
 	} = usePropertyPagination({
-		items: properties || [],
+		items: Array.isArray(properties) ? properties : [],
 		defaultItemsPerPage: pageSize,
+		resetOnItemsChange: true,
 	})
 
-	// Reset pagination when filters change
-	useEffect(() => {
-		resetPagination()
-	}, [filters, resetPagination])
+	const renderPagination = () => (
+		<Pagination>
+			<PaginationContent>
+				<PaginationItem>
+					<PaginationPrevious
+						onClick={goToPreviousPage}
+						className={
+							pagination.currentPage === 1
+								? "pointer-events-none opacity-50"
+								: "cursor-pointer"
+						}
+					/>
+				</PaginationItem>
+
+				{getPageNumbers().map((page, index) =>
+					page === "..." ? (
+						<PaginationItem key={`ellipsis-${index}`}>
+							<PaginationEllipsis />
+						</PaginationItem>
+					) : (
+						<PaginationItem key={page}>
+							<PaginationLink
+								onClick={() => goToPage(page as number)}
+								isActive={pagination.currentPage === page}
+								className="cursor-pointer"
+							>
+								{page}
+							</PaginationLink>
+						</PaginationItem>
+					),
+				)}
+
+				<PaginationItem>
+					<PaginationNext
+						onClick={goToNextPage}
+						className={
+							pagination.currentPage === pagination.totalPages
+								? "pointer-events-none opacity-50"
+								: "cursor-pointer"
+						}
+					/>
+				</PaginationItem>
+			</PaginationContent>
+		</Pagination>
+	)
 
 	return (
 		<div className="space-y-8">
@@ -85,7 +131,7 @@ export function PropertyListing({
 					{showFilters && (
 						<PropertyFilters
 							onFiltersChange={handleFiltersChange}
-							initialFilters={initialFilters}
+							initialFilters={filters}
 						/>
 					)}
 					<ViewToggle view={currentView} onChange={setCurrentView} />
@@ -102,58 +148,15 @@ export function PropertyListing({
 						Error loading properties. Please try again later.
 					</p>
 				</div>
-			) : properties && properties.length > 0 ? (
+			) : properties?.length ?? 0 > 0 ? (
 				<div>
 					{currentView === "grid" ? (
 						<div className="space-y-8">
 							<PropertiesGrid properties={paginatedItems} />
-
-							<Pagination>
-								<PaginationContent>
-									<PaginationItem>
-										<PaginationPrevious
-											onClick={goToPreviousPage}
-											className={
-												pagination.currentPage === 1
-													? "pointer-events-none opacity-50"
-													: "cursor-pointer"
-											}
-										/>
-									</PaginationItem>
-
-									{getPageNumbers().map((page, index) =>
-										page === "..." ? (
-											<PaginationItem key={`ellipsis-${index}`}>
-												<PaginationEllipsis />
-											</PaginationItem>
-										) : (
-											<PaginationItem key={page}>
-												<PaginationLink
-													onClick={() => goToPage(page as number)}
-													isActive={pagination.currentPage === page}
-													className="cursor-pointer"
-												>
-													{page}
-												</PaginationLink>
-											</PaginationItem>
-										),
-									)}
-
-									<PaginationItem>
-										<PaginationNext
-											onClick={goToNextPage}
-											className={
-												pagination.currentPage === pagination.totalPages
-													? "pointer-events-none opacity-50"
-													: "cursor-pointer"
-											}
-										/>
-									</PaginationItem>
-								</PaginationContent>
-							</Pagination>
+							{renderPagination()}
 						</div>
 					) : (
-						<PropertyMap properties={properties} />
+						<PropertyMap properties={paginatedItems} />
 					)}
 				</div>
 			) : (

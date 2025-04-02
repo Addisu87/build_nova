@@ -9,7 +9,6 @@ import { useRouter } from "next/navigation"
 
 export function AuthForm({
 	children,
-	title,
 	description,
 	linkText,
 	linkLabel,
@@ -60,7 +59,6 @@ export function AuthForm({
 	return (
 		<Card className="border-none shadow-none">
 			<CardHeader className="space-y-2 px-0 pb-8 pt-0">
-				<h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
 				{description && <p className="text-sm text-muted-foreground">{description}</p>}
 			</CardHeader>
 			<CardContent className="px-0 space-y-4">

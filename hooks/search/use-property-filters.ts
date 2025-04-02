@@ -1,4 +1,4 @@
-import { PropertyApiFilters, PropertyFilterOptions, PropertyStatus } from "@/types";
+import { PropertyApiFilters, PropertyFilterOptions, PropertyStatus } from "@/types"
 
 // Helper function to convert string filter values to appropriate types for API calls
 export function convertFiltersToApiParams(
