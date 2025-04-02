@@ -1,49 +1,30 @@
-import { PropertyFilters as BasePropertyFilters } from "@/types"
-
-// Re-export the PropertyFilters interface from types/properties.ts
-// This ensures all components importing from this file get the same interface
-export type PropertyFilters = BasePropertyFilters
+import { PropertyApiFilters, PropertyFilterOptions, PropertyStatus } from "@/types";
 
 // Helper function to convert string filter values to appropriate types for API calls
 export function convertFiltersToApiParams(
-	filters: PropertyFilters,
-) {
+	filters: PropertyFilterOptions,
+): PropertyApiFilters {
 	return {
-		min_price: filters.min_price
-			? Number(filters.min_price)
-			: undefined,
-		max_price: filters.max_price
-			? Number(filters.max_price)
-			: undefined,
-		bedrooms: filters.bedrooms
-			? Number(filters.bedrooms)
-			: undefined,
-		bathrooms: filters.bathrooms
-			? Number(filters.bathrooms)
-			: undefined,
-		property_type:
-			filters.property_type || undefined,
+		min_price: filters.min_price !== undefined ? Number(filters.min_price) : undefined,
+		max_price: filters.max_price !== undefined ? Number(filters.max_price) : undefined,
+		bedrooms: filters.bedrooms !== undefined ? Number(filters.bedrooms) : undefined,
+		bathrooms: filters.bathrooms !== undefined ? Number(filters.bathrooms) : undefined,
+		property_type: filters.property_type || undefined,
 		location: filters.location || undefined,
-		status: filters.status || undefined,
+		status: filters.status as PropertyStatus | undefined,
 		square_feet: {
-			min:
-				filters.min_square_feet?.toString() || "",
-			max:
-				filters.max_square_feet?.toString() || "",
+			min: filters.min_square_feet?.toString() || "",
+			max: filters.max_square_feet?.toString() || "",
 		},
 		year_built: {
-			min:
-				filters.min_year_built?.toString() || "",
-			max:
-				filters.max_year_built?.toString() || "",
+			min: filters.min_year_built?.toString() || "",
+			max: filters.max_year_built?.toString() || "",
 		},
 	}
 }
 
 // Helper function to check if filters are empty
-export function areFiltersEmpty(
-	filters: Partial<PropertyFilters>,
-): boolean {
+export function areFiltersEmpty(filters: Partial<PropertyFilterOptions>): boolean {
 	return (
 		!filters.min_price &&
 		!filters.max_price &&
@@ -60,12 +41,12 @@ export function areFiltersEmpty(
 }
 
 // Helper function to create empty filters
-export function createEmptyFilters(): PropertyFilters {
+export function createEmptyFilters(): PropertyFilterOptions {
 	return {
-		min_price: 0,
-		max_price: 0,
-		bedrooms: 0,
-		bathrooms: 0,
+		min_price: undefined,
+		max_price: undefined,
+		bedrooms: undefined,
+		bathrooms: undefined,
 		property_type: undefined,
 		location: "",
 		status: undefined,

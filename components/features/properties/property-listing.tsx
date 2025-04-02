@@ -13,9 +13,9 @@ import {
 import { useAuth } from "@/contexts/auth-context"
 import { usePropertyManager } from "@/hooks/properties/use-property-manager"
 import { usePropertyPagination } from "@/hooks/properties/use-property-pagination"
-import { PropertyFilters } from "@/types"
-import { useCallback, useEffect, useState } from "react"
-import { PropertyFilters as PropertyFiltersComponent } from "./property-filters"
+import { PropertyFilterOptions } from "@/types"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { PropertyFilters } from "./property-filters"
 import { PropertiesGrid } from "./property-grid"
 import { PropertyMap } from "./property-map"
 import { ViewToggle } from "./view-toggle"
@@ -25,7 +25,7 @@ interface PropertyListingProps {
 	viewType?: "grid" | "map"
 	showFilters?: boolean
 	pageSize?: number
-	initialFilters?: PropertyFilters
+	initialFilters?: PropertyFilterOptions
 	listingType?: "buy" | "rent"
 }
 
@@ -39,13 +39,23 @@ export function PropertyListing({
 }: PropertyListingProps) {
 	const { user } = useAuth()
 	const [currentView, setCurrentView] = useState<"grid" | "map">(viewType)
-	const [filters, setFilters] = useState<PropertyFilters>(initialFilters)
+	const [filters, setFilters] = useState<PropertyFilterOptions>(
+		() => initialFilters || {},
+	)
 
-	// Use the property manager hook to handle data fetching and filtering
-	const { properties, isLoading, isError } = usePropertyManager({
-		...filters,
-		listingType,
-	})
+	const queryParams = useMemo(
+		() => ({
+			...filters,
+			listingType,
+		}),
+		[filters, listingType],
+	)
+
+	const { properties, isLoading, isError } = usePropertyManager(queryParams)
+
+	const handleFiltersChange = useCallback((newFilters: PropertyFilterOptions) => {
+		setFilters(newFilters)
+	}, [])
 
 	// Use pagination hook with the properties from the manager
 	const {
@@ -61,25 +71,21 @@ export function PropertyListing({
 		defaultItemsPerPage: pageSize,
 	})
 
-	const handleFiltersChange = useCallback((newFilters: PropertyFilters) => {
-		setFilters(newFilters)
-	}, [])
-
-	// Reset pagination when filters or properties change
+	// Reset pagination when filters change
 	useEffect(() => {
 		resetPagination()
-	}, [filters, properties, resetPagination])
+	}, [filters, resetPagination])
 
 	return (
 		<div className="space-y-8">
 			<div className="flex items-center justify-between">
-				{title && <h2 className="text-2xl font-bold">{title}</h2>}
+				<h2 className="text-2xl font-bold">{title}</h2>
 
 				<div className="flex items-center gap-4">
 					{showFilters && (
-						<PropertyFiltersComponent
+						<PropertyFilters
 							onFiltersChange={handleFiltersChange}
-							initialFilters={filters}
+							initialFilters={initialFilters}
 						/>
 					)}
 					<ViewToggle view={currentView} onChange={setCurrentView} />

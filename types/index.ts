@@ -87,7 +87,7 @@ export interface Range {
 }
 
 // Filter Interface
-export interface PropertyFilters extends Partial<Record<string, unknown>> {
+export interface PropertyFilterOptions extends Partial<Record<string, unknown>> {
 	searchQuery?: string
 	min_price?: number
 	max_price?: number
@@ -108,7 +108,7 @@ export interface PropertyFilters extends Partial<Record<string, unknown>> {
 }
 
 // API Filter Interface (for backend queries)
-export interface PropertyApiFilters extends PropertyFilters {
+export interface PropertyApiFilters extends PropertyFilterOptions {
 	status?: PropertyStatus
 	page?: number
 	limit?: number

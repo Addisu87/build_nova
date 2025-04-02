@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/auth-context"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { toast } from "sonner"
 
 export interface PaginationState {
@@ -22,9 +22,9 @@ interface UsePropertyPaginationProps {
 	defaultItemsPerPage?: number
 }
 
-export function usePropertyPagination({ 
-	items = [], 
-	defaultItemsPerPage = 12 
+export function usePropertyPagination({
+	items = [],
+	defaultItemsPerPage = 12,
 }: UsePropertyPaginationProps = {}) {
 	const router = useRouter()
 	const searchParams = useSearchParams()
@@ -33,7 +33,7 @@ export function usePropertyPagination({
 		...DEFAULT_PAGINATION,
 		itemsPerPage: defaultItemsPerPage,
 		totalItems: items.length,
-		totalPages: Math.ceil(items.length / defaultItemsPerPage)
+		totalPages: Math.ceil(items.length / defaultItemsPerPage),
 	})
 
 	useEffect(() => {
@@ -41,7 +41,7 @@ export function usePropertyPagination({
 		const newPagination: PaginationState = {
 			...pagination,
 			totalItems: items.length,
-			totalPages: Math.ceil(items.length / pagination.itemsPerPage)
+			totalPages: Math.ceil(items.length / pagination.itemsPerPage),
 		}
 
 		// Current page
@@ -122,11 +122,11 @@ export function usePropertyPagination({
 		updatePagination({
 			itemsPerPage,
 			currentPage: 1,
-			totalPages: Math.ceil(pagination.totalItems / itemsPerPage)
+			totalPages: Math.ceil(pagination.totalItems / itemsPerPage),
 		})
 	}
 
-	const resetPagination = () => {
+	const resetPagination = useCallback(() => {
 		try {
 			const params = new URLSearchParams(searchParams.toString())
 			params.delete("page")
@@ -137,7 +137,7 @@ export function usePropertyPagination({
 			toast.error("Failed to reset pagination")
 			throw err
 		}
-	}
+	}, [searchParams, router])
 
 	// Calculate paginated items
 	const startIndex = (pagination.currentPage - 1) * pagination.itemsPerPage
@@ -154,11 +154,27 @@ export function usePropertyPagination({
 			pages = Array.from({ length: totalPages }, (_, i) => i + 1)
 		} else {
 			if (currentPage <= 3) {
-				pages = [1, 2, 3, 4, '...', totalPages - 1, totalPages]
+				pages = [1, 2, 3, 4, "...", totalPages - 1, totalPages]
 			} else if (currentPage >= totalPages - 2) {
-				pages = [1, 2, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages]
+				pages = [
+					1,
+					2,
+					"...",
+					totalPages - 3,
+					totalPages - 2,
+					totalPages - 1,
+					totalPages,
+				]
 			} else {
-				pages = [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages]
+				pages = [
+					1,
+					"...",
+					currentPage - 1,
+					currentPage,
+					currentPage + 1,
+					"...",
+					totalPages,
+				]
 			}
 		}
 		return pages
@@ -173,6 +189,6 @@ export function usePropertyPagination({
 		goToPreviousPage,
 		updateItemsPerPage,
 		resetPagination,
-		getPageNumbers
+		getPageNumbers,
 	}
 }

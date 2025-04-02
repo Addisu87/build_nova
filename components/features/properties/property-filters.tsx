@@ -15,38 +15,53 @@ import {
 	SheetTitle,
 	SheetTrigger,
 } from "@/components/ui/sheet"
-import type { PropertyFilters } from "@/types/properties"
+import { PropertyFilterOptions, PropertyType, PROPERTY_TYPES } from "@/types"
+import { createEmptyFilters } from "@/hooks/search/use-property-filters"
 import { SlidersHorizontal } from "lucide-react"
-import { useState } from "react"
+import { useState, useCallback, useEffect } from "react"
 
 interface PropertyFiltersProps {
-	onFiltersChange: (filters: PropertyFilters) => void
-	initialFilters?: PropertyFilters
+	onFiltersChange: (filters: PropertyFilterOptions) => void
+	initialFilters?: PropertyFilterOptions
 }
 
 export function PropertyFilters({
 	onFiltersChange,
 	initialFilters,
 }: PropertyFiltersProps) {
-	const [filters, setFilters] = useState<PropertyFilters>(initialFilters || {})
+	// Use a ref to track if this is the first render
+	const [filters, setFilters] = useState<PropertyFilterOptions>(
+		() => initialFilters || createEmptyFilters(),
+	)
 	const [isOpen, setIsOpen] = useState(false)
 
-	const handleFilterChange = (key: keyof PropertyFilters, value: any) => {
-		const newFilters = { ...filters, [key]: value }
-		setFilters(newFilters)
-	}
+	const handleFilterChange = useCallback(
+		(key: keyof PropertyFilterOptions, value: any) => {
+			setFilters((prev) => {
+				// If value is empty, remove the key from filters
+				const newFilters = { ...prev }
+				if (value === "" || value === null || value === undefined) {
+					delete newFilters[key]
+				} else {
+					newFilters[key] = value
+				}
+				return newFilters
+			})
+		},
+		[],
+	)
 
-	const handleApplyFilters = () => {
+	const handleApplyFilters = useCallback(() => {
 		onFiltersChange(filters)
 		setIsOpen(false)
-	}
+	}, [filters, onFiltersChange])
 
-	const handleReset = () => {
-		const newFilters = {}
+	const handleReset = useCallback(() => {
+		const newFilters = createEmptyFilters()
 		setFilters(newFilters)
 		onFiltersChange(newFilters)
 		setIsOpen(false)
-	}
+	}, [onFiltersChange])
 
 	return (
 		<Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -69,14 +84,24 @@ export function PropertyFilters({
 							<Input
 								type="number"
 								placeholder="Min"
-								value={filters.minPrice || ""}
-								onChange={(e) => handleFilterChange("minPrice", e.target.value)}
+								value={filters.min_price || ""}
+								onChange={(e) =>
+									handleFilterChange(
+										"min_price",
+										e.target.value ? Number(e.target.value) : null,
+									)
+								}
 							/>
 							<Input
 								type="number"
 								placeholder="Max"
-								value={filters.maxPrice || ""}
-								onChange={(e) => handleFilterChange("maxPrice", e.target.value)}
+								value={filters.max_price || ""}
+								onChange={(e) =>
+									handleFilterChange(
+										"max_price",
+										e.target.value ? Number(e.target.value) : null,
+									)
+								}
 							/>
 						</div>
 					</div>
@@ -92,10 +117,13 @@ export function PropertyFilters({
 								<SelectValue placeholder="Select type" />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="house">House</SelectItem>
-								<SelectItem value="apartment">Apartment</SelectItem>
-								<SelectItem value="condo">Condo</SelectItem>
-								<SelectItem value="townhouse">Townhouse</SelectItem>
+								<SelectItem value="SINGLE_FAMILY_HOME">
+									{PROPERTY_TYPES.SINGLE_FAMILY_HOME}
+								</SelectItem>
+								<SelectItem value="APARTMENT">{PROPERTY_TYPES.APARTMENT}</SelectItem>
+								<SelectItem value="CONDO">{PROPERTY_TYPES.CONDO}</SelectItem>
+								<SelectItem value="TOWNHOUSE">{PROPERTY_TYPES.TOWNHOUSE}</SelectItem>
+								<SelectItem value="STUDIO">{PROPERTY_TYPES.STUDIO}</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
