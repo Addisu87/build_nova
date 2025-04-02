@@ -20,7 +20,9 @@ export function AuthForm({
 	const router = useRouter()
 
 	const handleAuthChange = (mode: string) => {
-		router.push(`?auth=${mode}`, { scroll: false })
+		// Convert "Sign Up" to "signup" and "Log In" to "login"
+		const authMode = mode.toLowerCase().replace(/\s+/g, "")
+		router.push(`?auth=${authMode}`, { scroll: false })
 	}
 
 	const socialButtons = (onGoogleClick || onFacebookClick) && (
@@ -82,7 +84,7 @@ export function AuthForm({
 					<div className="text-center text-sm text-muted-foreground">
 						{linkText}{" "}
 						<button
-							onClick={() => handleAuthChange(linkLabel.toLowerCase().replace(" ", "-"))}
+							onClick={() => handleAuthChange(linkLabel)}
 							className="underline hover:text-primary font-medium transition-colors"
 						>
 							{linkLabel}
