@@ -1,13 +1,13 @@
 "use client"
 
 import { PropertiesGrid, PropertyCard } from "@/components/features/properties"
-import { Card, Input, Button, Label, Separator } from "@/components/ui"
+import { Button, Card, Input, Label, Separator } from "@/components/ui"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { LoadingState } from "@/components/ui/loading-state"
 import { useAuth } from "@/contexts/auth-context"
+import { useProtectedRoute } from "@/hooks/auth/use-protected-route"
 import { useFavorites } from "@/hooks/favorites/use-favorites"
 import { removeFavorite } from "@/lib/supabase/db"
-import { useProtectedRoute } from "@/hooks/auth/use-protected-route"
 import { Building2, Mail, MapPin, User } from "lucide-react"
 import Link from "next/link"
 

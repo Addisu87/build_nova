@@ -19,12 +19,20 @@ interface UsePropertyImagesHook {
 	) => Promise<ImageUploadResult[]>
 	deleteMultipleImages: (paths: string[]) => Promise<void>
 	listImages: (folderPath: string) => Promise<ImageUploadResult[]>
+	handleImageUpload: (files: File[], options: ImageUploadOptions) => Promise<void>
+}
+
+interface ImageUploadOptions {
+	maxFiles?: number
+	currentImages: Array<{ url: string; path: string }>
+	folderPath: string
+	onSuccess: (results: ImageUploadResult[]) => void
+	onError?: (error: Error) => void
 }
 
 export function usePropertyImages(): UsePropertyImagesHook {
 	const [error, setError] = useState<Error | null>(null)
-	const [isLoading, setIsLoading] = useState(false)
-	const { user } = useAuth()
+	const { user, isLoading } = useAuth()
 
 	const handleError = (err: unknown, defaultMessage: string) => {
 		const errorMessage = err instanceof Error ? err.message : defaultMessage
@@ -34,7 +42,6 @@ export function usePropertyImages(): UsePropertyImagesHook {
 	}
 
 	const validateAccess = (operation: string) => {
-		// Add specific operations that require authentication
 		const restrictedOperations = ["upload", "delete"]
 		if (restrictedOperations.includes(operation) && !user) {
 			throw new Error("Authentication required for this operation")
@@ -45,18 +52,18 @@ export function usePropertyImages(): UsePropertyImagesHook {
 		try {
 			const { data, error: listError } = await supabase.storage
 				.from("images")
-				.list(folderPath)
+				.list(folderPath, { limit: 100 }) // Added limit for safety
 
 			if (listError) throw listError
 
-			const images = data
-				?.filter((file) => file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i))
+			const images = (data || [])
+				.filter((file) => file.name.match(/\.(jpg|jpeg|png|gif|webp)$/i))
 				.map((file) => ({
 					url: supabase.storage
 						.from("images")
 						.getPublicUrl(`${folderPath}/${file.name}`).data.publicUrl,
 					path: `${folderPath}/${file.name}`,
-				})) || []
+				}))
 
 			return images
 		} catch (err) {
@@ -71,9 +78,7 @@ export function usePropertyImages(): UsePropertyImagesHook {
 	): Promise<ImageUploadResult> => {
 		try {
 			validateAccess("upload")
-			setIsLoading(true)
 
-			// Validate file
 			if (!file.type.startsWith("image/")) {
 				throw new Error("File must be an image")
 			}
@@ -83,17 +88,16 @@ export function usePropertyImages(): UsePropertyImagesHook {
 				throw new Error("File size must be less than 5MB")
 			}
 
-			// Generate unique filename
 			const fileExt = file.name.split(".").pop() || "jpg"
 			const fileName = `${crypto.randomUUID()}.${fileExt}`
 			const filePath = `${folderPath}/${fileName}`
 
-			// Upload file
 			const { error: uploadError } = await supabase.storage
 				.from("images")
 				.upload(filePath, file, {
 					upsert: false,
 					contentType: file.type,
+					cacheControl: "3600",
 				})
 
 			if (uploadError) throw uploadError
@@ -106,16 +110,13 @@ export function usePropertyImages(): UsePropertyImagesHook {
 			}
 		} catch (err) {
 			handleError(err, "Failed to upload image")
-			throw err
-		} finally {
-			setIsLoading(false)
+			throw err // Re-throw to allow caller to handle
 		}
 	}
 
 	const deleteImage = async (path: string): Promise<void> => {
 		try {
 			validateAccess("delete")
-			setIsLoading(true)
 
 			const { error: deleteError } = await supabase.storage
 				.from("images")
@@ -126,8 +127,6 @@ export function usePropertyImages(): UsePropertyImagesHook {
 			toast.success("Image deleted successfully")
 		} catch (err) {
 			handleError(err, "Failed to delete image")
-		} finally {
-			setIsLoading(false)
 		}
 	}
 
@@ -137,37 +136,53 @@ export function usePropertyImages(): UsePropertyImagesHook {
 	): Promise<ImageUploadResult[]> => {
 		try {
 			validateAccess("upload")
-			setIsLoading(true)
 
-			const results = await Promise.all(
-				files.map((file) => uploadImage(file, folderPath)),
-			)
+			const uploadPromises = files.map((file) => uploadImage(file, folderPath))
+			const results = await Promise.all(uploadPromises)
 
+			toast.success(`Uploaded ${results.length} image${results.length > 1 ? "s" : ""}`)
 			return results
 		} catch (err) {
 			handleError(err, "Failed to upload images")
 			throw err
-		} finally {
-			setIsLoading(false)
 		}
 	}
 
 	const deleteMultipleImages = async (paths: string[]): Promise<void> => {
 		try {
 			validateAccess("delete")
-			setIsLoading(true)
 
-			const { error: deleteError } = await supabase.storage
-				.from("images")
-				.remove(paths)
+			const { error: deleteError } = await supabase.storage.from("images").remove(paths)
 
 			if (deleteError) throw deleteError
 
-			toast.success("Images deleted successfully")
+			toast.success(`Deleted ${paths.length} image${paths.length > 1 ? "s" : ""}`)
 		} catch (err) {
 			handleError(err, "Failed to delete images")
-		} finally {
-			setIsLoading(false)
+		}
+	}
+
+	const handleImageUpload = async (files: File[], options: ImageUploadOptions) => {
+		const {
+			maxFiles = 10,
+			currentImages,
+			folderPath,
+			onSuccess,
+			onError
+		} = options
+
+		try {
+			if (files.length + currentImages.length > maxFiles) {
+				throw new Error(`Maximum ${maxFiles} files allowed`)
+			}
+
+			const results = await uploadMultipleImages(files, folderPath)
+			onSuccess(results)
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : "Failed to upload images"
+			console.error("Failed to upload images:", error)
+			onError?.(new Error(errorMessage))
+			throw error
 		}
 	}
 
@@ -179,5 +194,6 @@ export function usePropertyImages(): UsePropertyImagesHook {
 		uploadMultipleImages,
 		deleteMultipleImages,
 		listImages,
+		handleImageUpload
 	}
 }

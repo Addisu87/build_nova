@@ -12,7 +12,7 @@ import {
 } from "@/components/ui"
 import { usePropertyImages } from "@/hooks/properties/use-property-images"
 import { PropertyFormData, propertySchema } from "@/lib/properties/property-schemas"
-import { Property, PROPERTY_TYPES, PropertyType } from "@/types"
+import { PROPERTY_TYPES, PropertyType } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import Image from "next/image"
 import { useState } from "react"
@@ -21,7 +21,7 @@ import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 
 interface PropertyFormProps {
-	initialData?: Partial<Property>
+	initialData?: Partial<PropertyFormData>
 	onSubmit: (data: PropertyFormData) => void
 	isLoading?: boolean
 }
@@ -31,10 +31,9 @@ export function PropertyForm({
 	onSubmit,
 	isLoading = false,
 }: PropertyFormProps) {
-	// Track both uploaded images and their paths for deletion
 	const [uploadedImages, setUploadedImages] = useState<
 		Array<{ url: string; path: string }>
-	>([])
+	>(initialData.images?.map((url, index) => ({ url, path: `initial/${index}` })) || [])
 
 	const {
 		register,
@@ -85,33 +84,25 @@ export function PropertyForm({
 	})
 
 	const {
-		uploadMultipleImages,
+		handleImageUpload,
 		deleteMultipleImages,
 		isLoading: isUploadingImages,
 	} = usePropertyImages()
 
 	const handleFiles = async (files: File[]) => {
-		try {
-			if (files.length > 10) {
-				toast.error("Maximum 10 files allowed")
-				return
-			}
+		const propertyType = watch("property_type")?.toLowerCase() || "default"
+		const propertyId = initialData.id || "new"
+		const folderPath = `properties/${propertyType}/${propertyId}`
 
-			const propertyType = watch("property_type")?.toLowerCase() || "default"
-			const propertyId = initialData.id || "new"
-			const folderPath = `properties/${propertyType}/${propertyId}`
-
-			const results = await uploadMultipleImages(files, folderPath)
-
-			setUploadedImages((prev) => [...prev, ...results])
-			const imageUrls = results.map((result) => result.url)
-			setValue("images", [...(watch("images") || []), ...imageUrls])
-
-			toast.success(`Successfully uploaded ${results.length} images`)
-		} catch (error) {
-			console.error("Failed to upload images:", error)
-			toast.error("Failed to upload images")
-		}
+		await handleImageUpload(files, {
+			maxFiles: 10,
+			currentImages: uploadedImages,
+			folderPath,
+			onSuccess: (results) => {
+				setUploadedImages((prev) => [...prev, ...results])
+				setValue("images", [...(watch("images") || []), ...results.map((r) => r.url)])
+			},
+		})
 	}
 
 	const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -126,23 +117,19 @@ export function PropertyForm({
 	const removeImage = async (index: number) => {
 		try {
 			const imageToRemove = uploadedImages[index]
-
-			if (imageToRemove?.path) {
+			if (imageToRemove?.path && !imageToRemove.path.startsWith("initial/")) {
 				await deleteMultipleImages([imageToRemove.path])
 			}
 
-			// Update state
 			const newUploadedImages = uploadedImages.filter((_, i) => i !== index)
 			setUploadedImages(newUploadedImages)
-
-			// Update form
-			const newImageUrls = newUploadedImages.map((img) => img.url)
-			setValue("images", newImageUrls)
-
-			toast.success("Image removed successfully")
+			setValue(
+				"images",
+				newUploadedImages.map((img) => img.url),
+			)
 		} catch (error) {
 			console.error("Failed to remove image:", error)
-			toast.error("Failed to remove image")
+			// Error toast is handled in the hook
 		}
 	}
 
@@ -167,9 +154,7 @@ export function PropertyForm({
 					<label className="text-sm font-medium">Price</label>
 					<Input
 						type="number"
-						{...register("price", {
-							valueAsNumber: true,
-						})}
+						{...register("price", { valueAsNumber: true })}
 						className="mt-1"
 					/>
 					{errors.price && (
@@ -205,13 +190,11 @@ export function PropertyForm({
 					<label className="text-sm font-medium">Year Built</label>
 					<Input
 						type="number"
-						{...register("yearBuilt", {
-							valueAsNumber: true,
-						})}
+						{...register("year_built", { valueAsNumber: true })} // Corrected field name
 						className="mt-1"
 					/>
-					{errors.yearBuilt && (
-						<p className="text-red-500 text-sm mt-1">{errors.yearBuilt.message}</p>
+					{errors.year_built && (
+						<p className="text-red-500 text-sm mt-1">{errors.year_built.message}</p>
 					)}
 				</div>
 
@@ -219,9 +202,7 @@ export function PropertyForm({
 					<label className="text-sm font-medium">Bedrooms</label>
 					<Input
 						type="number"
-						{...register("bedrooms", {
-							valueAsNumber: true,
-						})}
+						{...register("bedrooms", { valueAsNumber: true })}
 						className="mt-1"
 					/>
 					{errors.bedrooms && (
@@ -233,9 +214,7 @@ export function PropertyForm({
 					<label className="text-sm font-medium">Bathrooms</label>
 					<Input
 						type="number"
-						{...register("bathrooms", {
-							valueAsNumber: true,
-						})}
+						{...register("bathrooms", { valueAsNumber: true })}
 						className="mt-1"
 					/>
 					{errors.bathrooms && (
@@ -247,13 +226,11 @@ export function PropertyForm({
 					<label className="text-sm font-medium">Square Feet</label>
 					<Input
 						type="number"
-						{...register("squareFootage", {
-							valueAsNumber: true,
-						})}
+						{...register("square_feet", { valueAsNumber: true })} // Corrected field name
 						className="mt-1"
 					/>
-					{errors.squareFootage && (
-						<p className="text-red-500 text-sm mt-1">{errors.squareFootage.message}</p>
+					{errors.square_feet && (
+						<p className="text-red-500 text-sm mt-1">{errors.square_feet.message}</p>
 					)}
 				</div>
 			</div>
@@ -301,8 +278,9 @@ export function PropertyForm({
 								<button
 									type="button"
 									onClick={() => removeImage(index)}
+									disabled={isLoading || isUploadingImages}
 									className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full 
-											 opacity-0 group-hover:opacity-100 transition-opacity"
+                           opacity-0 group-hover:opacity-100 transition-opacity"
 								>
 									×
 								</button>

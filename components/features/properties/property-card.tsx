@@ -25,16 +25,16 @@ export function PropertyCard({
 }: PropertyCardProps) {
 	const { isFavorite, addFavorite, removeFavorite, getFavoriteId } = useFavorites()
 	const { listImages } = usePropertyImages()
+	const [propertyImages, setPropertyImages] = useState<Array<{ url: string; path: string }>>([])
 	const [isHovered, setIsHovered] = useState(false)
 	const [currentImageIndex, setCurrentImageIndex] = useState(0)
-	const [propertyImages, setPropertyImages] = useState<string[]>([])
 
 	useEffect(() => {
 		const fetchPropertyImages = async () => {
 			try {
 				const folderPath = `properties/${property.property_type.toLowerCase()}/${property.id}`
 				const images = await listImages(folderPath)
-				setPropertyImages(images.map(img => img.url))
+				setPropertyImages(images)
 			} catch (error) {
 				console.error("Error fetching property images:", error)
 			}
@@ -85,7 +85,7 @@ export function PropertyCard({
 				{/* Image Section */}
 				<div className="relative aspect-[4/3] overflow-hidden">
 					<ImageCarousel
-						images={propertyImages}
+						images={propertyImages.map(img => img.url)}
 						aspectRatio="property"
 						showControls={isHovered && propertyImages.length > 1}
 						autoPlay={false}

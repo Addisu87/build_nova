@@ -1,11 +1,11 @@
 "use client"
 
-import { usePropertyImages } from "@/hooks/properties/use-property-images"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { usePropertyImages } from "@/hooks/properties/use-property-images"
+import { ImageUploadResult } from "@/lib/supabase/images"
 import { useState } from "react"
 import { toast } from "sonner"
-import { ImageUploadResult } from "@/lib/supabase/images"
 
 interface ImageUploadPanelProps {
 	folderPath?: string
@@ -19,33 +19,25 @@ export function ImageUploadPanel({
 	maxFiles = 10,
 }: ImageUploadPanelProps) {
 	const [selectedFiles, setSelectedFiles] = useState<File[]>([])
-	const { uploadMultipleImages, isLoading } = usePropertyImages()
+	const { handleImageUpload, isLoading } = usePropertyImages()
 
 	const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files) {
 			const files = Array.from(e.target.files)
-			if (files.length > maxFiles) {
-				toast.error(`Maximum ${maxFiles} files allowed`)
-				return
-			}
 			setSelectedFiles(files)
 		}
 	}
 
 	const handleUpload = async () => {
-		if (selectedFiles.length === 0) {
-			toast.error("Please select files to upload")
-			return
-		}
-
-		try {
-			const results = await uploadMultipleImages(selectedFiles, folderPath)
-			toast.success(`Successfully uploaded ${results.length} images`)
-			setSelectedFiles([])
-			onUploadComplete?.(results)
-		} catch (error) {
-			console.error("Upload error:", error)
-		}
+		await handleImageUpload(selectedFiles, {
+			maxFiles,
+			currentImages: [],
+			folderPath,
+			onSuccess: (results) => {
+				onUploadComplete?.(results)
+				setSelectedFiles([])
+			}
+		})
 	}
 
 	return (
@@ -70,7 +62,7 @@ export function ImageUploadPanel({
 
 			{selectedFiles.length > 0 && (
 				<div className="text-sm text-gray-600">
-					Selected {selectedFiles.length} files
+					Selected {selectedFiles.length} file{selectedFiles.length > 1 ? "s" : ""}
 				</div>
 			)}
 

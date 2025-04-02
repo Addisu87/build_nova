@@ -6,23 +6,29 @@ import { useAuth } from "@/contexts/auth-context"
 import { usePropertyImages } from "@/hooks/properties/use-property-images"
 import { useCallback, useEffect, useState } from "react"
 
+const DEFAULT_HERO_IMAGES = [
+	"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&w=2000&q=75",
+	"https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&w=2000&q=75",
+	"https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&w=2000&q=75",
+]
+
 export function Hero() {
 	const { user } = useAuth()
-	const { listImages } = usePropertyImages() // Remove isLoading dependency
-	const [heroImages, setHeroImages] = useState<string[]>([])
+	const { listImages } = usePropertyImages()
+	const [heroImages, setHeroImages] = useState<Array<{ url: string; path: string }>>([])
 
 	const fetchHeroImages = useCallback(async () => {
 		try {
 			const images = await listImages("hero")
 			if (images && images.length > 0) {
-				setHeroImages(images.map((img) => img.url))
+				setHeroImages(images)
 			} else {
-				setHeroImages([
-					// Add your default hero image URLs here
-					"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&w=2000&q=75",
-					"https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&w=2000&q=75",
-					"https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&w=2000&q=75",
-				])
+				setHeroImages(
+					DEFAULT_HERO_IMAGES.map((url, index) => ({
+						url,
+						path: `default/hero/${index}`
+					}))
+				)
 			}
 		} catch (error) {
 			console.error("Error fetching hero images:", error)
@@ -43,7 +49,7 @@ export function Hero() {
 	return (
 		<div className="relative">
 			<ImageCarousel
-				images={heroImages}
+				images={heroImages.map(img => img.url)}
 				aspectRatio="hero"
 				className="h-[600px]"
 				priority={true}

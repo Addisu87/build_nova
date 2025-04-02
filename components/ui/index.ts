@@ -61,3 +61,5 @@ export {
 	CarouselNext,
 	CarouselPrevious,
 } from "./carousel"
+
+export { Separator } from "./separator"
