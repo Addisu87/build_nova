@@ -134,10 +134,13 @@ export function PropertyForm({
 	const handleImageUploadComplete = (results: ImageUploadResult[]) => {
 		const newImages = [...uploadedImages, ...results]
 		setUploadedImages(newImages)
-		form.setValue(
-			"images",
-			newImages.map((img) => img.url),
-		)
+		
+		// Update the form with the new image URLs
+		const imageUrls = newImages.map((img) => img.url)
+		form.setValue("images", imageUrls, {
+			shouldValidate: true,
+			shouldDirty: true
+		})
 	}
 
 	const handleRemoveImage = async (index: number) => {
@@ -164,14 +167,14 @@ export function PropertyForm({
 	const propertyId = (initialData as any)?.id || "new"
 	const folderPath = `properties/${propertyTypeValue}/${propertyId}`
 
-	const onSubmitForm = async (data: PropertyFormData) => {
+	const handleSubmit = async (data: PropertyFormData) => {
 		try {
 			if (filesToDelete.length > 0) {
 				await deleteImage(filesToDelete)
 				setFilesToDelete([])
 			}
 
-			// Ensure all required fields are present
+			// Use the existing uploadedImages state which already contains the correct URLs
 			const formData = {
 				...data,
 				images: uploadedImages.map((img) => img.url),
@@ -182,9 +185,9 @@ export function PropertyForm({
 				bedrooms: Number(data.bedrooms),
 				bathrooms: Number(data.bathrooms),
 				square_feet: Number(data.square_feet),
-				// Handle listing_date: if empty string, set to null
 				listing_date: data.listing_date || null,
 				user_id: user.id,
+				updated_at: new Date().toISOString()
 			}
 
 			await onSubmit(formData)

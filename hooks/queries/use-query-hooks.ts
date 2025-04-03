@@ -1,8 +1,8 @@
+import { PropertyFormData } from "@/lib/properties/property-schemas"
 import { supabase } from "@/lib/supabase/client"
 import { Property, PropertyApiFilters, PropertyType } from "@/types"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
-import { PropertyFormData } from "@/lib/properties/property-schemas"
 
 // Enhanced query keys with type safety
 export const queryKeys = {
@@ -79,7 +79,7 @@ export function useProperties(filters: PropertyApiFilters = {}) {
 		queryFn: () => fetchProperties(filters),
 		staleTime: 60 * 1000, // 1 minute
 		retry: 2,
-		onError: (error) => {
+		onError: (error: Error) => {
 			toast.error(`Error fetching properties: ${error.message}`)
 		},
 	})
@@ -118,7 +118,7 @@ export function useCreateProperty() {
 				.insert({
 					...newProperty,
 					created_at: new Date().toISOString(),
-					updated_at: new Date().toISOString()
+					updated_at: new Date().toISOString(),
 				})
 				.select()
 				.single()

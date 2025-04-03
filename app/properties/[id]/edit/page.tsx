@@ -1,16 +1,15 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { PropertyForm } from "@/components/features/properties"
-import { mockProperties } from "@/components/features/properties/mock-data"
-import { Property } from "@/components/features/properties/types"
+import { PropertyForm } from "@/components/features/properties/property-form"
+import { LoadingState } from "@/components/ui/loading-state"
 import { useAuth } from "@/contexts/auth-context"
 import { useAdminStatus } from "@/hooks/auth/use-admin-status"
-import { useProperty } from "@/hooks/use-property"
-import { updateProperty } from "@/api/properties"
-import { toast } from "react-toastify"
-import { LoadingState } from "@/components/ui/loading-state"
+import { useProperty } from "@/hooks/queries/use-query-hooks"
+import { updateProperty } from "@/lib/supabase/db"
+import { Property } from "@/types"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { toast } from "sonner"
 
 interface EditPropertyPageProps {
 	params: {
@@ -68,8 +67,19 @@ export default function EditPropertyPage({ params }: { params: { id: string } })
 	const handleSubmit = async (data: Partial<Property>) => {
 		setIsSaving(true)
 		try {
-			await updateProperty(user.id, params.id, data, isAdmin)
+			// Ensure images array is included in the update
+			const propertyData = {
+				...data,
+				// Make sure images array exists and contains valid URLs
+				images: data.images && Array.isArray(data.images) ? data.images : [],
+				updated_at: new Date().toISOString()
+			}
+
+			await updateProperty(user.id, params.id, propertyData, isAdmin)
+			
+			// Only redirect after successful update
 			router.push(`/properties/${params.id}`)
+			toast.success("Property updated successfully")
 		} catch (error) {
 			console.error("Error updating property:", error)
 			toast.error("Failed to update property")

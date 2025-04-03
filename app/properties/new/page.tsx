@@ -35,10 +35,15 @@ export default function NewPropertyPage() {
 		createProperty(
 			{
 				...data,
+				// Ensure images array is properly included
+				images: data.images || [],
+				created_at: new Date().toISOString(),
+				updated_at: new Date().toISOString()
 			},
 			{
 				onSuccess: (newProperty) => {
 					router.push(`/properties/${newProperty.id}`)
+					toast.success("Property created successfully")
 				},
 				onError: (error) => {
 					toast.error(`Failed to create property: ${error.message}`)
