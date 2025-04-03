@@ -2,7 +2,14 @@ import { cn } from "@/lib/utils"
 import { Skeleton } from "./skeleton"
 
 interface LoadingStateProps {
-	type?: "default" | "profile" | "property" | "properties" | "hero" | "map" | "imageUpload"
+	type?:
+		| "default"
+		| "profile"
+		| "property"
+		| "properties"
+		| "hero"
+		| "map"
+		| "imageUpload"
 	className?: string
 	height?: string
 }
@@ -34,13 +41,11 @@ export function LoadingState({
 					<div className="p-6 border rounded-lg space-y-6">
 						{/* Section title */}
 						<Skeleton className="h-7 w-40" /> {/* Image Management text */}
-
 						{/* Property type selector */}
 						<div className="space-y-2">
 							<Skeleton className="h-5 w-24" /> {/* Label */}
 							<Skeleton className="h-10 w-full rounded-md" /> {/* Select input */}
 						</div>
-
 						{/* Upload section */}
 						<div className="p-4 space-y-4 border rounded-lg">
 							{/* Upload path text */}
@@ -103,11 +108,20 @@ export function LoadingState({
 	if (type === "property") {
 		return (
 			<div className="space-y-8">
-				{/* Main image */}
-				<Skeleton className="h-[500px] w-full rounded-xl" />
+				{/* Image Gallery Loading State */}
+				<div className="grid grid-cols-1 md:grid-cols-4 gap-2 h-[600px]">
+					{/* Main large image skeleton */}
+					<div className="md:col-span-2 relative h-full">
+						<Skeleton className="h-full w-full rounded-lg" />
+					</div>
 
-				{/* Image thumbnails */}
-				{createImageGrid(4)}
+					{/* Thumbnails grid */}
+					<div className="hidden md:grid md:col-span-2 grid-cols-2 gap-2 h-full">
+						{Array.from({ length: 4 }).map((_, i) => (
+							<Skeleton key={i} className="h-[295px] rounded-lg" />
+						))}
+					</div>
+				</div>
 
 				{/* Content grid */}
 				<div className="grid gap-8 lg:grid-cols-3">

@@ -13,36 +13,54 @@ import { PropertyMap } from "@/components/features/properties/property-map"
 import { PropertySpecifications } from "@/components/features/properties/property-specifications"
 
 import { ImageThumbnails } from "@/components/ui/image-thumbnails"
+import { LoadingState } from "@/components/ui/loading-state"
+import { usePropertyManager } from "@/hooks/properties/use-property-manager"
 import { mockProperties } from "@/mock-data/properties"
 import { Property } from "@/types"
 import { LayoutGrid } from "lucide-react"
 import { notFound } from "next/navigation"
 import { useEffect, useState } from "react"
-import PropertyDetailsLoading from "./loading"
-import { usePropertyManager } from "@/hooks/properties/use-property-manager"
 
 export default function PropertyDetailsPage({ params }: { params: { id: string } }) {
+	const { properties, isLoading } = usePropertyManager()
 	const [property, setProperty] = useState<Property | null>(null)
 	const [nearbyProperties, setNearbyProperties] = useState<Property[]>([])
-	const [currentImageIndex, setCurrentImageIndex] = useState(0)
 	const [isGalleryOpen, setIsGalleryOpen] = useState(false)
-	const { properties } = usePropertyManager()
+	const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
 	useEffect(() => {
-		const found = properties?.find((p) => p.id === params.id) || mockProperties.find((p) => p.id === params.id)
+		if (isLoading || !properties) return
+
+		const found =
+			properties.find((p) => p.id === params.id) ||
+			mockProperties.find((p) => p.id === params.id)
+
 		if (!found) {
 			notFound()
+			return
 		}
+
 		setProperty(found)
 
+		// Ensure property has an images array
+		const propertyWithImages = {
+			...found,
+			images: found.images || [],
+		}
+
 		const nearby = (properties || mockProperties)
-			.filter((p) => p.id !== params.id && isNearby(found, p))
+			.filter((p) => p.id !== params.id && isNearby(propertyWithImages, p))
 			.slice(0, 10)
 		setNearbyProperties(nearby)
-	}, [params.id, properties])
+	}, [params.id, properties, isLoading])
 
-	if (!property) {
-		return <PropertyDetailsLoading />
+	// Render loading state
+	if (isLoading || !property) {
+		return (
+			<main className="container mx-auto py-8">
+				<LoadingState type="property" />
+			</main>
+		)
 	}
 
 	return (
@@ -52,23 +70,25 @@ export default function PropertyDetailsPage({ params }: { params: { id: string }
 				<div className="max-w-[1600px] mx-auto">
 					<div className="relative">
 						<ImageThumbnails
-							images={property.images}
+							images={property.images || []}
 							currentIndex={currentImageIndex}
 							onSelect={setCurrentImageIndex}
 							title={property.title}
 							className="w-full"
 						/>
 
-						<button
-							onClick={() => setIsGalleryOpen(true)}
-							className="absolute bottom-6 right-6 bg-white/90 backdrop-blur-sm px-6 py-3 
-								rounded-lg shadow-md text-sm font-medium hover:bg-white 
-								transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500
-								flex items-center gap-2 z-10"
-						>
-							<span>Show all</span>
-							<LayoutGrid className="w-4 h-4" />
-						</button>
+						{property.images?.length > 0 && (
+							<button
+								onClick={() => setIsGalleryOpen(true)}
+								className="absolute bottom-6 right-6 bg-white/90 backdrop-blur-sm px-6 py-3 
+									rounded-lg shadow-md text-sm font-medium hover:bg-white 
+									transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500
+									flex items-center gap-2 z-10"
+							>
+								<span>Show all</span>
+								<LayoutGrid className="w-4 h-4" />
+							</button>
+						)}
 					</div>
 				</div>
 			</div>

@@ -6,7 +6,7 @@ const nextConfig = {
 			{
 				protocol: "https",
 				hostname: "sinvgquzrvfrusjtwzdf.supabase.co",
-				pathname: "/storage/v1/object/public/**",
+				pathname: "/storage/v1/object/public/images/**",
 			},
 			{
 				protocol: "https",
@@ -24,6 +24,7 @@ const nextConfig = {
 				pathname: "/**",
 			},
 		],
+		unoptimized: true, // This allows using local images in public folder
 	},
 }
 

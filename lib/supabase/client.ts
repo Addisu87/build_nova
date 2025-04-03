@@ -11,3 +11,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
+
+const checkStorageAccess = async () => {
+	try {
+		const { data, error } = await supabase.storage.getBucket('images')
+		if (error) {
+			console.error('Storage access error:', error)
+			throw error
+		}
+		console.log('Storage bucket info:', data)
+	} catch (err) {
+		console.error('Failed to access storage:', err)
+	}
+}
+
+checkStorageAccess()

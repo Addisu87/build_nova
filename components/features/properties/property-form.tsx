@@ -166,7 +166,10 @@ export function PropertyForm({
 
 	const propertyTypeValue = form.watch("property_type")?.toLowerCase() || 'default'
 	const propertyId = (initialData as any)?.id || uuidv4()
-	const folderPath = `properties/${propertyTypeValue}/${propertyId}`
+	// Ensure clean folder path
+	const folderPath = `properties/${propertyTypeValue}/${propertyId}`.replace(/\/+/g, '/')
+
+	console.log('Property form upload path:', folderPath)
 
 	const handleSubmit = async (data: PropertyFormData) => {
 		try {

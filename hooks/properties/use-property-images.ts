@@ -45,20 +45,26 @@ export function usePropertyImages() {
 			setIsLoading(true)
 			setError(null)
 
+			// Log user and admin status
+			const { data: { user: userData }, error: userError } = await supabase.auth.getUser()
+			console.log('Current user:', userData)
+			
 			await checkAdminAccess()
 			validateFile(file)
 
-			// Clean the folder path to ensure proper structure
 			const cleanFolderPath = folderPath.replace(/^\/+|\/+$/g, "")
-
-			// Generate a unique filename with original extension
 			const fileExt = file.name.split(".").pop()?.toLowerCase() || "jpg"
 			const fileName = `${uuidv4()}.${fileExt}`
 			const filePath = `${cleanFolderPath}/${fileName}`
 
-			console.log('Attempting to upload to:', filePath)
+			console.log('Upload attempt:', {
+				bucket: 'images',
+				path: filePath,
+				contentType: file.type,
+				fileSize: file.size
+			})
 
-			const { error: uploadError } = await supabase.storage
+			const { data, error: uploadError } = await supabase.storage
 				.from("images")
 				.upload(filePath, file, {
 					cacheControl: "3600",
@@ -67,16 +73,21 @@ export function usePropertyImages() {
 				})
 
 			if (uploadError) {
-				console.error('Upload error:', uploadError)
+				console.error('Upload error:', {
+					message: uploadError.message,
+					details: uploadError.details,
+					hint: uploadError.hint
+				})
 				throw uploadError
 			}
 
-			// Get the public URL
+			console.log('Upload success:', data)
+
 			const {
 				data: { publicUrl },
 			} = supabase.storage.from("images").getPublicUrl(filePath)
 
-			console.log('Upload successful. Public URL:', publicUrl)
+			console.log('Generated public URL:', publicUrl)
 
 			return {
 				url: publicUrl,
@@ -84,7 +95,10 @@ export function usePropertyImages() {
 			}
 		} catch (err) {
 			const error = err instanceof Error ? err : new Error("Failed to upload image")
-			console.error('Upload failed:', error)
+			console.error('Upload failed:', {
+				error: error.message,
+				stack: error.stack
+			})
 			setError(error)
 			toast.error(error.message)
 			throw error
