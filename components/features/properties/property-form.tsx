@@ -12,9 +12,9 @@ import {
 	Textarea,
 } from "@/components/ui"
 import { useAuth } from "@/contexts/auth-context"
+import { useAdminStatus } from "@/hooks/auth/use-admin-status"
 import { usePropertyImages } from "@/hooks/properties/use-property-images"
 import { PropertyFormData, propertySchema } from "@/lib/properties/property-schemas"
-import { supabase } from "@/lib/supabase/client"
 import { PROPERTY_TYPES, PropertyType } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import Image from "next/image"
@@ -38,22 +38,20 @@ export function PropertyForm({
 	onSubmit,
 	isLoading = false,
 }: PropertyFormProps) {
-	const [uploadedImages, setUploadedImages] = useState<ImageUploadResult[]>([])
+	const [uploadedImages, setUploadedImages] = useState<ImageUploadResult[]>(() => 
+		initialData.images 
+			? initialData.images.map((url: string, index: number) => ({
+				url,
+				path: `initial/${index}`,
+			}))
+			: []
+	)
 	const [filesToDelete, setFilesToDelete] = useState<string[]>([])
-
 	const { user } = useAuth()
-	const [isAdmin, setIsAdmin] = useState(false)
-
+	const { isAdmin } = useAdminStatus(user)
 	const { deleteImage } = usePropertyImages()
 
-	const {
-		register,
-		handleSubmit,
-		formState: { errors },
-		setValue,
-		watch,
-		reset,
-	} = useForm<PropertyFormData>({
+	const form = useForm<PropertyFormData>({
 		resolver: zodResolver(propertySchema),
 		defaultValues: {
 			title: "",
@@ -70,7 +68,7 @@ export function PropertyForm({
 			zip_code: "",
 			latitude: 0,
 			longitude: 0,
-			images: [],
+			images: initialData.images || [],
 			features: [],
 			status: "for-sale",
 			amenities: [],
@@ -95,42 +93,23 @@ export function PropertyForm({
 		},
 	})
 
-	// Initialize form with initialData
+	// Initialize form with initialData only once
 	useEffect(() => {
-		if (initialData.images && initialData.images.length > 0) {
-			setUploadedImages(
-				initialData.images.map((url: string, index: number) => ({
-					url,
-					path: `initial/${index}`, // Temporary path for initial images
-				})),
-			)
-		}
-		reset(initialData)
-	}, [initialData, reset])
-
-	useEffect(() => {
-		const checkAdminStatus = async () => {
-			if (!user) return
-
-			const { data } = await supabase.auth.admin.getUserById(user.id)
-
-			setIsAdmin(data?.user?.user_metadata?.role === "admin" || false)
-		}
-
-		checkAdminStatus()
-	}, [user])
+		form.reset(initialData)
+	}, []) // Empty dependency array - only run once on mount
 
 	if (!isAdmin) {
 		return (
 			<div className="p-4 border rounded-lg text-center">
-				<p>You need admin privileges to manage property images</p>
+				<p>You need admin privileges to manage properties</p>
 			</div>
 		)
 	}
 
 	const handleImageUploadComplete = (results: ImageUploadResult[]) => {
-		setUploadedImages((prev) => [...prev, ...results])
-		setValue("images", [...(watch("images") || []), ...results.map((r) => r.url)])
+		const newImages = [...uploadedImages, ...results]
+		setUploadedImages(newImages)
+		form.setValue("images", newImages.map(img => img.url))
 	}
 
 	const handleRemoveImage = async (index: number) => {
@@ -138,39 +117,32 @@ export function PropertyForm({
 		if (!imageToRemove) return
 
 		try {
-			// If it's an existing image (not just uploaded), mark for deletion
 			if (imageToRemove.path && !imageToRemove.path.startsWith("initial/")) {
-				setFilesToDelete((prev) => [...prev, imageToRemove.path])
+				setFilesToDelete(prev => [...prev, imageToRemove.path])
 			}
 
-			// Remove from UI immediately
-			const newImages = [...uploadedImages]
-			newImages.splice(index, 1)
+			const newImages = uploadedImages.filter((_, i) => i !== index)
 			setUploadedImages(newImages)
-			setValue(
-				"images",
-				newImages.map((img) => img.url),
-			)
+			form.setValue("images", newImages.map(img => img.url))
 		} catch (error) {
 			toast.error("Failed to remove image")
 		}
 	}
 
-	const propertyTypeValue = watch("property_type")?.toLowerCase()
+	const propertyTypeValue = form.watch("property_type")?.toLowerCase()
 	const propertyId = initialData.id || "new"
 	const folderPath = `properties/${propertyTypeValue}/${propertyId}`
 
 	const onSubmitForm = async (data: PropertyFormData) => {
 		try {
-			// First delete any marked images
 			if (filesToDelete.length > 0) {
 				await deleteImage(filesToDelete)
+				setFilesToDelete([])
 			}
 
-			// Then submit the form data
-			onSubmit({
+			await onSubmit({
 				...data,
-				images: uploadedImages.map((img) => img.url),
+				images: uploadedImages.map(img => img.url),
 			})
 		} catch (error) {
 			toast.error("Failed to save property")
@@ -178,18 +150,20 @@ export function PropertyForm({
 	}
 
 	return (
-		<form onSubmit={handleSubmit(onSubmitForm)} className="space-y-6">
+		<form onSubmit={form.handleSubmit(onSubmitForm)} className="space-y-6">
 			<div className="grid gap-6 md:grid-cols-2">
 				{/* Title */}
 				<div>
 					<label className="text-sm font-medium">Title*</label>
 					<Input
-						{...register("title")}
+						{...form.register("title")}
 						className="mt-1"
 						placeholder="Beautiful family home"
 					/>
-					{errors.title && (
-						<p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
+					{form.formState.errors.title && (
+						<p className="text-red-500 text-sm mt-1">
+							{form.formState.errors.title.message}
+						</p>
 					)}
 				</div>
 
@@ -198,12 +172,14 @@ export function PropertyForm({
 					<label className="text-sm font-medium">Price*</label>
 					<Input
 						type="number"
-						{...register("price", { valueAsNumber: true })}
+						{...form.register("price", { valueAsNumber: true })}
 						className="mt-1"
 						placeholder="500000"
 					/>
-					{errors.price && (
-						<p className="text-red-500 text-sm mt-1">{errors.price.message}</p>
+					{form.formState.errors.price && (
+						<p className="text-red-500 text-sm mt-1">
+							{form.formState.errors.price.message}
+						</p>
 					)}
 				</div>
 
@@ -213,7 +189,7 @@ export function PropertyForm({
 					<Select
 						value={propertyTypeValue}
 						onValueChange={(value) =>
-							setValue("property_type", value.toUpperCase() as PropertyType)
+							form.setValue("property_type", value.toUpperCase() as PropertyType)
 						}
 					>
 						<SelectTrigger className="mt-1">
@@ -227,8 +203,10 @@ export function PropertyForm({
 							))}
 						</SelectContent>
 					</Select>
-					{errors.property_type && (
-						<p className="text-red-500 text-sm mt-1">{errors.property_type.message}</p>
+					{form.formState.errors.property_type && (
+						<p className="text-red-500 text-sm mt-1">
+							{form.formState.errors.property_type.message}
+						</p>
 					)}
 				</div>
 
@@ -237,7 +215,7 @@ export function PropertyForm({
 					<label className="text-sm font-medium">Year Built</label>
 					<Input
 						type="number"
-						{...register("year_built", {
+						{...form.register("year_built", {
 							valueAsNumber: true,
 							min: 1800,
 							max: new Date().getFullYear(),
@@ -245,8 +223,10 @@ export function PropertyForm({
 						className="mt-1"
 						placeholder="2020"
 					/>
-					{errors.year_built && (
-						<p className="text-red-500 text-sm mt-1">{errors.year_built.message}</p>
+					{form.formState.errors.year_built && (
+						<p className="text-red-500 text-sm mt-1">
+							{form.formState.errors.year_built.message}
+						</p>
 					)}
 				</div>
 
@@ -255,15 +235,17 @@ export function PropertyForm({
 					<label className="text-sm font-medium">Bedrooms*</label>
 					<Input
 						type="number"
-						{...register("bedrooms", {
+						{...form.register("bedrooms", {
 							valueAsNumber: true,
 							min: 0,
 						})}
 						className="mt-1"
 						placeholder="3"
 					/>
-					{errors.bedrooms && (
-						<p className="text-red-500 text-sm mt-1">{errors.bedrooms.message}</p>
+					{form.formState.errors.bedrooms && (
+						<p className="text-red-500 text-sm mt-1">
+							{form.formState.errors.bedrooms.message}
+						</p>
 					)}
 				</div>
 
@@ -272,15 +254,17 @@ export function PropertyForm({
 					<label className="text-sm font-medium">Bathrooms*</label>
 					<Input
 						type="number"
-						{...register("bathrooms", {
+						{...form.register("bathrooms", {
 							valueAsNumber: true,
 							min: 0,
 						})}
 						className="mt-1"
 						placeholder="2"
 					/>
-					{errors.bathrooms && (
-						<p className="text-red-500 text-sm mt-1">{errors.bathrooms.message}</p>
+					{form.formState.errors.bathrooms && (
+						<p className="text-red-500 text-sm mt-1">
+							{form.formState.errors.bathrooms.message}
+						</p>
 					)}
 				</div>
 
@@ -289,33 +273,43 @@ export function PropertyForm({
 					<label className="text-sm font-medium">Square Feet*</label>
 					<Input
 						type="number"
-						{...register("square_feet", {
+						{...form.register("square_feet", {
 							valueAsNumber: true,
 							min: 0,
 						})}
 						className="mt-1"
 						placeholder="1500"
 					/>
-					{errors.square_feet && (
-						<p className="text-red-500 text-sm mt-1">{errors.square_feet.message}</p>
+					{form.formState.errors.square_feet && (
+						<p className="text-red-500 text-sm mt-1">
+							{form.formState.errors.square_feet.message}
+						</p>
 					)}
 				</div>
 
 				{/* Address */}
 				<div className="md:col-span-2">
 					<label className="text-sm font-medium">Address*</label>
-					<Input {...register("address")} className="mt-1" placeholder="123 Main St" />
-					{errors.address && (
-						<p className="text-red-500 text-sm mt-1">{errors.address.message}</p>
+					<Input
+						{...form.register("address")}
+						className="mt-1"
+						placeholder="123 Main St"
+					/>
+					{form.formState.errors.address && (
+						<p className="text-red-500 text-sm mt-1">
+							{form.formState.errors.address.message}
+						</p>
 					)}
 				</div>
 
 				{/* City */}
 				<div>
 					<label className="text-sm font-medium">City*</label>
-					<Input {...register("city")} className="mt-1" placeholder="Anytown" />
-					{errors.city && (
-						<p className="text-red-500 text-sm mt-1">{errors.city.message}</p>
+					<Input {...form.register("city")} className="mt-1" placeholder="Anytown" />
+					{form.formState.errors.city && (
+						<p className="text-red-500 text-sm mt-1">
+							{form.formState.errors.city.message}
+						</p>
 					)}
 				</div>
 
@@ -323,22 +317,26 @@ export function PropertyForm({
 				<div>
 					<label className="text-sm font-medium">State*</label>
 					<Input
-						{...register("state")}
+						{...form.register("state")}
 						className="mt-1"
 						placeholder="CA"
 						maxLength={2}
 					/>
-					{errors.state && (
-						<p className="text-red-500 text-sm mt-1">{errors.state.message}</p>
+					{form.formState.errors.state && (
+						<p className="text-red-500 text-sm mt-1">
+							{form.formState.errors.state.message}
+						</p>
 					)}
 				</div>
 
 				{/* ZIP Code */}
 				<div>
 					<label className="text-sm font-medium">ZIP Code*</label>
-					<Input {...register("zip_code")} className="mt-1" placeholder="90210" />
-					{errors.zip_code && (
-						<p className="text-red-500 text-sm mt-1">{errors.zip_code.message}</p>
+					<Input {...form.register("zip_code")} className="mt-1" placeholder="90210" />
+					{form.formState.errors.zip_code && (
+						<p className="text-red-500 text-sm mt-1">
+							{form.formState.errors.zip_code.message}
+						</p>
 					)}
 				</div>
 			</div>
@@ -390,7 +388,7 @@ export function PropertyForm({
 			<div>
 				<label className="text-sm font-medium">Description*</label>
 				<Textarea
-					{...register("description")}
+					{...form.register("description")}
 					className="mt-1"
 					rows={4}
 					placeholder="Describe the property features, neighborhood, and unique selling points..."

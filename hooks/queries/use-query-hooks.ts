@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supabase/client"
 import { Property, PropertyApiFilters, PropertyType } from "@/types"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+import { PropertyFormData } from "@/lib/properties/property-schemas"
 
 // Enhanced query keys with type safety
 export const queryKeys = {
@@ -111,10 +112,14 @@ export function useCreateProperty() {
 	const queryClient = useQueryClient()
 
 	return useMutation({
-		mutationFn: async (newProperty: Omit<Property, "id">) => {
+		mutationFn: async (newProperty: PropertyFormData) => {
 			const { data, error } = await supabase
 				.from("properties")
-				.insert(newProperty)
+				.insert({
+					...newProperty,
+					created_at: new Date().toISOString(),
+					updated_at: new Date().toISOString()
+				})
 				.select()
 				.single()
 
@@ -122,10 +127,10 @@ export function useCreateProperty() {
 			return data as Property
 		},
 		onSuccess: (newProperty) => {
-			queryClient.invalidateQueries({ queryKey: queryKeys.properties.all })
+			queryClient.invalidateQueries({ queryKey: ["properties"] })
 			toast.success("Property created successfully")
 		},
-		onError: (error) => {
+		onError: (error: Error) => {
 			toast.error(`Failed to create property: ${error.message}`)
 		},
 	})
