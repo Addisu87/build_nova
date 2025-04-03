@@ -60,8 +60,9 @@ export function PropertyForm({
 	}
 
 	// Only check permissions if we're editing an existing property
-	if (initialData.id) {
-		const canEditProperty = isAdmin || initialData.user_id === user.id
+	if ("id" in initialData && "user_id" in initialData) {
+		const canEditProperty = isAdmin || initialData.user_id === user?.id
+
 		if (!canEditProperty) {
 			return (
 				<div className="p-4 border rounded-lg text-center">
@@ -117,21 +118,15 @@ export function PropertyForm({
 
 	// Initialize form with initialData only once
 	useEffect(() => {
-		form.reset(initialData)
-	}, []) // Empty dependency array - only run once on mount
+		if (Object.keys(initialData).length > 0) {
+			form.reset(initialData)
+		}
+	}, [initialData, form])
 
 	if (isLoading) {
 		return (
 			<div className="p-4 border rounded-lg text-center">
 				<LoadingState type="property" />
-			</div>
-		)
-	}
-
-	if (!isAdmin) {
-		return (
-			<div className="p-4 border rounded-lg text-center">
-				<p>You need admin privileges to manage properties</p>
 			</div>
 		)
 	}
@@ -166,7 +161,7 @@ export function PropertyForm({
 	}
 
 	const propertyTypeValue = form.watch("property_type")?.toLowerCase()
-	const propertyId = initialData.id || "new"
+	const propertyId = (initialData as any)?.id || "new"
 	const folderPath = `properties/${propertyTypeValue}/${propertyId}`
 
 	const onSubmitForm = async (data: PropertyFormData) => {
@@ -176,11 +171,25 @@ export function PropertyForm({
 				setFilesToDelete([])
 			}
 
-			await onSubmit({
+			// Ensure all required fields are present
+			const formData = {
 				...data,
 				images: uploadedImages.map((img) => img.url),
-			})
+				property_type: data.property_type,
+				status: data.status,
+				year_built: data.year_built || new Date().getFullYear(),
+				price: Number(data.price),
+				bedrooms: Number(data.bedrooms),
+				bathrooms: Number(data.bathrooms),
+				square_feet: Number(data.square_feet),
+				// Handle listing_date: if empty string, set to null
+				listing_date: data.listing_date || null,
+				user_id: user.id,
+			}
+
+			await onSubmit(formData)
 		} catch (error) {
+			console.error("Submit error:", error)
 			toast.error("Failed to save property")
 		}
 	}

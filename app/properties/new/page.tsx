@@ -6,11 +6,12 @@ import { useAuth } from "@/contexts/auth-context"
 import { useCreateProperty } from "@/hooks/queries/use-query-hooks"
 import { PropertyFormData } from "@/lib/properties/property-schemas"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 export default function NewPropertyPage() {
 	const { user, isLoading: isAuthLoading } = useAuth()
 	const router = useRouter()
-	const { mutate: createProperty, isLoading: isCreating } = useCreateProperty()
+	const { mutate: createProperty, isPending: isCreating } = useCreateProperty()
 
 	if (isAuthLoading) {
 		return (
@@ -32,12 +33,17 @@ export default function NewPropertyPage() {
 
 	const handleSubmit = async (data: PropertyFormData) => {
 		createProperty(
-			{ ...data, user_id: user.id },
+			{
+				...data,
+			},
 			{
 				onSuccess: (newProperty) => {
 					router.push(`/properties/${newProperty.id}`)
 				},
-			}
+				onError: (error) => {
+					toast.error(`Failed to create property: ${error.message}`)
+				},
+			},
 		)
 	}
 

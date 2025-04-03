@@ -6,7 +6,7 @@ export const propertySchema = z.object({
 	// Basic Information
 	title: z.string().min(1, "Title is required"),
 	description: z.string().min(1, "Description is required"),
-	price: z.number().min(0, "Price cannot be negative"),
+	price: z.number().min(0, "Price must be greater than 0"),
 
 	// Property Details
 	bedrooms: z.number().min(0, "Number of bedrooms cannot be negative"),

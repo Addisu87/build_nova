@@ -1,14 +1,14 @@
 "use client"
 
-import { Button } from "@/components/ui/button";
-import { ImageCarousel } from "@/components/ui/image-carousel";
-import { useFavorites } from "@/hooks/favorites/use-favorites";
-import { usePropertyImages } from "@/hooks/properties/use-property-images";
-import { formatPrice } from "@/lib/utils";
-import { Database } from "@/types/supabase";
-import { Bath, Bed, Heart, Square } from "lucide-react";
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button"
+import { ImageCarousel } from "@/components/ui/image-carousel"
+import { useFavorites } from "@/hooks/favorites/use-favorites"
+import { usePropertyImages } from "@/hooks/properties/use-property-images"
+import { formatPrice } from "@/lib/utils"
+import { Database } from "@/types/supabase"
+import { Bath, Bed, Heart, Square } from "lucide-react"
+import Link from "next/link"
+import { useEffect, useState } from "react"
 
 type Property = Database["public"]["Tables"]["properties"]["Row"]
 
@@ -18,21 +18,25 @@ interface PropertyCardProps {
 	onFavoriteToggle?: () => void
 }
 
-export function PropertyCard({ 
-	property, 
+export function PropertyCard({
+	property,
 	variant = "default",
-	onFavoriteToggle 
+	onFavoriteToggle,
 }: PropertyCardProps) {
 	const { isFavorite, addFavorite, removeFavorite, getFavoriteId } = useFavorites()
 	const { listImages } = usePropertyImages()
-	const [propertyImages, setPropertyImages] = useState<Array<{ url: string; path: string }>>([])
+	const [propertyImages, setPropertyImages] = useState<
+		Array<{ url: string; path: string }>
+	>([])
 	const [isHovered, setIsHovered] = useState(false)
 	const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
 	useEffect(() => {
 		const fetchPropertyImages = async () => {
 			try {
-				const folderPath = `properties/${property.property_type.toLowerCase()}/${property.id}`
+				const folderPath = `properties/${property.property_type.toLowerCase()}/${
+					property.id
+				}`
 				const images = await listImages(folderPath)
 				setPropertyImages(images)
 			} catch (error) {
@@ -85,7 +89,7 @@ export function PropertyCard({
 				{/* Image Section */}
 				<div className="relative aspect-[4/3] overflow-hidden">
 					<ImageCarousel
-						images={propertyImages.map(img => img.url)}
+						images={propertyImages.map((img) => img.url)}
 						aspectRatio="property"
 						showControls={isHovered && propertyImages.length > 1}
 						autoPlay={false}

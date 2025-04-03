@@ -98,10 +98,51 @@ export function usePropertyImages() {
 		}
 	}
 
+	const listImages = async (
+		folderPath: string,
+	): Promise<Array<{ url: string; path: string }>> => {
+		try {
+			setIsLoading(true)
+			setError(null)
+
+			const { data, error: listError } = await supabase.storage
+				.from("images")
+				.list(folderPath)
+
+			if (listError) throw listError
+
+			if (!data?.length) return []
+
+			// Get public URLs for all images
+			const images = await Promise.all(
+				data.map(async (file) => {
+					const path = `${folderPath}/${file.name}`
+					const {
+						data: { publicUrl },
+					} = supabase.storage.from("images").getPublicUrl(path)
+
+					return {
+						url: publicUrl,
+						path: path,
+					}
+				}),
+			)
+
+			return images
+		} catch (err) {
+			const error = err instanceof Error ? err : new Error("Failed to list images")
+			setError(error)
+			throw error
+		} finally {
+			setIsLoading(false)
+		}
+	}
+
 	return {
-		isLoading,
-		error,
 		uploadImage,
 		deleteImage,
+		listImages,
+		isLoading,
+		error,
 	}
 }
