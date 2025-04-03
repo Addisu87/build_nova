@@ -5,6 +5,12 @@ import { useRouter } from "next/navigation"
 import { PropertyForm } from "@/components/features/properties"
 import { mockProperties } from "@/components/features/properties/mock-data"
 import { Property } from "@/components/features/properties/types"
+import { useAuth } from "@/contexts/auth-context"
+import { useAdminStatus } from "@/hooks/auth/use-admin-status"
+import { useProperty } from "@/hooks/use-property"
+import { updateProperty } from "@/api/properties"
+import { toast } from "react-toastify"
+import { LoadingState } from "@/components/ui/loading-state"
 
 interface EditPropertyPageProps {
 	params: {
@@ -12,86 +18,76 @@ interface EditPropertyPageProps {
 	}
 }
 
-export default function EditPropertyPage({
-	params,
-}: EditPropertyPageProps) {
+export default function EditPropertyPage({ params }: { params: { id: string } }) {
+	const { user, isLoading: isAuthLoading } = useAuth()
+	const { isAdmin } = useAdminStatus(user)
 	const router = useRouter()
-	const [property, setProperty] =
-		useState<Property | null>(null)
-	const [isLoading, setIsLoading] = useState(true)
+	const { data: property, isLoading } = useProperty(params.id)
 	const [isSaving, setIsSaving] = useState(false)
 
-	useEffect(() => {
-		// Simulating API call to fetch property
-		const fetchProperty = async () => {
-			try {
-				const found = mockProperties.find(
-					(p) => p.id === params.id,
-				)
-				if (!found) {
-					router.push("/404")
-					return
-				}
-				setProperty(found)
-			} catch (error) {
-				console.error(
-					"Error fetching property:",
-					error,
-				)
-				router.push("/404")
-			} finally {
-				setIsLoading(false)
-			}
-		}
-
-		fetchProperty()
-	}, [params.id, router])
-
-	const handleSubmit = async (
-		data: Partial<Property>,
-	) => {
-		setIsSaving(true)
-		try {
-			// Simulating API call to update property
-			await new Promise((resolve) =>
-				setTimeout(resolve, 1000),
-			)
-			router.push(`/properties/${params.id}`)
-		} catch (error) {
-			console.error(
-				"Error updating property:",
-				error,
-			)
-		} finally {
-			setIsSaving(false)
-		}
-	}
-
-	if (isLoading || !property) {
+	if (isAuthLoading || isLoading) {
 		return (
 			<main className="container mx-auto px-4 py-8">
-				<div className="animate-pulse">
-					<div className="h-8 w-1/4 bg-gray-200 rounded"></div>
-					<div className="mt-8 space-y-6">
-						<div className="h-10 w-full bg-gray-200 rounded"></div>
-						<div className="h-10 w-full bg-gray-200 rounded"></div>
-						<div className="h-32 w-full bg-gray-200 rounded"></div>
-					</div>
+				<LoadingState type="property" />
+			</main>
+		)
+	}
+
+	if (!user) {
+		return (
+			<main className="container mx-auto px-4 py-8">
+				<div className="text-center">
+					<p>Please sign in to edit properties</p>
 				</div>
 			</main>
 		)
 	}
 
+	if (!property) {
+		return (
+			<main className="container mx-auto px-4 py-8">
+				<div className="text-center">
+					<p>Property not found</p>
+				</div>
+			</main>
+		)
+	}
+
+	const canEditProperty = isAdmin || property.user_id === user.id
+
+	if (!canEditProperty) {
+		return (
+			<main className="container mx-auto px-4 py-8">
+				<div className="text-center">
+					<p>You don't have permission to edit this property</p>
+				</div>
+			</main>
+		)
+	}
+
+	const handleSubmit = async (data: Partial<Property>) => {
+		setIsSaving(true)
+		try {
+			await updateProperty(user.id, params.id, data, isAdmin)
+			router.push(`/properties/${params.id}`)
+		} catch (error) {
+			console.error("Error updating property:", error)
+			toast.error("Failed to update property")
+		} finally {
+			setIsSaving(false)
+		}
+	}
+
 	return (
 		<main className="container mx-auto px-4 py-8">
-			<h1 className="mb-8 text-2xl font-bold">
-				Edit Property
-			</h1>
-			<PropertyForm
-				initialData={property}
-				onSubmit={handleSubmit}
-				isLoading={isSaving}
-			/>
+			<div className="space-y-8">
+				<h1 className="text-4xl font-bold">Edit Property</h1>
+				<PropertyForm
+					initialData={property}
+					onSubmit={handleSubmit}
+					isLoading={isSaving}
+				/>
+			</div>
 		</main>
 	)
 }

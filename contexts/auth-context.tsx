@@ -1,5 +1,6 @@
 "use client"
 
+import { AdminService } from "@/lib/services/admin-service"
 import { supabase } from "@/lib/supabase/client"
 import type { Session, User } from "@supabase/supabase-js"
 import { useRouter } from "next/navigation"
@@ -189,9 +190,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 						.eq("user_id", state.user.id)
 						.eq("property_id", propertyId)
 				} else {
-					await supabase
-						.from("favorites")
-						.insert({ user_id: state.user.id, property_id: propertyId })
+					await supabase.from("favorites").insert({
+						user_id: state.user.id,
+						property_id: propertyId,
+					})
 				}
 				await loadAuthenticatedFavorites()
 			} else {
@@ -225,7 +227,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 				for (const propertyId of guestFavorites) {
 					await supabase
 						.from("favorites")
-						.insert({ user_id: state.user!.id, property_id: propertyId })
+						.insert({
+							user_id: state.user!.id,
+							property_id: propertyId,
+						})
 						.select()
 				}
 				localStorage.removeItem(GUEST_FAVORITES_KEY)
@@ -238,7 +243,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		})
 	}
 
-	// Auth methods with processing states
 	const signUp = async (email: string, password: string) => {
 		await withProcessing("signup", async () => {
 			// Check email rate limit
@@ -437,8 +441,11 @@ export function useAuth() {
 	if (!context) {
 		throw new Error("useAuth must be used within an AuthProvider")
 	}
+
 	return {
 		...context,
-		isAdmin: context.user?.user_metadata?.role === "admin",
+		isAdmin:
+			AdminService.isSuperAdmin(context.user) ||
+			context.user?.user_metadata?.role === "admin",
 	}
 }

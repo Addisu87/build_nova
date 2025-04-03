@@ -11,6 +11,7 @@ import {
 	SelectValue,
 	Textarea,
 } from "@/components/ui"
+import { LoadingState } from "@/components/ui/loading-state"
 import { useAuth } from "@/contexts/auth-context"
 import { useAdminStatus } from "@/hooks/auth/use-admin-status"
 import { usePropertyImages } from "@/hooks/properties/use-property-images"
@@ -38,17 +39,38 @@ export function PropertyForm({
 	onSubmit,
 	isLoading = false,
 }: PropertyFormProps) {
-	const [uploadedImages, setUploadedImages] = useState<ImageUploadResult[]>(() => 
-		initialData.images 
+	const [uploadedImages, setUploadedImages] = useState<ImageUploadResult[]>(() =>
+		initialData.images
 			? initialData.images.map((url: string, index: number) => ({
-				url,
-				path: `initial/${index}`,
-			}))
-			: []
+					url,
+					path: `initial/${index}`,
+			  }))
+			: [],
 	)
 	const [filesToDelete, setFilesToDelete] = useState<string[]>([])
 	const { user } = useAuth()
 	const { isAdmin } = useAdminStatus(user)
+
+	if (!user) {
+		return (
+			<div className="p-4 border rounded-lg text-center">
+				<p>Please sign in to manage properties</p>
+			</div>
+		)
+	}
+
+	// Only check permissions if we're editing an existing property
+	if (initialData.id) {
+		const canEditProperty = isAdmin || initialData.user_id === user.id
+		if (!canEditProperty) {
+			return (
+				<div className="p-4 border rounded-lg text-center">
+					<p>You don't have permission to edit this property</p>
+				</div>
+			)
+		}
+	}
+
 	const { deleteImage } = usePropertyImages()
 
 	const form = useForm<PropertyFormData>({
@@ -98,6 +120,14 @@ export function PropertyForm({
 		form.reset(initialData)
 	}, []) // Empty dependency array - only run once on mount
 
+	if (isLoading) {
+		return (
+			<div className="p-4 border rounded-lg text-center">
+				<LoadingState type="property" />
+			</div>
+		)
+	}
+
 	if (!isAdmin) {
 		return (
 			<div className="p-4 border rounded-lg text-center">
@@ -109,7 +139,10 @@ export function PropertyForm({
 	const handleImageUploadComplete = (results: ImageUploadResult[]) => {
 		const newImages = [...uploadedImages, ...results]
 		setUploadedImages(newImages)
-		form.setValue("images", newImages.map(img => img.url))
+		form.setValue(
+			"images",
+			newImages.map((img) => img.url),
+		)
 	}
 
 	const handleRemoveImage = async (index: number) => {
@@ -118,12 +151,15 @@ export function PropertyForm({
 
 		try {
 			if (imageToRemove.path && !imageToRemove.path.startsWith("initial/")) {
-				setFilesToDelete(prev => [...prev, imageToRemove.path])
+				setFilesToDelete((prev) => [...prev, imageToRemove.path])
 			}
 
 			const newImages = uploadedImages.filter((_, i) => i !== index)
 			setUploadedImages(newImages)
-			form.setValue("images", newImages.map(img => img.url))
+			form.setValue(
+				"images",
+				newImages.map((img) => img.url),
+			)
 		} catch (error) {
 			toast.error("Failed to remove image")
 		}
@@ -142,7 +178,7 @@ export function PropertyForm({
 
 			await onSubmit({
 				...data,
-				images: uploadedImages.map(img => img.url),
+				images: uploadedImages.map((img) => img.url),
 			})
 		} catch (error) {
 			toast.error("Failed to save property")
@@ -172,7 +208,9 @@ export function PropertyForm({
 					<label className="text-sm font-medium">Price*</label>
 					<Input
 						type="number"
-						{...form.register("price", { valueAsNumber: true })}
+						{...form.register("price", {
+							valueAsNumber: true,
+						})}
 						className="mt-1"
 						placeholder="500000"
 					/>
@@ -344,7 +382,8 @@ export function PropertyForm({
 			{/* Image Upload Section */}
 			<div className="space-y-4">
 				<label className="text-sm font-medium">
-					Property Images ({uploadedImages.length}/10)
+					Property Images ({uploadedImages.length}
+					/10)
 				</label>
 
 				<ImageUploadPanel
@@ -393,8 +432,10 @@ export function PropertyForm({
 					rows={4}
 					placeholder="Describe the property features, neighborhood, and unique selling points..."
 				/>
-				{errors.description && (
-					<p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
+				{form.formState.errors.description && (
+					<p className="text-red-500 text-sm mt-1">
+						{form.formState.errors.description.message}
+					</p>
 				)}
 			</div>
 

@@ -33,7 +33,7 @@ export async function handleSupabaseError<T>(
 
 export async function getProperty(id: string): Promise<Property> {
 	return handleSupabaseError(() =>
-		supabase.from("properties").select("*").eq("id", id).single(),
+		supabase.from("properties").select("*").eq("id", id).single()
 	)
 }
 
@@ -51,24 +51,72 @@ export async function getProperties(filters: Partial<Property> = {}) {
 }
 
 export async function createProperty(
-	property: Omit<Property, "id" | "created_at" | "updated_at">,
+	userId: string,
+	property: Omit<Property, "id" | "created_at" | "updated_at" | "user_id">
 ): Promise<Property> {
 	return handleSupabaseError(() =>
-		supabase.from("properties").insert(property).select().single(),
+		supabase
+			.from("properties")
+			.insert({ ...property, user_id: userId })
+			.select()
+			.single()
 	)
 }
 
 export async function updateProperty(
+	userId: string,
 	id: string,
-	property: Partial<Omit<Property, "id" | "created_at" | "updated_at">>,
+	property: Partial<Omit<Property, "id" | "created_at" | "updated_at" | "user_id">>,
+	isAdmin: boolean
 ): Promise<Property> {
+	// First check if user has permission to update this property
+	const { data: existingProperty } = await supabase
+		.from("properties")
+		.select("user_id")
+		.eq("id", id)
+		.single()
+
+	if (!existingProperty) {
+		throw new Error("Property not found")
+	}
+
+	if (!isAdmin && existingProperty.user_id !== userId) {
+		throw new Error("You don't have permission to update this property")
+	}
+
 	return handleSupabaseError(() =>
-		supabase.from("properties").update(property).eq("id", id).select().single(),
+		supabase
+			.from("properties")
+			.update(property)
+			.eq("id", id)
+			.select()
+			.single()
 	)
 }
 
-export async function deleteProperty(id: string): Promise<void> {
-	return handleSupabaseError(() => supabase.from("properties").delete().eq("id", id))
+export async function deleteProperty(
+	userId: string,
+	id: string,
+	isAdmin: boolean
+): Promise<void> {
+	// First check if user has permission to delete this property
+	const { data: existingProperty } = await supabase
+		.from("properties")
+		.select("user_id")
+		.eq("id", id)
+		.single()
+
+	if (!existingProperty) {
+		throw new Error("Property not found")
+	}
+
+	if (!isAdmin && existingProperty.user_id !== userId) {
+		throw new Error("You don't have permission to delete this property")
+	}
+
+	return handleSupabaseError(() =>
+		supabase.from("properties").delete().eq("id", id)
+	)
 }
 
 export async function getFavorites(userId: string) {
