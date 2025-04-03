@@ -25,17 +25,14 @@ export function useFavorites() {
 				setIsLoading(true)
 
 				if (user) {
-					// Load authenticated user favorites
+					// Load authenticated user favorites - RLS will handle filtering
 					const { data, error } = await supabase
 						.from("favorites")
-						.select(
-							`
+						.select(`
               id,
               created_at,
               property:properties(*)
-            `,
-						)
-						.eq("user_id", user.id)
+            `)
 						.order("created_at", { ascending: false })
 
 					if (error) throw error
@@ -45,7 +42,7 @@ export function useFavorites() {
 							...item.property,
 							favoriteId: item.id,
 							addedAt: item.created_at,
-						})),
+						}))
 					)
 				} else {
 					// Load guest favorites from localStorage
@@ -55,8 +52,8 @@ export function useFavorites() {
 						setFavorites(guestFavorites)
 					}
 				}
-			} catch (err) {
-				console.error("Failed to load favorites:", err)
+			} catch (error) {
+				console.error("Error loading favorites:", error)
 				toast.error("Failed to load favorites")
 			} finally {
 				setIsLoading(false)

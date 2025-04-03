@@ -1,8 +1,9 @@
 import { useAuth } from "@/contexts/auth-context"
+import { supabaseAdmin } from "@/lib/supabase/admin-client"
 import { supabase } from "@/lib/supabase/client"
 import { useState } from "react"
 import { toast } from "sonner"
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid"
 
 interface ImageUploadResult {
 	url: string
@@ -45,11 +46,6 @@ export function usePropertyImages() {
 			setIsLoading(true)
 			setError(null)
 
-			// Log user and admin status
-			const { data: { user: userData }, error: userError } = await supabase.auth.getUser()
-			console.log('Current user:', userData)
-			
-			await checkAdminAccess()
 			validateFile(file)
 
 			const cleanFolderPath = folderPath.replace(/^\/+|\/+$/g, "")
@@ -57,14 +53,10 @@ export function usePropertyImages() {
 			const fileName = `${uuidv4()}.${fileExt}`
 			const filePath = `${cleanFolderPath}/${fileName}`
 
-			console.log('Upload attempt:', {
-				bucket: 'images',
-				path: filePath,
-				contentType: file.type,
-				fileSize: file.size
-			})
+			// Use admin client if available, otherwise use regular client
+			const client = supabaseAdmin || supabase
 
-			const { data, error: uploadError } = await supabase.storage
+			const { data, error: uploadError } = await client.storage
 				.from("images")
 				.upload(filePath, file, {
 					cacheControl: "3600",
@@ -73,21 +65,15 @@ export function usePropertyImages() {
 				})
 
 			if (uploadError) {
-				console.error('Upload error:', {
+				console.error("Upload error:", {
 					message: uploadError.message,
-					details: uploadError.details,
-					hint: uploadError.hint
 				})
 				throw uploadError
 			}
 
-			console.log('Upload success:', data)
-
 			const {
 				data: { publicUrl },
-			} = supabase.storage.from("images").getPublicUrl(filePath)
-
-			console.log('Generated public URL:', publicUrl)
+			} = client.storage.from("images").getPublicUrl(filePath)
 
 			return {
 				url: publicUrl,
@@ -95,10 +81,6 @@ export function usePropertyImages() {
 			}
 		} catch (err) {
 			const error = err instanceof Error ? err : new Error("Failed to upload image")
-			console.error('Upload failed:', {
-				error: error.message,
-				stack: error.stack
-			})
 			setError(error)
 			toast.error(error.message)
 			throw error

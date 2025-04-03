@@ -75,6 +75,25 @@ CREATE TABLE properties (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Add RLS policies for properties
+ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public properties are viewable by everyone"
+  ON properties FOR SELECT
+  USING (true);
+
+CREATE POLICY "Users can insert their own properties"
+  ON properties FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own properties"
+  ON properties FOR UPDATE
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own properties"
+  ON properties FOR DELETE
+  USING (auth.uid() = user_id);
+
 -- Favorites Table
 CREATE TABLE favorites (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -83,6 +102,21 @@ CREATE TABLE favorites (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE (user_id, property_id)
 );
+
+-- Add RLS policies for favorites
+ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own favorites"
+  ON favorites FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own favorites"
+  ON favorites FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own favorites"
+  ON favorites FOR DELETE
+  USING (auth.uid() = user_id);
 
 -- Reservation Status Enum
 CREATE TYPE reservation_status AS ENUM ('pending', 'confirmed', 'cancelled');
@@ -110,6 +144,25 @@ CREATE TABLE reviews (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE (user_id, property_id)
 );
+
+-- Add RLS policies for reviews
+ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Reviews are viewable by everyone"
+  ON reviews FOR SELECT
+  USING (true);
+
+CREATE POLICY "Users can insert their own reviews"
+  ON reviews FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own reviews"
+  ON reviews FOR UPDATE
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own reviews"
+  ON reviews FOR DELETE
+  USING (auth.uid() = user_id);
 
 -- Indexes
 CREATE INDEX idx_properties_status ON properties(status);

@@ -17,7 +17,7 @@ interface EditPropertyPageProps {
 	}
 }
 
-export default function EditPropertyPage({ params }: { params: { id: string } }) {
+export default function EditPropertyPage({ params }: EditPropertyPageProps) {
 	const { user, isLoading: isAuthLoading } = useAuth()
 	const { isAdmin } = useAdminStatus(user)
 	const router = useRouter()
@@ -67,17 +67,13 @@ export default function EditPropertyPage({ params }: { params: { id: string } })
 	const handleSubmit = async (data: Partial<Property>) => {
 		setIsSaving(true)
 		try {
-			// Ensure images array is included in the update
 			const propertyData = {
 				...data,
-				// Make sure images array exists and contains valid URLs
 				images: data.images && Array.isArray(data.images) ? data.images : [],
 				updated_at: new Date().toISOString()
 			}
 
 			await updateProperty(user.id, params.id, propertyData, isAdmin)
-			
-			// Only redirect after successful update
 			router.push(`/properties/${params.id}`)
 			toast.success("Property updated successfully")
 		} catch (error) {

@@ -1,5 +1,6 @@
 import { Property } from "@/types"
 import { Database } from "@/types/supabase"
+import { supabaseAdmin } from "./admin-client"
 import { supabase } from "./client"
 
 export class DatabaseError extends Error {
@@ -31,16 +32,15 @@ export async function handleSupabaseError<T>(
 	return data
 }
 
-export async function getProperty(id: string): Promise<Property> {
+export function getProperty(id: string): Promise<Property> {
 	return handleSupabaseError(() =>
-		supabase.from("properties").select("*").eq("id", id).single()
+		supabase.from("properties").select("*").eq("id", id).single(),
 	)
 }
 
-export async function getProperties(filters: Partial<Property> = {}) {
+export function getProperties(filters: Partial<Property> = {}) {
 	let query = supabase.from("properties").select("*")
 
-	// Apply filters if any
 	Object.entries(filters).forEach(([key, value]) => {
 		if (value !== undefined && value !== null) {
 			query = query.eq(key, value)
@@ -50,16 +50,11 @@ export async function getProperties(filters: Partial<Property> = {}) {
 	return handleSupabaseError(() => query)
 }
 
-export async function createProperty(
-	userId: string,
-	property: Omit<Property, "id" | "created_at" | "updated_at" | "user_id">
+export function createProperty(
+	property: Omit<Property, "id" | "created_at" | "updated_at" | "user_id">,
 ): Promise<Property> {
 	return handleSupabaseError(() =>
-		supabase
-			.from("properties")
-			.insert({ ...property, user_id: userId })
-			.select()
-			.single()
+		supabase.from("properties").insert(property).select().single(),
 	)
 }
 
@@ -67,77 +62,57 @@ export async function updateProperty(
 	userId: string,
 	id: string,
 	property: Partial<Omit<Property, "id" | "created_at" | "updated_at" | "user_id">>,
-	isAdmin: boolean
+	isAdmin: boolean,
 ): Promise<Property> {
-	// First check if user has permission to update this property
-	const { data: existingProperty } = await supabase
+	const { data, error } = await supabase
 		.from("properties")
-		.select("user_id")
+		.update(property)
 		.eq("id", id)
+		.select()
 		.single()
 
-	if (!existingProperty) {
-		throw new Error("Property not found")
+	if (error && isAdmin && supabaseAdmin) {
+		return handleSupabaseError(() =>
+			supabaseAdmin.from("properties").update(property).eq("id", id).select().single()
+		)
 	}
 
-	if (!isAdmin && existingProperty.user_id !== userId) {
-		throw new Error("You don't have permission to update this property")
+	if (error) throw error
+	return data as Property
+}
+
+export function deleteProperty(id: string, isAdmin: boolean): Promise<void> {
+	if (!isAdmin || !supabaseAdmin) {
+		return handleSupabaseError(() => 
+			supabase.from("properties").delete().eq("id", id)
+		)
 	}
 
 	return handleSupabaseError(() =>
-		supabase
-			.from("properties")
-			.update(property)
-			.eq("id", id)
-			.select()
-			.single()
+		supabaseAdmin.from("properties").delete().eq("id", id)
 	)
 }
 
-export async function deleteProperty(
-	userId: string,
-	id: string,
-	isAdmin: boolean
-): Promise<void> {
-	// First check if user has permission to delete this property
-	const { data: existingProperty } = await supabase
-		.from("properties")
-		.select("user_id")
-		.eq("id", id)
-		.single()
-
-	if (!existingProperty) {
-		throw new Error("Property not found")
-	}
-
-	if (!isAdmin && existingProperty.user_id !== userId) {
-		throw new Error("You don't have permission to delete this property")
-	}
-
-	return handleSupabaseError(() =>
-		supabase.from("properties").delete().eq("id", id)
-	)
-}
-
-export async function getFavorites(userId: string) {
+export function getFavorites() {
 	return handleSupabaseError(() =>
 		supabase
 			.from("favorites")
 			.select(
 				`
-        property:properties(*)
-      `,
+				id,
+				created_at,
+				property:properties(*)
+			`,
 			)
-			.eq("user_id", userId),
+			.order("created_at", { ascending: false }),
 	)
 }
 
-export async function addFavorite(userId: string, propertyId: string) {
+export function addFavorite(propertyId: string) {
 	return handleSupabaseError(() =>
 		supabase
 			.from("favorites")
 			.insert({
-				user_id: userId,
 				property_id: propertyId,
 			})
 			.select()
@@ -145,24 +120,20 @@ export async function addFavorite(userId: string, propertyId: string) {
 	)
 }
 
-export async function removeFavorite(userId: string, propertyId: string) {
+export function removeFavorite(propertyId: string) {
 	return handleSupabaseError(() =>
-		supabase
-			.from("favorites")
-			.delete()
-			.eq("user_id", userId)
-			.eq("property_id", propertyId),
+		supabase.from("favorites").delete().eq("property_id", propertyId),
 	)
 }
 
-export async function getReservations(userId: string) {
+export function getReservations(userId: string) {
 	return handleSupabaseError(() =>
 		supabase
 			.from("reservations")
 			.select(
 				`
-        property:properties(*)
-      `,
+				property:properties(*)
+			`,
 			)
 			.eq("user_id", userId),
 	)
@@ -173,21 +144,18 @@ type ReservationInput = Omit<
 	"id" | "created_at"
 >
 
-export async function createReservation(reservation: ReservationInput) {
+export function createReservation(reservation: ReservationInput) {
 	return handleSupabaseError(() =>
 		supabase.from("reservations").insert(reservation).select().single(),
 	)
 }
 
-export async function updateReservation(
-	id: string,
-	reservation: Partial<ReservationInput>,
-) {
+export function updateReservation(id: string, reservation: Partial<ReservationInput>) {
 	return handleSupabaseError(() =>
 		supabase.from("reservations").update(reservation).eq("id", id).select().single(),
 	)
 }
 
-export async function deleteReservation(id: string) {
+export function deleteReservation(id: string) {
 	return handleSupabaseError(() => supabase.from("reservations").delete().eq("id", id))
 }

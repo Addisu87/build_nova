@@ -171,14 +171,13 @@ export function PropertyForm({
 
 	console.log('Property form upload path:', folderPath)
 
-	const handleSubmit = async (data: PropertyFormData) => {
+	const handleFormSubmit = async (data: PropertyFormData) => {
 		try {
 			if (filesToDelete.length > 0) {
 				await deleteImage(filesToDelete)
 				setFilesToDelete([])
 			}
 
-			// Use the existing uploadedImages state which already contains the correct URLs
 			const formData = {
 				...data,
 				images: uploadedImages.map((img) => img.url),
@@ -202,7 +201,7 @@ export function PropertyForm({
 	}
 
 	return (
-		<form onSubmit={form.handleSubmit(onSubmitForm)} className="space-y-6">
+		<form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
 			<div className="grid gap-6 md:grid-cols-2">
 				{/* Title */}
 				<div>
