@@ -2,7 +2,6 @@
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { useRouter, useSearchParams } from "next/navigation"
-import { AdminDashboard } from "./admin-dashboard"
 import { LoginForm } from "./login-form"
 import { PasswordResetForm } from "./password-reset-form"
 import { SignupForm } from "./signup-form"
@@ -13,7 +12,6 @@ const AUTH_COMPONENTS = {
 	signup: SignupForm,
 	"verify-email": VerifyEmailMessage,
 	"reset-password": PasswordResetForm,
-	admin: AdminDashboard,
 } as const
 
 const MODAL_TITLES = {
@@ -21,7 +19,6 @@ const MODAL_TITLES = {
 	signup: "Sign Up",
 	"verify-email": "Check your email",
 	"reset-password": "Reset your password",
-	admin: "Admin Dashboard",
 } as const
 
 type AuthComponentKey = keyof typeof AUTH_COMPONENTS

@@ -15,10 +15,15 @@ import { PropertyFormData, propertySchema } from "@/lib/properties/property-sche
 import { PROPERTY_TYPES, PropertyType } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import Image from "next/image"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useDropzone } from "react-dropzone"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
+
+interface ImageUploadResult {
+	url: string
+	path: string
+}
 
 interface PropertyFormProps {
 	initialData?: Partial<PropertyFormData>
@@ -31,9 +36,9 @@ export function PropertyForm({
 	onSubmit,
 	isLoading = false,
 }: PropertyFormProps) {
-	const [uploadedImages, setUploadedImages] = useState<
-		Array<{ url: string; path: string }>
-	>(initialData.images?.map((url, index) => ({ url, path: `initial/${index}` })) || [])
+	const [uploadedImages, setUploadedImages] = useState<ImageUploadResult[]>([])
+	const [filesToDelete, setFilesToDelete] = useState<string[]>([])
+	const [previewUrls, setPreviewUrls] = useState<string[]>([])
 
 	const {
 		register,
@@ -41,6 +46,7 @@ export function PropertyForm({
 		formState: { errors },
 		setValue,
 		watch,
+		reset,
 	} = useForm<PropertyFormData>({
 		resolver: zodResolver(propertySchema),
 		defaultValues: {
@@ -83,87 +89,144 @@ export function PropertyForm({
 		},
 	})
 
-	const {
-		handleImageUpload,
-		deleteMultipleImages,
-		isLoading: isUploadingImages,
-	} = usePropertyImages()
+	const { uploadImage, deleteImage, isLoading: isUploadingImages } = usePropertyImages()
 
-	const handleFiles = async (files: File[]) => {
+	// Initialize form with initialData
+	useEffect(() => {
+		if (initialData.images && initialData.images.length > 0) {
+			setUploadedImages(
+				initialData.images.map((url, index) => ({
+					url,
+					path: `initial/${index}`, // Temporary path for initial images
+				})),
+			)
+		}
+		reset(initialData)
+	}, [initialData, reset])
+
+	// Clean up preview URLs
+	useEffect(() => {
+		return () => {
+			previewUrls.forEach((url) => URL.revokeObjectURL(url))
+		}
+	}, [previewUrls])
+
+	const handleFileUpload = async (files: File[]) => {
 		const propertyType = watch("property_type")?.toLowerCase() || "default"
 		const propertyId = initialData.id || "new"
 		const folderPath = `properties/${propertyType}/${propertyId}`
 
-		await handleImageUpload(files, {
-			maxFiles: 10,
-			currentImages: uploadedImages,
-			folderPath,
-			onSuccess: (results) => {
-				setUploadedImages((prev) => [...prev, ...results])
-				setValue("images", [...(watch("images") || []), ...results.map((r) => r.url)])
-			},
-		})
+		try {
+			// Create preview URLs
+			const newPreviewUrls = files.map((file) => URL.createObjectURL(file))
+			setPreviewUrls((prev) => [...prev, ...newPreviewUrls])
+
+			// Upload files
+			const uploadPromises = files.map((file) => uploadImage(file, folderPath))
+			const results = await Promise.all(uploadPromises)
+
+			// Update state
+			setUploadedImages((prev) => [...prev, ...results])
+			setValue("images", [...(watch("images") || []), ...results.map((r) => r.url)])
+
+			toast.success(`Uploaded ${results.length} image${results.length > 1 ? "s" : ""}`)
+		} catch (error) {
+			toast.error("Failed to upload some images")
+		} finally {
+			// Clean up preview URLs after upload
+			setPreviewUrls((prev) => prev.filter((url) => !newPreviewUrls.includes(url)))
+		}
+	}
+
+	const handleRemoveImage = async (index: number) => {
+		const imageToRemove = uploadedImages[index]
+		if (!imageToRemove) return
+
+		try {
+			// If it's an existing image (not just uploaded), mark for deletion
+			if (imageToRemove.path && !imageToRemove.path.startsWith("initial/")) {
+				setFilesToDelete((prev) => [...prev, imageToRemove.path])
+			}
+
+			// Remove from UI immediately
+			const newImages = [...uploadedImages]
+			newImages.splice(index, 1)
+			setUploadedImages(newImages)
+			setValue(
+				"images",
+				newImages.map((img) => img.url),
+			)
+		} catch (error) {
+			toast.error("Failed to remove image")
+		}
 	}
 
 	const { getRootProps, getInputProps, isDragActive } = useDropzone({
-		onDrop: handleFiles,
+		onDrop: handleFileUpload,
 		accept: {
-			"image/*": [".jpeg", ".jpg", ".png", ".gif", ".webp"],
+			"image/*": [".jpeg", ".jpg", ".png", ".webp"],
 		},
 		maxSize: 5 * 1024 * 1024, // 5MB
+		maxFiles: 10 - uploadedImages.length, // Dynamic max based on current count
 		disabled: isLoading || isUploadingImages,
 	})
 
-	const removeImage = async (index: number) => {
+	const onSubmitForm = async (data: PropertyFormData) => {
 		try {
-			const imageToRemove = uploadedImages[index]
-			if (imageToRemove?.path && !imageToRemove.path.startsWith("initial/")) {
-				await deleteMultipleImages([imageToRemove.path])
+			// First delete any marked images
+			if (filesToDelete.length > 0) {
+				await deleteImage(filesToDelete)
 			}
 
-			const newUploadedImages = uploadedImages.filter((_, i) => i !== index)
-			setUploadedImages(newUploadedImages)
-			setValue(
-				"images",
-				newUploadedImages.map((img) => img.url),
-			)
+			// Then submit the form data
+			onSubmit({
+				...data,
+				images: uploadedImages.map((img) => img.url),
+			})
 		} catch (error) {
-			console.error("Failed to remove image:", error)
-			// Error toast is handled in the hook
+			toast.error("Failed to save property")
 		}
 	}
 
 	const propertyTypeValue = watch("property_type")?.toLowerCase()
-
-	const onSubmitForm = (data: PropertyFormData) => {
-		onSubmit(data)
-	}
+	const allImages = [
+		...uploadedImages,
+		...previewUrls.map((url) => ({ url, path: "preview" })),
+	]
 
 	return (
 		<form onSubmit={handleSubmit(onSubmitForm)} className="space-y-6">
 			<div className="grid gap-6 md:grid-cols-2">
+				{/* Title */}
 				<div>
-					<label className="text-sm font-medium">Title</label>
-					<Input {...register("title")} className="mt-1" />
+					<label className="text-sm font-medium">Title*</label>
+					<Input
+						{...register("title")}
+						className="mt-1"
+						placeholder="Beautiful family home"
+					/>
 					{errors.title && (
 						<p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
 					)}
 				</div>
 
+				{/* Price */}
 				<div>
-					<label className="text-sm font-medium">Price</label>
+					<label className="text-sm font-medium">Price*</label>
 					<Input
 						type="number"
 						{...register("price", { valueAsNumber: true })}
 						className="mt-1"
+						placeholder="500000"
 					/>
 					{errors.price && (
 						<p className="text-red-500 text-sm mt-1">{errors.price.message}</p>
 					)}
 				</div>
 
+				{/* Property Type */}
 				<div>
-					<label className="text-sm font-medium">Property Type</label>
+					<label className="text-sm font-medium">Property Type*</label>
 					<Select
 						value={propertyTypeValue}
 						onValueChange={(value) =>
@@ -176,7 +239,7 @@ export function PropertyForm({
 						<SelectContent>
 							{Object.values(PROPERTY_TYPES).map((type) => (
 								<SelectItem key={type} value={type.toLowerCase()}>
-									{type}
+									{type.charAt(0) + type.slice(1).toLowerCase()}
 								</SelectItem>
 							))}
 						</SelectContent>
@@ -186,58 +249,123 @@ export function PropertyForm({
 					)}
 				</div>
 
+				{/* Year Built */}
 				<div>
 					<label className="text-sm font-medium">Year Built</label>
 					<Input
 						type="number"
-						{...register("year_built", { valueAsNumber: true })} // Corrected field name
+						{...register("year_built", {
+							valueAsNumber: true,
+							min: 1800,
+							max: new Date().getFullYear(),
+						})}
 						className="mt-1"
+						placeholder="2020"
 					/>
 					{errors.year_built && (
 						<p className="text-red-500 text-sm mt-1">{errors.year_built.message}</p>
 					)}
 				</div>
 
+				{/* Bedrooms */}
 				<div>
-					<label className="text-sm font-medium">Bedrooms</label>
+					<label className="text-sm font-medium">Bedrooms*</label>
 					<Input
 						type="number"
-						{...register("bedrooms", { valueAsNumber: true })}
+						{...register("bedrooms", {
+							valueAsNumber: true,
+							min: 0,
+						})}
 						className="mt-1"
+						placeholder="3"
 					/>
 					{errors.bedrooms && (
 						<p className="text-red-500 text-sm mt-1">{errors.bedrooms.message}</p>
 					)}
 				</div>
 
+				{/* Bathrooms */}
 				<div>
-					<label className="text-sm font-medium">Bathrooms</label>
+					<label className="text-sm font-medium">Bathrooms*</label>
 					<Input
 						type="number"
-						{...register("bathrooms", { valueAsNumber: true })}
+						{...register("bathrooms", {
+							valueAsNumber: true,
+							min: 0,
+						})}
 						className="mt-1"
+						placeholder="2"
 					/>
 					{errors.bathrooms && (
 						<p className="text-red-500 text-sm mt-1">{errors.bathrooms.message}</p>
 					)}
 				</div>
 
+				{/* Square Feet */}
 				<div>
-					<label className="text-sm font-medium">Square Feet</label>
+					<label className="text-sm font-medium">Square Feet*</label>
 					<Input
 						type="number"
-						{...register("square_feet", { valueAsNumber: true })} // Corrected field name
+						{...register("square_feet", {
+							valueAsNumber: true,
+							min: 0,
+						})}
 						className="mt-1"
+						placeholder="1500"
 					/>
 					{errors.square_feet && (
 						<p className="text-red-500 text-sm mt-1">{errors.square_feet.message}</p>
 					)}
 				</div>
+
+				{/* Address */}
+				<div className="md:col-span-2">
+					<label className="text-sm font-medium">Address*</label>
+					<Input {...register("address")} className="mt-1" placeholder="123 Main St" />
+					{errors.address && (
+						<p className="text-red-500 text-sm mt-1">{errors.address.message}</p>
+					)}
+				</div>
+
+				{/* City */}
+				<div>
+					<label className="text-sm font-medium">City*</label>
+					<Input {...register("city")} className="mt-1" placeholder="Anytown" />
+					{errors.city && (
+						<p className="text-red-500 text-sm mt-1">{errors.city.message}</p>
+					)}
+				</div>
+
+				{/* State */}
+				<div>
+					<label className="text-sm font-medium">State*</label>
+					<Input
+						{...register("state")}
+						className="mt-1"
+						placeholder="CA"
+						maxLength={2}
+					/>
+					{errors.state && (
+						<p className="text-red-500 text-sm mt-1">{errors.state.message}</p>
+					)}
+				</div>
+
+				{/* ZIP Code */}
+				<div>
+					<label className="text-sm font-medium">ZIP Code*</label>
+					<Input {...register("zip_code")} className="mt-1" placeholder="90210" />
+					{errors.zip_code && (
+						<p className="text-red-500 text-sm mt-1">{errors.zip_code.message}</p>
+					)}
+				</div>
 			</div>
 
-			{/* Image upload section */}
+			{/* Image Upload Section */}
 			<div className="space-y-4">
-				<label className="text-sm font-medium">Property Images</label>
+				<label className="text-sm font-medium">
+					Property Images ({uploadedImages.length}/10)
+				</label>
+
 				<div
 					{...getRootProps()}
 					className={`border-2 border-dashed rounded-lg p-6 cursor-pointer transition-colors ${
@@ -249,50 +377,61 @@ export function PropertyForm({
 					<input {...getInputProps()} />
 					<div className="text-center">
 						{isDragActive ? (
-							<p>Drop the files here ...</p>
+							<p className="text-primary">Drop images here</p>
 						) : (
 							<p>Drag and drop images here, or click to select files</p>
 						)}
 						<p className="text-sm text-muted-foreground mt-1">
-							Maximum 10 files. Supported formats: JPG, PNG, GIF, WebP. Max size: 5MB
-							per file.
+							Supported formats: JPG, PNG, WebP. Max size: 5MB per file
 						</p>
 					</div>
 				</div>
 
-				{/* Image previews */}
-				{uploadedImages.length > 0 && (
-					<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-						{uploadedImages.map((image, index) => (
+				{/* Image Previews */}
+				{allImages.length > 0 && (
+					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+						{allImages.map((image, index) => (
 							<div
-								key={image.url}
-								className="relative group aspect-square rounded-lg overflow-hidden"
+								key={image.path === "preview" ? `preview-${index}` : image.path}
+								className="relative group aspect-square rounded-lg overflow-hidden border"
 							>
 								<Image
 									src={image.url}
 									alt={`Property image ${index + 1}`}
 									fill
 									className="object-cover"
-									sizes="(max-width: 768px) 50vw, 25vw"
+									sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
 								/>
 								<button
 									type="button"
-									onClick={() => removeImage(index)}
+									onClick={() => handleRemoveImage(index)}
 									disabled={isLoading || isUploadingImages}
 									className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full 
-                           opacity-0 group-hover:opacity-100 transition-opacity"
+                     opacity-0 group-hover:opacity-100 transition-opacity"
+									aria-label="Remove image"
 								>
 									×
 								</button>
+								{image.path === "preview" && (
+									<div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+										<span className="animate-pulse text-white">Uploading...</span>
+									</div>
+								)}
 							</div>
 						))}
 					</div>
 				)}
 			</div>
 
+			{/* Description */}
 			<div>
-				<label className="text-sm font-medium">Description</label>
-				<Textarea {...register("description")} className="mt-1" rows={4} />
+				<label className="text-sm font-medium">Description*</label>
+				<Textarea
+					{...register("description")}
+					className="mt-1"
+					rows={4}
+					placeholder="Describe the property features, neighborhood, and unique selling points..."
+				/>
 				{errors.description && (
 					<p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
 				)}
@@ -302,8 +441,13 @@ export function PropertyForm({
 				type="submit"
 				disabled={isLoading || isUploadingImages}
 				className="w-full"
+				size="lg"
 			>
-				{isLoading || isUploadingImages ? "Saving..." : "Save Property"}
+				{isLoading
+					? "Saving..."
+					: isUploadingImages
+					? "Processing images..."
+					: "Save Property"}
 			</Button>
 		</form>
 	)
