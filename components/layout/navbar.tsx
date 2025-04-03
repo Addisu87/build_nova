@@ -132,7 +132,10 @@ export const Navbar: FC<NavbarProps> = ({ className }) => {
 					href: "/settings",
 				},
 				{ type: "separator" },
-				{ label: "Theme", type: "theme" },
+				{
+					label: "Theme",
+					type: "theme",
+				},
 				{ type: "separator" },
 				{
 					label: "Sign Out",
@@ -157,7 +160,10 @@ export const Navbar: FC<NavbarProps> = ({ className }) => {
 				shallow: true,
 			},
 			{ type: "separator" },
-			{ label: "Theme", type: "theme" },
+			{
+				label: "Theme",
+				type: "theme",
+			},
 			{ type: "separator" },
 			{
 				label: "Help",
@@ -174,10 +180,12 @@ export const Navbar: FC<NavbarProps> = ({ className }) => {
 
 		if (item.type === "theme") {
 			return (
-				<DropdownMenuItem key="theme" className="!p-2">
+				<DropdownMenuItem className="pl-2">
 					<div className="flex items-center w-full">
-						<ModeToggle />
-						<span className="ml-2">{item.label}</span>
+						<div className="mr-2">
+							<ModeToggle />
+						</div>
+						{item.label}
 					</div>
 				</DropdownMenuItem>
 			)
@@ -186,7 +194,7 @@ export const Navbar: FC<NavbarProps> = ({ className }) => {
 		if (item.href) {
 			return (
 				<Link href={item.href} {...(item.shallow ? { shallow: true } : {})}>
-					<DropdownMenuItem className={cn(item.primary && "font-medium text-primary")}>
+					<DropdownMenuItem className={cn("pl-2", item.primary && "font-medium text-primary")}>
 						{item.icon}
 						{item.label}
 					</DropdownMenuItem>
@@ -195,7 +203,7 @@ export const Navbar: FC<NavbarProps> = ({ className }) => {
 		}
 
 		return (
-			<DropdownMenuItem onClick={item.onClick}>
+			<DropdownMenuItem className="pl-2" onClick={item.onClick}>
 				{item.icon}
 				{item.label}
 			</DropdownMenuItem>
@@ -204,8 +212,8 @@ export const Navbar: FC<NavbarProps> = ({ className }) => {
 
 	return (
 		<>
-			<div className={cn("sticky top-0 z-50 bg-white", className)}>
-				<nav className="border-b">
+			<div className={cn("sticky top-0 z-50 bg-background border-b", className)}>
+				<nav>
 					<div className="container mx-auto flex h-16 items-center px-4">
 						<Link href="/" className="mr-8 flex items-center space-x-2">
 							<span className="text-xl font-bold text-primary">Nova</span>
@@ -296,7 +304,7 @@ export const Navbar: FC<NavbarProps> = ({ className }) => {
 						className="fixed inset-0 bg-black/50 backdrop-blur-sm"
 						onClick={() => toggleNav(activeNav)}
 					/>
-					<div className="absolute top-16 inset-x-0 bg-white border-b shadow-lg">
+					<div className="absolute top-16 inset-x-0 bg-background border-b shadow-lg">
 						<div className="container mx-auto px-4 py-8">
 							<div className="max-w-6xl">
 								<div className="grid grid-cols-1 md:grid-cols-3 gap-y-2 gap-x-8">
@@ -305,7 +313,7 @@ export const Navbar: FC<NavbarProps> = ({ className }) => {
 											key={href}
 											href={href}
 											className={cn(
-												"text-gray-600 hover:text-primary hover:underline",
+												"text-muted-foreground hover:text-primary hover:underline",
 												"transition-colors py-2",
 											)}
 											onClick={() => toggleNav(activeNav)}
