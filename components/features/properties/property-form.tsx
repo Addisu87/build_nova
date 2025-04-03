@@ -22,6 +22,7 @@ import Image from "next/image"
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
+import { v4 as uuidv4 } from 'uuid';
 
 interface ImageUploadResult {
 	url: string
@@ -163,8 +164,8 @@ export function PropertyForm({
 		}
 	}
 
-	const propertyTypeValue = form.watch("property_type")?.toLowerCase()
-	const propertyId = (initialData as any)?.id || "new"
+	const propertyTypeValue = form.watch("property_type")?.toLowerCase() || 'default'
+	const propertyId = (initialData as any)?.id || uuidv4()
 	const folderPath = `properties/${propertyTypeValue}/${propertyId}`
 
 	const handleSubmit = async (data: PropertyFormData) => {

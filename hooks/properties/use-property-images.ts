@@ -2,6 +2,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { supabase } from "@/lib/supabase/client"
 import { useState } from "react"
 import { toast } from "sonner"
+import { v4 as uuidv4 } from 'uuid';
 
 interface ImageUploadResult {
 	url: string
@@ -52,10 +53,11 @@ export function usePropertyImages() {
 
 			// Generate a unique filename with original extension
 			const fileExt = file.name.split(".").pop()?.toLowerCase() || "jpg"
-			const fileName = `${crypto.randomUUID()}.${fileExt}`
+			const fileName = `${uuidv4()}.${fileExt}`
 			const filePath = `${cleanFolderPath}/${fileName}`
 
-			// Upload the file
+			console.log('Attempting to upload to:', filePath)
+
 			const { error: uploadError } = await supabase.storage
 				.from("images")
 				.upload(filePath, file, {
@@ -64,12 +66,17 @@ export function usePropertyImages() {
 					contentType: file.type,
 				})
 
-			if (uploadError) throw uploadError
+			if (uploadError) {
+				console.error('Upload error:', uploadError)
+				throw uploadError
+			}
 
 			// Get the public URL
 			const {
 				data: { publicUrl },
 			} = supabase.storage.from("images").getPublicUrl(filePath)
+
+			console.log('Upload successful. Public URL:', publicUrl)
 
 			return {
 				url: publicUrl,
@@ -77,6 +84,7 @@ export function usePropertyImages() {
 			}
 		} catch (err) {
 			const error = err instanceof Error ? err : new Error("Failed to upload image")
+			console.error('Upload failed:', error)
 			setError(error)
 			toast.error(error.message)
 			throw error
