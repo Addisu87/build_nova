@@ -10,8 +10,10 @@ import {
 	SelectValue,
 	Textarea,
 } from "@/components/ui"
+import { useAuth } from "@/contexts/auth-context"
 import { usePropertyImages } from "@/hooks/properties/use-property-images"
 import { PropertyFormData, propertySchema } from "@/lib/properties/property-schemas"
+import { supabaseAdmin } from "@/lib/supabase/admin"
 import { PROPERTY_TYPES, PropertyType } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import Image from "next/image"
@@ -39,6 +41,9 @@ export function PropertyForm({
 	const [uploadedImages, setUploadedImages] = useState<ImageUploadResult[]>([])
 	const [filesToDelete, setFilesToDelete] = useState<string[]>([])
 	const [previewUrls, setPreviewUrls] = useState<string[]>([])
+
+	const { user } = useAuth()
+	const [isAdmin, setIsAdmin] = useState(false)
 
 	const {
 		register,
@@ -95,7 +100,7 @@ export function PropertyForm({
 	useEffect(() => {
 		if (initialData.images && initialData.images.length > 0) {
 			setUploadedImages(
-				initialData.images.map((url, index) => ({
+				initialData.images.map((url: string, index: number) => ({
 					url,
 					path: `initial/${index}`, // Temporary path for initial images
 				})),
@@ -110,6 +115,26 @@ export function PropertyForm({
 			previewUrls.forEach((url) => URL.revokeObjectURL(url))
 		}
 	}, [previewUrls])
+
+	useEffect(() => {
+		const checkAdminStatus = async () => {
+			if (!user) return
+
+			const { data } = await supabaseAdmin.auth.admin.getUserById(user.id)
+
+			setIsAdmin(data?.user?.user_metadata?.role === "admin" || false)
+		}
+
+		checkAdminStatus()
+	}, [user])
+
+	if (!isAdmin) {
+		return (
+			<div className="p-4 border rounded-lg text-center">
+				<p>You need admin privileges to manage property images</p>
+			</div>
+		)
+	}
 
 	const handleFileUpload = async (files: File[]) => {
 		const propertyType = watch("property_type")?.toLowerCase() || "default"
@@ -134,7 +159,7 @@ export function PropertyForm({
 			toast.error("Failed to upload some images")
 		} finally {
 			// Clean up preview URLs after upload
-			setPreviewUrls((prev) => prev.filter((url) => !newPreviewUrls.includes(url)))
+			setPreviewUrls([])
 		}
 	}
 

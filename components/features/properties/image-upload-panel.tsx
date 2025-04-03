@@ -7,6 +7,11 @@ import { useState } from "react"
 import { useDropzone } from "react-dropzone"
 import { toast } from "sonner"
 
+interface ImageUploadResult {
+	url: string
+	path: string
+}
+
 interface ImageUploadPanelProps {
 	folderPath: string
 	onUploadComplete?: (results: ImageUploadResult[]) => void

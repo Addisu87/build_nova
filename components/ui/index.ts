@@ -63,3 +63,4 @@ export {
 } from "./carousel"
 
 export { Separator } from "./separator"
+export { Textarea } from "./textarea"

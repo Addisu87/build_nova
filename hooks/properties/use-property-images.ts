@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/auth-context"
-import { supabase } from "@/lib/supabase/client"
+import { supabaseAdmin } from "@/lib/supabase/admin"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -15,12 +15,27 @@ export function usePropertyImages() {
 
 	const validateFile = (file: File) => {
 		if (!file.type.startsWith("image/")) {
-			throw new Error("Only image files are allowed")
+			throw new Error("Only image files are allowed (JPEG, PNG, WebP)")
 		}
 
 		const maxSize = 5 * 1024 * 1024 // 5MB
 		if (file.size > maxSize) {
 			throw new Error("File size must be less than 5MB")
+		}
+	}
+
+	const checkAdminAccess = async () => {
+		if (!user) throw new Error("Authentication required")
+
+		// Check if user has admin role
+		const { data, error: roleError } = await supabaseAdmin
+			.from("profiles")
+			.select("is_admin")
+			.eq("id", user.id)
+			.single()
+
+		if (roleError || !data?.is_admin) {
+			throw new Error("Admin access required")
 		}
 	}
 
@@ -32,26 +47,26 @@ export function usePropertyImages() {
 			setIsLoading(true)
 			setError(null)
 
-			if (!user) throw new Error("Authentication required")
-
+			await checkAdminAccess()
 			validateFile(file)
 
-			const fileExt = file.name.split(".").pop() || "jpg"
+			const fileExt = file.name.split(".").pop()?.toLowerCase() || "jpg"
 			const fileName = `${crypto.randomUUID()}.${fileExt}`
 			const filePath = `${folderPath}/${fileName}`
 
-			const { error: uploadError } = await supabase.storage
+			const { error: uploadError } = await supabaseAdmin.storage
 				.from("images")
 				.upload(filePath, file, {
 					contentType: file.type,
 					cacheControl: "3600",
+					upsert: false,
 				})
 
 			if (uploadError) throw uploadError
 
 			const {
 				data: { publicUrl },
-			} = supabase.storage.from("images").getPublicUrl(filePath)
+			} = supabaseAdmin.storage.from("images").getPublicUrl(filePath)
 
 			return { url: publicUrl, path: filePath }
 		} catch (err) {
@@ -64,18 +79,19 @@ export function usePropertyImages() {
 		}
 	}
 
-	const deleteImage = async (path: string): Promise<void> => {
+	const deleteImage = async (paths: string[]): Promise<void> => {
 		try {
 			setIsLoading(true)
 			setError(null)
 
-			if (!user) throw new Error("Authentication required")
+			await checkAdminAccess()
+			if (!paths.length) return
 
-			const { error } = await supabase.storage.from("images").remove([path])
+			const { error } = await supabaseAdmin.storage.from("images").remove(paths)
 
 			if (error) throw error
 
-			toast.success("Image deleted successfully")
+			toast.success(`Deleted ${paths.length} image${paths.length > 1 ? "s" : ""}`)
 		} catch (err) {
 			const error = err instanceof Error ? err : new Error("Failed to delete image")
 			setError(error)
