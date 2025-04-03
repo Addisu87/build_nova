@@ -12,7 +12,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/contexts/auth-context"
-import { ModeToggle } from "@/lib/theme/theme-icon"
+import { ModeToggle } from "@/lib/theme/theme-toggle"
 import { cn } from "@/lib/utils"
 import {
 	Heart,
