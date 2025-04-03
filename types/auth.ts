@@ -25,3 +25,5 @@ export interface SignupFormData {
 export interface ResetPasswordFormData {
 	email: string
 }
+
+export type UserRole = "admin" | "user"

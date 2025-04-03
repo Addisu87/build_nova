@@ -1,7 +1,6 @@
 "use client"
 
-import { isFirstUser, setAdminRole } from "@/lib/supabase/admin"
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { supabase } from "@/lib/supabase/client"
 import type { Session, User } from "@supabase/supabase-js"
 import { useRouter } from "next/navigation"
 import { createContext, useContext, useEffect, useState } from "react"
@@ -59,7 +58,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	})
 
 	const router = useRouter()
-	const supabase = createClientComponentClient()
 
 	// Helper functions
 	const updateState = (updates: Partial<AuthState>) => {
@@ -170,7 +168,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		const { data, error } = await supabase
 			.from("favorites")
 			.select("property_id")
-			.eq("user_id", state.user?.id)
+			.eq("user_id", state.user!.id)
 
 		if (!error && data) {
 			setState((prev) => ({
@@ -243,22 +241,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	// Auth methods with processing states
 	const signUp = async (email: string, password: string) => {
 		await withProcessing("signup", async () => {
+			// Check email rate limit
+			if (!canSendEmail()) {
+				const timeLeft = Math.ceil(getTimeUntilNextEmail() / 1000)
+				throw new Error(`Please wait ${timeLeft} seconds before trying again.`)
+			}
+
 			try {
-				if (!canSendEmail()) {
-					const timeLeft = Math.ceil(getTimeUntilNextEmail() / 1000)
-					throw new Error(`Please wait ${timeLeft} seconds before trying again.`)
+				// Efficiently check for first user
+				const {
+					data: { users },
+					error: adminError,
+				} = await supabase.auth.admin.listUsers({
+					page: 1,
+					perPage: 1,
+				})
+
+				if (adminError) {
+					console.error("Admin check failed:", adminError)
+					throw new Error("Failed to verify user status")
 				}
 
-				// Check if this is the first user
-				const firstUser = await isFirstUser()
-
-				const { data, error } = await supabase.auth.signUp({
+				const { error } = await supabase.auth.signUp({
 					email,
 					password,
 					options: {
 						data: {
-							role: firstUser ? "admin" : "user",
+							role: users.length === 0 ? "admin" : "user",
 						},
+						emailRedirectTo: `${window.location.origin}/auth/callback`,
 					},
 				})
 
@@ -271,18 +282,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 					throw error
 				}
 
-				if (firstUser && data.user) {
-					await setAdminRole(data.user.id)  // Changed from makeUserAdmin to setAdminRole
-				}
-
+				// Handle successful signup
 				handleEmailRateLimit()
 				toast.success("Verification email sent", {
 					description: "Please check your email to verify your account.",
 				})
 				router.push("/auth/verify-email")
-			} catch (error: any) {
-				toast.error("Registration failed", {
-					description: error.message,
+			} catch (error) {
+				const errorMessage =
+					error instanceof Error ? error.message : "Registration failed"
+				toast.error("Sign up failed", {
+					description: errorMessage,
 				})
 				throw error
 			}
@@ -429,6 +439,6 @@ export function useAuth() {
 	}
 	return {
 		...context,
-		isAdmin: context.user?.user_metadata?.role === "admin"
+		isAdmin: context.user?.user_metadata?.role === "admin",
 	}
 }

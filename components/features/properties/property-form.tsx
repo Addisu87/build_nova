@@ -1,5 +1,6 @@
 "use client"
 
+import { ImageUploadPanel } from "@/components/features/properties/image-upload-panel"
 import {
 	Button,
 	Input,
@@ -13,12 +14,11 @@ import {
 import { useAuth } from "@/contexts/auth-context"
 import { usePropertyImages } from "@/hooks/properties/use-property-images"
 import { PropertyFormData, propertySchema } from "@/lib/properties/property-schemas"
-import { supabaseAdmin } from "@/lib/supabase/admin"
+import { supabase } from "@/lib/supabase/client"
 import { PROPERTY_TYPES, PropertyType } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import Image from "next/image"
 import { useEffect, useState } from "react"
-import { useDropzone } from "react-dropzone"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 
@@ -40,10 +40,11 @@ export function PropertyForm({
 }: PropertyFormProps) {
 	const [uploadedImages, setUploadedImages] = useState<ImageUploadResult[]>([])
 	const [filesToDelete, setFilesToDelete] = useState<string[]>([])
-	const [previewUrls, setPreviewUrls] = useState<string[]>([])
 
 	const { user } = useAuth()
 	const [isAdmin, setIsAdmin] = useState(false)
+
+	const { deleteImage } = usePropertyImages()
 
 	const {
 		register,
@@ -94,8 +95,6 @@ export function PropertyForm({
 		},
 	})
 
-	const { uploadImage, deleteImage, isLoading: isUploadingImages } = usePropertyImages()
-
 	// Initialize form with initialData
 	useEffect(() => {
 		if (initialData.images && initialData.images.length > 0) {
@@ -109,18 +108,11 @@ export function PropertyForm({
 		reset(initialData)
 	}, [initialData, reset])
 
-	// Clean up preview URLs
-	useEffect(() => {
-		return () => {
-			previewUrls.forEach((url) => URL.revokeObjectURL(url))
-		}
-	}, [previewUrls])
-
 	useEffect(() => {
 		const checkAdminStatus = async () => {
 			if (!user) return
 
-			const { data } = await supabaseAdmin.auth.admin.getUserById(user.id)
+			const { data } = await supabase.auth.admin.getUserById(user.id)
 
 			setIsAdmin(data?.user?.user_metadata?.role === "admin" || false)
 		}
@@ -136,31 +128,9 @@ export function PropertyForm({
 		)
 	}
 
-	const handleFileUpload = async (files: File[]) => {
-		const propertyType = watch("property_type")?.toLowerCase() || "default"
-		const propertyId = initialData.id || "new"
-		const folderPath = `properties/${propertyType}/${propertyId}`
-
-		try {
-			// Create preview URLs
-			const newPreviewUrls = files.map((file) => URL.createObjectURL(file))
-			setPreviewUrls((prev) => [...prev, ...newPreviewUrls])
-
-			// Upload files
-			const uploadPromises = files.map((file) => uploadImage(file, folderPath))
-			const results = await Promise.all(uploadPromises)
-
-			// Update state
-			setUploadedImages((prev) => [...prev, ...results])
-			setValue("images", [...(watch("images") || []), ...results.map((r) => r.url)])
-
-			toast.success(`Uploaded ${results.length} image${results.length > 1 ? "s" : ""}`)
-		} catch (error) {
-			toast.error("Failed to upload some images")
-		} finally {
-			// Clean up preview URLs after upload
-			setPreviewUrls([])
-		}
+	const handleImageUploadComplete = (results: ImageUploadResult[]) => {
+		setUploadedImages((prev) => [...prev, ...results])
+		setValue("images", [...(watch("images") || []), ...results.map((r) => r.url)])
 	}
 
 	const handleRemoveImage = async (index: number) => {
@@ -186,15 +156,9 @@ export function PropertyForm({
 		}
 	}
 
-	const { getRootProps, getInputProps, isDragActive } = useDropzone({
-		onDrop: handleFileUpload,
-		accept: {
-			"image/*": [".jpeg", ".jpg", ".png", ".webp"],
-		},
-		maxSize: 5 * 1024 * 1024, // 5MB
-		maxFiles: 10 - uploadedImages.length, // Dynamic max based on current count
-		disabled: isLoading || isUploadingImages,
-	})
+	const propertyTypeValue = watch("property_type")?.toLowerCase()
+	const propertyId = initialData.id || "new"
+	const folderPath = `properties/${propertyTypeValue}/${propertyId}`
 
 	const onSubmitForm = async (data: PropertyFormData) => {
 		try {
@@ -212,12 +176,6 @@ export function PropertyForm({
 			toast.error("Failed to save property")
 		}
 	}
-
-	const propertyTypeValue = watch("property_type")?.toLowerCase()
-	const allImages = [
-		...uploadedImages,
-		...previewUrls.map((url) => ({ url, path: "preview" })),
-	]
 
 	return (
 		<form onSubmit={handleSubmit(onSubmitForm)} className="space-y-6">
@@ -391,33 +349,18 @@ export function PropertyForm({
 					Property Images ({uploadedImages.length}/10)
 				</label>
 
-				<div
-					{...getRootProps()}
-					className={`border-2 border-dashed rounded-lg p-6 cursor-pointer transition-colors ${
-						isDragActive
-							? "border-primary bg-primary/5"
-							: "border-muted hover:border-primary/50"
-					}`}
-				>
-					<input {...getInputProps()} />
-					<div className="text-center">
-						{isDragActive ? (
-							<p className="text-primary">Drop images here</p>
-						) : (
-							<p>Drag and drop images here, or click to select files</p>
-						)}
-						<p className="text-sm text-muted-foreground mt-1">
-							Supported formats: JPG, PNG, WebP. Max size: 5MB per file
-						</p>
-					</div>
-				</div>
+				<ImageUploadPanel
+					folderPath={folderPath}
+					onUploadComplete={handleImageUploadComplete}
+					maxFiles={10 - uploadedImages.length}
+				/>
 
 				{/* Image Previews */}
-				{allImages.length > 0 && (
+				{uploadedImages.length > 0 && (
 					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-						{allImages.map((image, index) => (
+						{uploadedImages.map((image, index) => (
 							<div
-								key={image.path === "preview" ? `preview-${index}` : image.path}
+								key={image.path}
 								className="relative group aspect-square rounded-lg overflow-hidden border"
 							>
 								<Image
@@ -430,18 +373,13 @@ export function PropertyForm({
 								<button
 									type="button"
 									onClick={() => handleRemoveImage(index)}
-									disabled={isLoading || isUploadingImages}
+									disabled={isLoading}
 									className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full 
                      opacity-0 group-hover:opacity-100 transition-opacity"
 									aria-label="Remove image"
 								>
 									×
 								</button>
-								{image.path === "preview" && (
-									<div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-										<span className="animate-pulse text-white">Uploading...</span>
-									</div>
-								)}
 							</div>
 						))}
 					</div>
@@ -462,17 +400,8 @@ export function PropertyForm({
 				)}
 			</div>
 
-			<Button
-				type="submit"
-				disabled={isLoading || isUploadingImages}
-				className="w-full"
-				size="lg"
-			>
-				{isLoading
-					? "Saving..."
-					: isUploadingImages
-					? "Processing images..."
-					: "Save Property"}
+			<Button type="submit" disabled={isLoading} className="w-full" size="lg">
+				{isLoading ? "Saving..." : "Save Property"}
 			</Button>
 		</form>
 	)

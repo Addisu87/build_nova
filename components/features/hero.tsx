@@ -1,10 +1,8 @@
 "use client"
 
-import { SearchBar } from "@/components/layout/search-bar"
-import { ImageCarousel } from "@/components/ui/image-carousel"
-import { useAuth } from "@/contexts/auth-context"
-import { usePropertyImages } from "@/hooks/properties/use-property-images"
-import { useCallback, useEffect, useState } from "react"
+import { SearchBar } from "@/components/layout/search-bar";
+import { ImageCarousel } from "@/components/ui/image-carousel";
+import { useAuth } from "@/contexts/auth-context";
 
 const DEFAULT_HERO_IMAGES = [
 	"https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&w=2000&q=75",
@@ -14,31 +12,6 @@ const DEFAULT_HERO_IMAGES = [
 
 export function Hero() {
 	const { user } = useAuth()
-	const { listImages } = usePropertyImages()
-	const [heroImages, setHeroImages] = useState<Array<{ url: string; path: string }>>([])
-
-	const fetchHeroImages = useCallback(async () => {
-		try {
-			const images = await listImages("hero")
-			if (images && images.length > 0) {
-				setHeroImages(images)
-			} else {
-				setHeroImages(
-					DEFAULT_HERO_IMAGES.map((url, index) => ({
-						url,
-						path: `default/hero/${index}`
-					}))
-				)
-			}
-		} catch (error) {
-			console.error("Error fetching hero images:", error)
-			setHeroImages([])
-		}
-	}, [listImages])
-
-	useEffect(() => {
-		fetchHeroImages()
-	}, [fetchHeroImages])
 
 	const welcomeMessage = user?.user_metadata?.full_name
 		? `Welcome ${user.user_metadata.full_name}`
@@ -49,13 +22,13 @@ export function Hero() {
 	return (
 		<div className="relative">
 			<ImageCarousel
-				images={heroImages.map(img => img.url)}
+				images={DEFAULT_HERO_IMAGES}
 				aspectRatio="hero"
 				className="h-[600px]"
 				priority={true}
-				showControls={heroImages.length > 1}
+				showControls={true}
 				fullWidth={true}
-				autoPlay={heroImages.length > 1}
+				autoPlay={true}
 				interval={6000}
 				title="Hero Section"
 			/>

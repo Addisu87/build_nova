@@ -13,7 +13,7 @@ export const AUTH_ROUTES = {
 		"/auth/reset-password",
 	],
 	protected: ["/favorites", "/auth/profile", "/properties/create", "/properties/edit"],
-	admin: ["/auth/admin"], // Make sure this is correct
+	admin: ["/auth/admin"],
 } as const
 
 export async function middleware(req: NextRequest) {

@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/auth-context"
-import { supabaseAdmin } from "@/lib/supabase/admin"
+import { supabase } from "@/lib/supabase/client"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -28,13 +28,9 @@ export function usePropertyImages() {
 		if (!user) throw new Error("Authentication required")
 
 		// Check if user has admin role
-		const { data, error: roleError } = await supabaseAdmin
-			.from("profiles")
-			.select("is_admin")
-			.eq("id", user.id)
-			.single()
+		const { data, error: roleError } = await supabase.auth.admin.getUserById(user.id)
 
-		if (roleError || !data?.is_admin) {
+		if (roleError || data?.user?.user_metadata?.role !== "admin") {
 			throw new Error("Admin access required")
 		}
 	}
@@ -54,7 +50,7 @@ export function usePropertyImages() {
 			const fileName = `${crypto.randomUUID()}.${fileExt}`
 			const filePath = `${folderPath}/${fileName}`
 
-			const { error: uploadError } = await supabaseAdmin.storage
+			const { error: uploadError } = await supabase.storage
 				.from("images")
 				.upload(filePath, file, {
 					contentType: file.type,
@@ -66,7 +62,7 @@ export function usePropertyImages() {
 
 			const {
 				data: { publicUrl },
-			} = supabaseAdmin.storage.from("images").getPublicUrl(filePath)
+			} = supabase.storage.from("images").getPublicUrl(filePath)
 
 			return { url: publicUrl, path: filePath }
 		} catch (err) {
@@ -87,7 +83,7 @@ export function usePropertyImages() {
 			await checkAdminAccess()
 			if (!paths.length) return
 
-			const { error } = await supabaseAdmin.storage.from("images").remove(paths)
+			const { error } = await supabase.storage.from("images").remove(paths)
 
 			if (error) throw error
 
