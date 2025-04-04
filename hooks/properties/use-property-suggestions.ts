@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase/db"
+import { supabase } from "@/lib/supabase/client"
 import { useCallback, useEffect, useState } from "react"
 import { toast } from "sonner"
 import { useDebounce } from "./use-debounce"

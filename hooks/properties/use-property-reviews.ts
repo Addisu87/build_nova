@@ -1,39 +1,24 @@
 import { useAuth } from "@/contexts/auth-context"
 import { useAsyncOperation } from "@/hooks/utils/use-async-operation"
-import { supabase } from "@/lib/supabase/db"
-import {
-	Review,
-	ReviewStats,
-	ReviewWithUser,
-} from "@/types"
+import { supabase } from "@/lib/supabase/client"
+import { Review, ReviewStats, ReviewWithUser } from "@/types"
 import { Database } from "@/types/supabase"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
-export function usePropertyReviews(
-	propertyId: string,
-) {
-	const { user, isLoading: authLoading } =
-		useAuth()
-	const [reviews, setReviews] = useState<
-		ReviewWithUser[]
-	>([])
-	const [stats, setStats] = useState<ReviewStats>(
-		{
-			averageRating: 0,
-			totalReviews: 0,
-			ratingDistribution: {},
-		},
-	)
+export function usePropertyReviews(propertyId: string) {
+	const { user, isLoading: authLoading } = useAuth()
+	const [reviews, setReviews] = useState<ReviewWithUser[]>([])
+	const [stats, setStats] = useState<ReviewStats>({
+		averageRating: 0,
+		totalReviews: 0,
+		ratingDistribution: {},
+	})
 
-	const fetchOperation =
-		useAsyncOperation<ReviewWithUser[]>()
-	const createOperation =
-		useAsyncOperation<ReviewWithUser>()
-	const updateOperation =
-		useAsyncOperation<ReviewWithUser>()
-	const deleteOperation =
-		useAsyncOperation<void>()
+	const fetchOperation = useAsyncOperation<ReviewWithUser[]>()
+	const createOperation = useAsyncOperation<ReviewWithUser>()
+	const updateOperation = useAsyncOperation<ReviewWithUser>()
+	const deleteOperation = useAsyncOperation<void>()
 
 	useEffect(() => {
 		async function fetchReviews() {
@@ -41,22 +26,21 @@ export function usePropertyReviews(
 
 			const result = await fetchOperation.execute(
 				async () => {
-					const { data, error: fetchError } =
-						await supabase
-							.from("reviews")
-							.select(
-								`
+					const { data, error: fetchError } = await supabase
+						.from("reviews")
+						.select(
+							`
 								*,
 								user:profiles (
 								name,
 								avatar_url
 								)
 							`,
-							)
-							.eq("property_id", propertyId)
-							.order("created_at", {
-								ascending: false,
-							})
+						)
+						.eq("property_id", propertyId)
+						.order("created_at", {
+							ascending: false,
+						})
 
 					if (fetchError) {
 						throw fetchError
@@ -78,9 +62,7 @@ export function usePropertyReviews(
 		fetchReviews()
 	}, [propertyId, fetchOperation])
 
-	const calculateStats = (
-		reviews: ReviewWithUser[],
-	) => {
+	const calculateStats = (reviews: ReviewWithUser[]) => {
 		const totalReviews = reviews.length
 		const ratingDistribution: {
 			[key: number]: number
@@ -89,15 +71,11 @@ export function usePropertyReviews(
 
 		reviews.forEach((review) => {
 			const rating = review.rating
-			ratingDistribution[rating] =
-				(ratingDistribution[rating] || 0) + 1
+			ratingDistribution[rating] = (ratingDistribution[rating] || 0) + 1
 			totalRating += rating
 		})
 
-		const averageRating =
-			totalReviews > 0
-				? totalRating / totalReviews
-				: 0
+		const averageRating = totalReviews > 0 ? totalRating / totalReviews : 0
 
 		setStats({
 			averageRating,
@@ -113,32 +91,29 @@ export function usePropertyReviews(
 		>,
 	) => {
 		if (!user) {
-			toast.error(
-				"Please sign in to leave a review",
-			)
+			toast.error("Please sign in to leave a review")
 			throw new Error("User not authenticated")
 		}
 
 		const result = await createOperation.execute(
 			async () => {
-				const { data, error: createError } =
-					await supabase
-						.from("reviews")
-						.insert({
-							...review,
-							user_id: user.id,
-							property_id: propertyId,
-						})
-						.select(
-							`
+				const { data, error: createError } = await supabase
+					.from("reviews")
+					.insert({
+						...review,
+						user_id: user.id,
+						property_id: propertyId,
+					})
+					.select(
+						`
           *,
           user:profiles (
             name,
             avatar_url
           )
         `,
-						)
-						.single()
+					)
+					.single()
 
 				if (createError) {
 					throw createError
@@ -148,8 +123,7 @@ export function usePropertyReviews(
 			},
 			{
 				errorMessage: "Failed to submit review",
-				successMessage:
-					"Review submitted successfully",
+				successMessage: "Review submitted successfully",
 			},
 		)
 
@@ -163,27 +137,24 @@ export function usePropertyReviews(
 
 	const updateReview = async (
 		reviewId: string,
-		updates: Partial<
-			Pick<Review, "rating" | "comment">
-		>,
+		updates: Partial<Pick<Review, "rating" | "comment">>,
 	) => {
 		const result = await updateOperation.execute(
 			async () => {
-				const { data, error: updateError } =
-					await supabase
-						.from("reviews")
-						.update(updates)
-						.eq("id", reviewId)
-						.select(
-							`
+				const { data, error: updateError } = await supabase
+					.from("reviews")
+					.update(updates)
+					.eq("id", reviewId)
+					.select(
+						`
           *,
           user:profiles (
             name,
             avatar_url
           )
         `,
-						)
-						.single()
+					)
+					.single()
 
 				if (updateError) {
 					throw updateError
@@ -193,41 +164,27 @@ export function usePropertyReviews(
 			},
 			{
 				errorMessage: "Failed to update review",
-				successMessage:
-					"Review updated successfully",
+				successMessage: "Review updated successfully",
 			},
 		)
 
 		if (result) {
-			setReviews(
-				reviews.map((review) =>
-					review.id === reviewId
-						? result
-						: review,
-				),
-			)
+			setReviews(reviews.map((review) => (review.id === reviewId ? result : review)))
 			calculateStats(
-				reviews.map((review) =>
-					review.id === reviewId
-						? result
-						: review,
-				),
+				reviews.map((review) => (review.id === reviewId ? result : review)),
 			)
 		}
 
 		return result
 	}
 
-	const deleteReview = async (
-		reviewId: string,
-	) => {
+	const deleteReview = async (reviewId: string) => {
 		const success = await deleteOperation.execute(
 			async () => {
-				const { error: deleteError } =
-					await supabase
-						.from("reviews")
-						.delete()
-						.eq("id", reviewId)
+				const { error: deleteError } = await supabase
+					.from("reviews")
+					.delete()
+					.eq("id", reviewId)
 
 				if (deleteError) {
 					throw deleteError
@@ -235,15 +192,12 @@ export function usePropertyReviews(
 			},
 			{
 				errorMessage: "Failed to delete review",
-				successMessage:
-					"Review deleted successfully",
+				successMessage: "Review deleted successfully",
 			},
 		)
 
 		if (success !== null) {
-			const updatedReviews = reviews.filter(
-				(review) => review.id !== reviewId,
-			)
+			const updatedReviews = reviews.filter((review) => review.id !== reviewId)
 			setReviews(updatedReviews)
 			calculateStats(updatedReviews)
 		}

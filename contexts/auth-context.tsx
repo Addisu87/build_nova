@@ -1,6 +1,5 @@
 "use client"
 
-import { AdminService } from "@/lib/services/admin-service"
 import { supabase } from "@/lib/supabase/client"
 import type { Session, User } from "@supabase/supabase-js"
 import { useRouter } from "next/navigation"
@@ -252,52 +251,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 			}
 
 			try {
-				// Efficiently check for first user
+				// Check if this is the first user signing up
 				const {
 					data: { users },
 					error: adminError,
-				} = await supabase.auth.admin.listUsers({
-					page: 1,
-					perPage: 1,
-				})
+				} = await supabase.from("profiles").select("id").limit(1)
 
-				if (adminError) {
-					console.error("Admin check failed:", adminError)
-					throw new Error("Failed to verify user status")
-				}
+				if (adminError) throw adminError
+
+				const isFirstUser = users?.length === 0
 
 				const { error } = await supabase.auth.signUp({
 					email,
 					password,
 					options: {
 						data: {
-							role: users.length === 0 ? "admin" : "user",
+							role: isFirstUser ? "admin" : "user",
 						},
 						emailRedirectTo: `${window.location.origin}/auth/callback`,
 					},
 				})
 
-				if (error) {
-					if (error.message.includes("unique constraint")) {
-						throw new Error(
-							"This email is already registered. Please try signing in instead.",
-						)
-					}
-					throw error
-				}
+				if (error) throw error
 
-				// Handle successful signup
 				handleEmailRateLimit()
-				toast.success("Verification email sent", {
-					description: "Please check your email to verify your account.",
-				})
+				toast.success("Verification email sent")
 				router.push("/auth/verify-email")
 			} catch (error) {
-				const errorMessage =
-					error instanceof Error ? error.message : "Registration failed"
-				toast.error("Sign up failed", {
-					description: errorMessage,
-				})
+				toast.error("Sign up failed")
 				throw error
 			}
 		})
@@ -444,8 +425,6 @@ export function useAuth() {
 
 	return {
 		...context,
-		isAdmin:
-			AdminService.isSuperAdmin(context.user) ||
-			context.user?.user_metadata?.role === "admin",
+		isAdmin: context.user?.user_metadata?.role === "admin",
 	}
 }

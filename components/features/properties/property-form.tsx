@@ -13,16 +13,23 @@ import {
 } from "@/components/ui"
 import { LoadingState } from "@/components/ui/loading-state"
 import { useAuth } from "@/contexts/auth-context"
-import { useAdminStatus } from "@/hooks/auth/use-admin-status"
+// Remove this import
+// import { useAdminStatus } from "@/hooks/auth/use-admin-status"
 import { usePropertyImages } from "@/hooks/properties/use-property-images"
-import { PropertyFormData, propertySchema } from "@/lib/properties/property-schemas"
-import { PROPERTY_TYPES, PropertyType } from "@/types"
+import {
+	PropertyFormData,
+	propertySchema,
+} from "@/lib/properties/property-schemas"
+import {
+	PROPERTY_TYPES,
+	PropertyType,
+} from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import Image from "next/image"
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid"
 
 interface ImageUploadResult {
 	url: string
@@ -40,15 +47,19 @@ export function PropertyForm({
 	onSubmit,
 	isLoading = false,
 }: PropertyFormProps) {
-	const [uploadedImages, setUploadedImages] = useState<ImageUploadResult[]>(() =>
-		initialData.images
-			? initialData.images.map((url: string, index: number) => ({
-					url,
-					path: `initial/${index}`,
-			  }))
-			: [],
-	)
-	const [filesToDelete, setFilesToDelete] = useState<string[]>([])
+	const [uploadedImages, setUploadedImages] =
+		useState<ImageUploadResult[]>(() =>
+			initialData.images
+				? initialData.images.map(
+						(url: string, index: number) => ({
+							url,
+							path: `initial/${index}`,
+						}),
+				  )
+				: [],
+		)
+	const [filesToDelete, setFilesToDelete] =
+		useState<string[]>([])
 	const { user } = useAuth()
 	const { isAdmin } = useAdminStatus(user)
 
@@ -61,13 +72,21 @@ export function PropertyForm({
 	}
 
 	// Only check permissions if we're editing an existing property
-	if ("id" in initialData && "user_id" in initialData) {
-		const canEditProperty = isAdmin || initialData.user_id === user?.id
+	if (
+		"id" in initialData &&
+		"user_id" in initialData
+	) {
+		const canEditProperty =
+			user?.user_metadata?.role === "admin" ||
+			initialData.user_id === user?.id
 
 		if (!canEditProperty) {
 			return (
 				<div className="p-4 border rounded-lg text-center">
-					<p>You don't have permission to edit this property</p>
+					<p>
+						You don't have permission to edit this
+						property
+					</p>
 				</div>
 			)
 		}
@@ -132,80 +151,124 @@ export function PropertyForm({
 		)
 	}
 
-	const handleImageUploadComplete = (results: ImageUploadResult[]) => {
-		const newImages = [...uploadedImages, ...results]
+	const handleImageUploadComplete = (
+		results: ImageUploadResult[],
+	) => {
+		if (!results || results.length === 0) return
+
+		const newImages = [
+			...uploadedImages,
+			...results,
+		]
 		setUploadedImages(newImages)
-		
+
 		// Update the form with the new image URLs
-		const imageUrls = newImages.map((img) => img.url)
+		const imageUrls = newImages
+			.map((img) => img.url)
+			.filter(Boolean)
 		form.setValue("images", imageUrls, {
 			shouldValidate: true,
-			shouldDirty: true
+			shouldDirty: true,
 		})
 	}
 
 	const handleRemoveImage = async (index: number) => {
-		const imageToRemove = uploadedImages[index]
-		if (!imageToRemove) return
-
-		try {
-			if (imageToRemove.path && !imageToRemove.path.startsWith("initial/")) {
-				setFilesToDelete((prev) => [...prev, imageToRemove.path])
-			}
-
-			const newImages = uploadedImages.filter((_, i) => i !== index)
-			setUploadedImages(newImages)
-			form.setValue(
-				"images",
-				newImages.map((img) => img.url),
-			)
-		} catch (error) {
-			toast.error("Failed to remove image")
-		}
+	  const imageToRemove = uploadedImages[index]
+	  if (!imageToRemove) return
+	
+	  // Check permissions
+	  if (user?.user_metadata?.role !== "admin" && 
+	      initialData.user_id !== user?.id) {
+	    toast.error("You don't have permission to delete images")
+	    return
+	  }
+	
+	  try {
+	    if (imageToRemove.path && !imageToRemove.path.startsWith("initial/")) {
+	      setFilesToDelete((prev) => [...prev, imageToRemove.path])
+	    }
+	
+	    const newImages = uploadedImages.filter((_, i) => i !== index)
+	    setUploadedImages(newImages)
+	    form.setValue(
+	      "images",
+	      newImages.map((img) => img.url),
+	    )
+	  } catch (error) {
+	    toast.error("Failed to remove image")
+	  }
 	}
 
-	const propertyTypeValue = form.watch("property_type")?.toLowerCase() || 'default'
-	const propertyId = (initialData as any)?.id || uuidv4()
+	const propertyTypeValue =
+		form.watch("property_type")?.toLowerCase() ||
+		"default"
+	const propertyId =
+		(initialData as any)?.id || uuidv4()
 	// Ensure clean folder path
-	const folderPath = `properties/${propertyTypeValue}/${propertyId}`.replace(/\/+/g, '/')
+	const folderPath =
+		`properties/${propertyTypeValue}/${propertyId}`.replace(
+			/\/+/g,
+			"/",
+		)
 
-	console.log('Property form upload path:', folderPath)
+	console.log(
+		"Property form upload path:",
+		folderPath,
+	)
 
 	const handleFormSubmit = async (data: PropertyFormData) => {
-		try {
-			if (filesToDelete.length > 0) {
-				await deleteImage(filesToDelete)
-				setFilesToDelete([])
-			}
+	  try {
+	    // Check permissions before allowing delete
+	    if (filesToDelete.length > 0 && 
+	        user?.user_metadata?.role !== "admin" && 
+	        initialData.user_id !== user?.id) {
+	      throw new Error("You don't have permission to modify this property")
+	    }
+	
+	    if (filesToDelete.length > 0) {
+	      await deleteImage(filesToDelete)
+	      setFilesToDelete([])
+	    }
 
 			const formData = {
 				...data,
-				images: uploadedImages.map((img) => img.url),
+				images: uploadedImages
+					.map((img) => img.url)
+					.filter(Boolean),
 				property_type: data.property_type,
 				status: data.status,
-				year_built: data.year_built || new Date().getFullYear(),
+				year_built:
+					data.year_built ||
+					new Date().getFullYear(),
 				price: Number(data.price),
 				bedrooms: Number(data.bedrooms),
 				bathrooms: Number(data.bathrooms),
 				square_feet: Number(data.square_feet),
 				listing_date: data.listing_date || null,
 				user_id: user.id,
-				updated_at: new Date().toISOString()
+				updated_at: new Date().toISOString(),
 			}
 
 			await onSubmit(formData)
 		} catch (error) {
 			console.error("Submit error:", error)
-			toast.error("Failed to save property")
+			toast.error(error.message || "Failed to save property")
 		}
 	}
 
 	return (
-		<form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
+		<form
+			onSubmit={form.handleSubmit(
+				handleFormSubmit,
+			)}
+			className="space-y-6"
+		>
 			<div className="grid gap-6 md:grid-cols-2">
 				{/* Title */}
 				<div>
-					<label className="text-sm font-medium">Title*</label>
+					<label className="text-sm font-medium">
+						Title*
+					</label>
 					<Input
 						{...form.register("title")}
 						className="mt-1"
@@ -213,14 +276,19 @@ export function PropertyForm({
 					/>
 					{form.formState.errors.title && (
 						<p className="text-red-500 text-sm mt-1">
-							{form.formState.errors.title.message}
+							{
+								form.formState.errors.title
+									.message
+							}
 						</p>
 					)}
 				</div>
 
 				{/* Price */}
 				<div>
-					<label className="text-sm font-medium">Price*</label>
+					<label className="text-sm font-medium">
+						Price*
+					</label>
 					<Input
 						type="number"
 						{...form.register("price", {
@@ -231,41 +299,61 @@ export function PropertyForm({
 					/>
 					{form.formState.errors.price && (
 						<p className="text-red-500 text-sm mt-1">
-							{form.formState.errors.price.message}
+							{
+								form.formState.errors.price
+									.message
+							}
 						</p>
 					)}
 				</div>
 
 				{/* Property Type */}
 				<div>
-					<label className="text-sm font-medium">Property Type*</label>
+					<label className="text-sm font-medium">
+						Property Type*
+					</label>
 					<Select
 						value={propertyTypeValue}
 						onValueChange={(value) =>
-							form.setValue("property_type", value.toUpperCase() as PropertyType)
+							form.setValue(
+								"property_type",
+								value.toUpperCase() as PropertyType,
+							)
 						}
 					>
 						<SelectTrigger className="mt-1">
 							<SelectValue placeholder="Select type" />
 						</SelectTrigger>
 						<SelectContent>
-							{Object.values(PROPERTY_TYPES).map((type) => (
-								<SelectItem key={type} value={type.toLowerCase()}>
-									{type.charAt(0) + type.slice(1).toLowerCase()}
-								</SelectItem>
-							))}
+							{Object.values(PROPERTY_TYPES).map(
+								(type) => (
+									<SelectItem
+										key={type}
+										value={type.toLowerCase()}
+									>
+										{type.charAt(0) +
+											type.slice(1).toLowerCase()}
+									</SelectItem>
+								),
+							)}
 						</SelectContent>
 					</Select>
-					{form.formState.errors.property_type && (
+					{form.formState.errors
+						.property_type && (
 						<p className="text-red-500 text-sm mt-1">
-							{form.formState.errors.property_type.message}
+							{
+								form.formState.errors
+									.property_type.message
+							}
 						</p>
 					)}
 				</div>
 
 				{/* Year Built */}
 				<div>
-					<label className="text-sm font-medium">Year Built</label>
+					<label className="text-sm font-medium">
+						Year Built
+					</label>
 					<Input
 						type="number"
 						{...form.register("year_built", {
@@ -278,14 +366,19 @@ export function PropertyForm({
 					/>
 					{form.formState.errors.year_built && (
 						<p className="text-red-500 text-sm mt-1">
-							{form.formState.errors.year_built.message}
+							{
+								form.formState.errors.year_built
+									.message
+							}
 						</p>
 					)}
 				</div>
 
 				{/* Bedrooms */}
 				<div>
-					<label className="text-sm font-medium">Bedrooms*</label>
+					<label className="text-sm font-medium">
+						Bedrooms*
+					</label>
 					<Input
 						type="number"
 						{...form.register("bedrooms", {
@@ -297,14 +390,19 @@ export function PropertyForm({
 					/>
 					{form.formState.errors.bedrooms && (
 						<p className="text-red-500 text-sm mt-1">
-							{form.formState.errors.bedrooms.message}
+							{
+								form.formState.errors.bedrooms
+									.message
+							}
 						</p>
 					)}
 				</div>
 
 				{/* Bathrooms */}
 				<div>
-					<label className="text-sm font-medium">Bathrooms*</label>
+					<label className="text-sm font-medium">
+						Bathrooms*
+					</label>
 					<Input
 						type="number"
 						{...form.register("bathrooms", {
@@ -316,14 +414,19 @@ export function PropertyForm({
 					/>
 					{form.formState.errors.bathrooms && (
 						<p className="text-red-500 text-sm mt-1">
-							{form.formState.errors.bathrooms.message}
+							{
+								form.formState.errors.bathrooms
+									.message
+							}
 						</p>
 					)}
 				</div>
 
 				{/* Square Feet */}
 				<div>
-					<label className="text-sm font-medium">Square Feet*</label>
+					<label className="text-sm font-medium">
+						Square Feet*
+					</label>
 					<Input
 						type="number"
 						{...form.register("square_feet", {
@@ -335,14 +438,19 @@ export function PropertyForm({
 					/>
 					{form.formState.errors.square_feet && (
 						<p className="text-red-500 text-sm mt-1">
-							{form.formState.errors.square_feet.message}
+							{
+								form.formState.errors.square_feet
+									.message
+							}
 						</p>
 					)}
 				</div>
 
 				{/* Address */}
 				<div className="md:col-span-2">
-					<label className="text-sm font-medium">Address*</label>
+					<label className="text-sm font-medium">
+						Address*
+					</label>
 					<Input
 						{...form.register("address")}
 						className="mt-1"
@@ -350,15 +458,24 @@ export function PropertyForm({
 					/>
 					{form.formState.errors.address && (
 						<p className="text-red-500 text-sm mt-1">
-							{form.formState.errors.address.message}
+							{
+								form.formState.errors.address
+									.message
+							}
 						</p>
 					)}
 				</div>
 
 				{/* City */}
 				<div>
-					<label className="text-sm font-medium">City*</label>
-					<Input {...form.register("city")} className="mt-1" placeholder="Anytown" />
+					<label className="text-sm font-medium">
+						City*
+					</label>
+					<Input
+						{...form.register("city")}
+						className="mt-1"
+						placeholder="Anytown"
+					/>
 					{form.formState.errors.city && (
 						<p className="text-red-500 text-sm mt-1">
 							{form.formState.errors.city.message}
@@ -368,7 +485,9 @@ export function PropertyForm({
 
 				{/* State */}
 				<div>
-					<label className="text-sm font-medium">State*</label>
+					<label className="text-sm font-medium">
+						State*
+					</label>
 					<Input
 						{...form.register("state")}
 						className="mt-1"
@@ -377,18 +496,30 @@ export function PropertyForm({
 					/>
 					{form.formState.errors.state && (
 						<p className="text-red-500 text-sm mt-1">
-							{form.formState.errors.state.message}
+							{
+								form.formState.errors.state
+									.message
+							}
 						</p>
 					)}
 				</div>
 
 				{/* ZIP Code */}
 				<div>
-					<label className="text-sm font-medium">ZIP Code*</label>
-					<Input {...form.register("zip_code")} className="mt-1" placeholder="90210" />
+					<label className="text-sm font-medium">
+						ZIP Code*
+					</label>
+					<Input
+						{...form.register("zip_code")}
+						className="mt-1"
+						placeholder="90210"
+					/>
 					{form.formState.errors.zip_code && (
 						<p className="text-red-500 text-sm mt-1">
-							{form.formState.errors.zip_code.message}
+							{
+								form.formState.errors.zip_code
+									.message
+							}
 						</p>
 					)}
 				</div>
@@ -403,44 +534,54 @@ export function PropertyForm({
 
 				<ImageUploadPanel
 					folderPath={folderPath}
-					onUploadComplete={handleImageUploadComplete}
+					onUploadComplete={
+						handleImageUploadComplete
+					}
 					maxFiles={10 - uploadedImages.length}
 				/>
 
 				{/* Image Previews */}
 				{uploadedImages.length > 0 && (
 					<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-						{uploadedImages.map((image, index) => (
-							<div
-								key={image.path}
-								className="relative group aspect-square rounded-lg overflow-hidden border"
-							>
-								<Image
-									src={image.url}
-									alt={`Property image ${index + 1}`}
-									fill
-									className="object-cover"
-									sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-								/>
-								<button
-									type="button"
-									onClick={() => handleRemoveImage(index)}
-									disabled={isLoading}
-									className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full 
-                     opacity-0 group-hover:opacity-100 transition-opacity"
-									aria-label="Remove image"
+						{uploadedImages.map(
+							(image, index) => (
+								<div
+									key={image.path}
+									className="relative group aspect-square rounded-lg overflow-hidden border"
 								>
-									×
-								</button>
-							</div>
-						))}
+									<Image
+										src={image.url}
+										alt={`Property image ${
+											index + 1
+										}`}
+										fill
+										className="object-cover"
+										sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+									/>
+									<button
+										type="button"
+										onClick={() =>
+											handleRemoveImage(index)
+										}
+										disabled={isLoading}
+										className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full 
+                     opacity-0 group-hover:opacity-100 transition-opacity"
+										aria-label="Remove image"
+									>
+										×
+									</button>
+								</div>
+							),
+						)}
 					</div>
 				)}
 			</div>
 
 			{/* Description */}
 			<div>
-				<label className="text-sm font-medium">Description*</label>
+				<label className="text-sm font-medium">
+					Description*
+				</label>
 				<Textarea
 					{...form.register("description")}
 					className="mt-1"
@@ -449,13 +590,23 @@ export function PropertyForm({
 				/>
 				{form.formState.errors.description && (
 					<p className="text-red-500 text-sm mt-1">
-						{form.formState.errors.description.message}
+						{
+							form.formState.errors.description
+								.message
+						}
 					</p>
 				)}
 			</div>
 
-			<Button type="submit" disabled={isLoading} className="w-full" size="lg">
-				{isLoading ? "Saving..." : "Save Property"}
+			<Button
+				type="submit"
+				disabled={isLoading}
+				className="w-full"
+				size="lg"
+			>
+				{isLoading
+					? "Saving..."
+					: "Save Property"}
 			</Button>
 		</form>
 	)
