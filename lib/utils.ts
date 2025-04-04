@@ -70,14 +70,13 @@ export function getImageDimensions(
 	})
 }
 
-export async function convertBlobUrlToFile(blobUrl: string): Promise<File> {
+export async function convertBlobUrlToFile(blobUrl: string) {
 	const response = await fetch(blobUrl)
 	const blob = await response.blob()
-
-	// Extract filename from the blob URL or generate a random one
-	const fileName =
-		blobUrl.split("/").pop() ||
-		`image-${Date.now()}.${blob.type.split("/")[1] || "jpg"}`
-
-	return new File([blob], fileName, { type: blob.type })
+	const fileName = Math.random().toString(36).slice(2, 9)
+	const mimeType = blob.type || "application/octet-stream"
+	const file = new File([blob], `${fileName}.${mimeType.split("/")[1]}`, {
+		type: mimeType,
+	})
+	return file
 }

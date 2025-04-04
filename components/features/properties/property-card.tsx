@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { ImageCarousel } from "@/components/ui/image-carousel"
 import { useFavorites } from "@/hooks/favorites/use-favorites"
-import { usePropertyImages } from "@/hooks/properties/use-property-images"
+import { listImages } from "@/hooks/properties/use-image-storage"
 import { formatPrice } from "@/lib/utils"
 import { Database } from "@/types/supabase"
 import { Bath, Bed, Heart, Square } from "lucide-react"
@@ -24,7 +24,6 @@ export function PropertyCard({
 	onFavoriteToggle,
 }: PropertyCardProps) {
 	const { isFavorite, addFavorite, removeFavorite, getFavoriteId } = useFavorites()
-	const { listImages } = usePropertyImages()
 	const [propertyImages, setPropertyImages] = useState<
 		Array<{ url: string; path: string }>
 	>([])

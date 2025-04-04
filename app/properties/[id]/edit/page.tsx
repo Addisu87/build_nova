@@ -3,7 +3,6 @@
 import { PropertyForm } from "@/components/features/properties/property-form"
 import { LoadingState } from "@/components/ui/loading-state"
 import { useAuth } from "@/contexts/auth-context"
-import { useAdminStatus } from "@/hooks/auth/use-admin-status"
 import { useProperty } from "@/hooks/queries/use-query-hooks"
 import { updateProperty } from "@/lib/supabase/db"
 import { Property } from "@/types"
@@ -19,7 +18,6 @@ interface EditPropertyPageProps {
 
 export default function EditPropertyPage({ params }: EditPropertyPageProps) {
 	const { user, isLoading: isAuthLoading } = useAuth()
-	const { isAdmin } = useAdminStatus(user)
 	const router = useRouter()
 	const { data: property, isLoading } = useProperty(params.id)
 	const [isSaving, setIsSaving] = useState(false)
@@ -52,9 +50,10 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
 		)
 	}
 
-	const canEditProperty = isAdmin || property.user_id === user.id
+	const canEditProperty = property.user_id === user.id
+	const isAdmin = user.user_metadata?.role === "admin"
 
-	if (!canEditProperty) {
+	if (!canEditProperty && !isAdmin) {
 		return (
 			<main className="container mx-auto px-4 py-8">
 				<div className="text-center">
@@ -70,7 +69,7 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
 			const propertyData = {
 				...data,
 				images: data.images && Array.isArray(data.images) ? data.images : [],
-				updated_at: new Date().toISOString()
+				updated_at: new Date().toISOString(),
 			}
 
 			await updateProperty(user.id, params.id, propertyData, isAdmin)
@@ -86,14 +85,12 @@ export default function EditPropertyPage({ params }: EditPropertyPageProps) {
 
 	return (
 		<main className="container mx-auto px-4 py-8">
-			<div className="space-y-8">
-				<h1 className="text-4xl font-bold">Edit Property</h1>
-				<PropertyForm
-					initialData={property}
-					onSubmit={handleSubmit}
-					isLoading={isSaving}
-				/>
-			</div>
+			<h1 className="text-2xl font-bold mb-6">Edit Property</h1>
+			<PropertyForm 
+				initialData={property} 
+				onSubmit={handleSubmit} 
+				isLoading={isSaving} 
+			/>
 		</main>
 	)
 }

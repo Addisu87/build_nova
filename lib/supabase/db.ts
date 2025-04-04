@@ -1,6 +1,5 @@
 import { Property } from "@/types"
 import { Database } from "@/types/supabase"
-import { supabaseAdmin } from "./admin-client"
 import { supabase } from "./client"
 
 export class DatabaseError extends Error {
@@ -71,9 +70,9 @@ export async function updateProperty(
 		.select()
 		.single()
 
-	if (error && isAdmin && supabaseAdmin) {
+	if (error && isAdmin) {
 		return handleSupabaseError(() =>
-			supabaseAdmin.from("properties").update(property).eq("id", id).select().single()
+			supabase.from("properties").update(property).eq("id", id).select().single(),
 		)
 	}
 
@@ -82,15 +81,11 @@ export async function updateProperty(
 }
 
 export function deleteProperty(id: string, isAdmin: boolean): Promise<void> {
-	if (!isAdmin || !supabaseAdmin) {
-		return handleSupabaseError(() => 
-			supabase.from("properties").delete().eq("id", id)
-		)
+	if (!isAdmin) {
+		return handleSupabaseError(() => supabase.from("properties").delete().eq("id", id))
 	}
 
-	return handleSupabaseError(() =>
-		supabaseAdmin.from("properties").delete().eq("id", id)
-	)
+	return handleSupabaseError(() => supabase.from("properties").delete().eq("id", id))
 }
 
 export function getFavorites() {
