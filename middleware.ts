@@ -1,4 +1,3 @@
-import { AdminService } from "@/lib/services/admin-service"
 import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs"
 import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
@@ -41,10 +40,7 @@ export async function middleware(req: NextRequest) {
 	// If user is not an admin and trying to access admin routes,
 	// redirect to home page
 	if (path.startsWith("/auth/admin") && session) {
-		const isAdmin =
-			AdminService.isSuperAdmin(session.user) ||
-			(await AdminService.isAdmin(session.user))
-
+		const isAdmin = session.user.user_metadata?.role === "admin"
 		if (!isAdmin) {
 			return NextResponse.redirect(new URL("/", req.url))
 		}
