@@ -220,13 +220,13 @@ export function PropertyForm({
 	return (
 		<form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
 			<div className="grid gap-6 md:grid-cols-2">
-				{/* Title */}
+				{/* Basic Information */}
 				<div>
 					<label className="text-sm font-medium">Title*</label>
 					<Input
 						{...form.register("title")}
 						className="mt-1"
-						placeholder="Beautiful family home"
+						placeholder="Luxurious Waterfront Villa with Ocean Views"
 					/>
 					{form.formState.errors.title && (
 						<p className="text-red-500 text-sm mt-1">
@@ -235,16 +235,13 @@ export function PropertyForm({
 					)}
 				</div>
 
-				{/* Price */}
 				<div>
 					<label className="text-sm font-medium">Price*</label>
 					<Input
 						type="number"
-						{...form.register("price", {
-							valueAsNumber: true,
-						})}
+						{...form.register("price", { valueAsNumber: true })}
 						className="mt-1"
-						placeholder="500000"
+						placeholder="750000"
 					/>
 					{form.formState.errors.price && (
 						<p className="text-red-500 text-sm mt-1">
@@ -253,7 +250,7 @@ export function PropertyForm({
 					)}
 				</div>
 
-				{/* Property Type */}
+				{/* Property Details */}
 				<div>
 					<label className="text-sm font-medium">Property Type*</label>
 					<Select
@@ -280,16 +277,11 @@ export function PropertyForm({
 					)}
 				</div>
 
-				{/* Year Built */}
 				<div>
-					<label className="text-sm font-medium">Year Built</label>
+					<label className="text-sm font-medium">Year Built*</label>
 					<Input
 						type="number"
-						{...form.register("year_built", {
-							valueAsNumber: true,
-							min: 1800,
-							max: new Date().getFullYear(),
-						})}
+						{...form.register("year_built", { valueAsNumber: true })}
 						className="mt-1"
 						placeholder="2020"
 					/>
@@ -300,17 +292,13 @@ export function PropertyForm({
 					)}
 				</div>
 
-				{/* Bedrooms */}
 				<div>
 					<label className="text-sm font-medium">Bedrooms*</label>
 					<Input
 						type="number"
-						{...form.register("bedrooms", {
-							valueAsNumber: true,
-							min: 0,
-						})}
+						{...form.register("bedrooms", { valueAsNumber: true })}
 						className="mt-1"
-						placeholder="3"
+						placeholder="4"
 					/>
 					{form.formState.errors.bedrooms && (
 						<p className="text-red-500 text-sm mt-1">
@@ -319,17 +307,13 @@ export function PropertyForm({
 					)}
 				</div>
 
-				{/* Bathrooms */}
 				<div>
 					<label className="text-sm font-medium">Bathrooms*</label>
 					<Input
 						type="number"
-						{...form.register("bathrooms", {
-							valueAsNumber: true,
-							min: 0,
-						})}
+						{...form.register("bathrooms", { valueAsNumber: true })}
 						className="mt-1"
-						placeholder="2"
+						placeholder="3.5"
 					/>
 					{form.formState.errors.bathrooms && (
 						<p className="text-red-500 text-sm mt-1">
@@ -338,17 +322,13 @@ export function PropertyForm({
 					)}
 				</div>
 
-				{/* Square Feet */}
 				<div>
 					<label className="text-sm font-medium">Square Feet*</label>
 					<Input
 						type="number"
-						{...form.register("square_feet", {
-							valueAsNumber: true,
-							min: 0,
-						})}
+						{...form.register("square_feet", { valueAsNumber: true })}
 						className="mt-1"
-						placeholder="1500"
+						placeholder="2500"
 					/>
 					{form.formState.errors.square_feet && (
 						<p className="text-red-500 text-sm mt-1">
@@ -357,13 +337,13 @@ export function PropertyForm({
 					)}
 				</div>
 
-				{/* Address */}
+				{/* Location Information */}
 				<div className="md:col-span-2">
 					<label className="text-sm font-medium">Address*</label>
 					<Input
 						{...form.register("address")}
 						className="mt-1"
-						placeholder="123 Main St"
+						placeholder="1234 Ocean View Boulevard"
 					/>
 					{form.formState.errors.address && (
 						<p className="text-red-500 text-sm mt-1">
@@ -372,10 +352,13 @@ export function PropertyForm({
 					)}
 				</div>
 
-				{/* City */}
 				<div>
 					<label className="text-sm font-medium">City*</label>
-					<Input {...form.register("city")} className="mt-1" placeholder="Anytown" />
+					<Input
+						{...form.register("city")}
+						className="mt-1"
+						placeholder="San Francisco"
+					/>
 					{form.formState.errors.city && (
 						<p className="text-red-500 text-sm mt-1">
 							{form.formState.errors.city.message}
@@ -383,7 +366,6 @@ export function PropertyForm({
 					)}
 				</div>
 
-				{/* State */}
 				<div>
 					<label className="text-sm font-medium">State*</label>
 					<Input
@@ -399,13 +381,293 @@ export function PropertyForm({
 					)}
 				</div>
 
-				{/* ZIP Code */}
 				<div>
 					<label className="text-sm font-medium">ZIP Code*</label>
-					<Input {...form.register("zip_code")} className="mt-1" placeholder="90210" />
+					<Input {...form.register("zip_code")} className="mt-1" placeholder="94123" />
 					{form.formState.errors.zip_code && (
 						<p className="text-red-500 text-sm mt-1">
 							{form.formState.errors.zip_code.message}
+						</p>
+					)}
+				</div>
+
+				<div>
+					<label className="text-sm font-medium">Latitude</label>
+					<Input
+						type="number"
+						step="any"
+						{...form.register("latitude", { valueAsNumber: true })}
+						className="mt-1"
+						placeholder="37.7749"
+					/>
+					{form.formState.errors.latitude && (
+						<p className="text-red-500 text-sm mt-1">
+							{form.formState.errors.latitude.message}
+						</p>
+					)}
+				</div>
+
+				<div>
+					<label className="text-sm font-medium">Longitude</label>
+					<Input
+						type="number"
+						step="any"
+						{...form.register("longitude", { valueAsNumber: true })}
+						className="mt-1"
+						placeholder="-122.4194"
+					/>
+					{form.formState.errors.longitude && (
+						<p className="text-red-500 text-sm mt-1">
+							{form.formState.errors.longitude.message}
+						</p>
+					)}
+				</div>
+
+				{/* Property Status */}
+				<div>
+					<label className="text-sm font-medium">Status</label>
+					<Select
+						value={form.watch("status")}
+						onValueChange={(value) => form.setValue("status", value)}
+					>
+						<SelectTrigger className="mt-1">
+							<SelectValue placeholder="Select status" />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="for-sale">For Sale</SelectItem>
+							<SelectItem value="for-rent">For Rent</SelectItem>
+							<SelectItem value="sold">Sold</SelectItem>
+							<SelectItem value="pending">Pending</SelectItem>
+						</SelectContent>
+					</Select>
+					{form.formState.errors.status && (
+						<p className="text-red-500 text-sm mt-1">
+							{form.formState.errors.status.message}
+						</p>
+					)}
+				</div>
+
+				{/* Additional Property Details */}
+				<div>
+					<label className="text-sm font-medium">Lot Size (sq ft)</label>
+					<Input
+						type="number"
+						{...form.register("lot_size", { valueAsNumber: true })}
+						className="mt-1"
+						placeholder="6000"
+					/>
+				</div>
+
+				<div>
+					<label className="text-sm font-medium">Parking Spaces</label>
+					<Input
+						type="number"
+						{...form.register("parking_spaces", { valueAsNumber: true })}
+						className="mt-1"
+						placeholder="2"
+					/>
+				</div>
+
+				<div>
+					<label className="text-sm font-medium">Heating Type</label>
+					<Input
+						{...form.register("heating_type")}
+						className="mt-1"
+						placeholder="Forced Air, Radiant, Heat Pump"
+					/>
+				</div>
+
+				<div>
+					<label className="text-sm font-medium">Cooling Type</label>
+					<Input
+						{...form.register("cooling_type")}
+						className="mt-1"
+						placeholder="Central Air, Split System"
+					/>
+				</div>
+
+				{/* Financial Details */}
+				<div>
+					<label className="text-sm font-medium">HOA Fees (monthly)</label>
+					<Input
+						type="number"
+						{...form.register("hoa_fees", { valueAsNumber: true })}
+						className="mt-1"
+						placeholder="450"
+					/>
+				</div>
+
+				<div>
+					<label className="text-sm font-medium">Property Tax (annual)</label>
+					<Input
+						type="number"
+						{...form.register("property_tax", { valueAsNumber: true })}
+						className="mt-1"
+						placeholder="8500"
+					/>
+				</div>
+
+				<div>
+					<label className="text-sm font-medium">Price per Square Foot</label>
+					<Input
+						type="number"
+						{...form.register("price_per_square_foot", { valueAsNumber: true })}
+						className="mt-1"
+						placeholder="350"
+					/>
+				</div>
+
+				<div>
+					<label className="text-sm font-medium">Estimated Value</label>
+					<Input
+						type="number"
+						{...form.register("estimate", { valueAsNumber: true })}
+						className="mt-1"
+						placeholder="785000"
+					/>
+				</div>
+
+				<div>
+					<label className="text-sm font-medium">Monthly Rent Estimate</label>
+					<Input
+						type="number"
+						{...form.register("rent_estimate", { valueAsNumber: true })}
+						className="mt-1"
+						placeholder="3500"
+					/>
+				</div>
+
+				<div>
+					<label className="text-sm font-medium">Last Sold Price</label>
+					<Input
+						type="number"
+						{...form.register("last_sold_price", { valueAsNumber: true })}
+						className="mt-1"
+						placeholder="680000"
+					/>
+				</div>
+
+				{/* Listing Information */}
+				<div>
+					<label className="text-sm font-medium">MLS Number</label>
+					<Input
+						{...form.register("mls_number")}
+						className="mt-1"
+						placeholder="SF24A456789"
+					/>
+				</div>
+
+				<div>
+					<label className="text-sm font-medium">Listing Date</label>
+					<Input type="date" {...form.register("listing_date")} className="mt-1" />
+				</div>
+
+				<div>
+					<label className="text-sm font-medium">Days on Market</label>
+					<Input
+						type="number"
+						{...form.register("days_on_market", { valueAsNumber: true })}
+						className="mt-1"
+						placeholder="14"
+					/>
+				</div>
+
+				<div>
+					<label className="text-sm font-medium">Last Sold Date</label>
+					<Input type="date" {...form.register("last_sold_date")} className="mt-1" />
+				</div>
+
+				{/* Location Scores */}
+				<div>
+					<label className="text-sm font-medium">School District</label>
+					<Input
+						{...form.register("school_district")}
+						className="mt-1"
+						placeholder="San Francisco Unified School District"
+					/>
+				</div>
+
+				<div>
+					<label className="text-sm font-medium">Walk Score</label>
+					<Input
+						type="number"
+						{...form.register("walk_score", { valueAsNumber: true })}
+						className="mt-1"
+						placeholder="85"
+						min="0"
+						max="100"
+					/>
+				</div>
+
+				<div>
+					<label className="text-sm font-medium">Transit Score</label>
+					<Input
+						type="number"
+						{...form.register("transit_score", { valueAsNumber: true })}
+						className="mt-1"
+						placeholder="90"
+						min="0"
+						max="100"
+					/>
+				</div>
+
+				<div>
+					<label className="text-sm font-medium">Bike Score</label>
+					<Input
+						type="number"
+						{...form.register("bike_score", { valueAsNumber: true })}
+						className="mt-1"
+						placeholder="75"
+						min="0"
+						max="100"
+					/>
+				</div>
+
+				{/* Features and Amenities */}
+				<div className="md:col-span-2">
+					<label className="text-sm font-medium">Features</label>
+					<Input
+						{...form.register("features")}
+						className="mt-1"
+						placeholder="Hardwood floors, Granite countertops, Updated kitchen, Smart home features"
+						onChange={(e) => {
+							const features = e.target.value
+								.split(",")
+								.map((f) => f.trim())
+								.filter(Boolean)
+							form.setValue("features", features)
+						}}
+					/>
+				</div>
+
+				<div className="md:col-span-2">
+					<label className="text-sm font-medium">Amenities</label>
+					<Input
+						{...form.register("amenities")}
+						className="mt-1"
+						placeholder="Swimming pool, Home theater, Wine cellar, Outdoor kitchen"
+						onChange={(e) => {
+							const amenities = e.target.value
+								.split(",")
+								.map((a) => a.trim())
+								.filter(Boolean)
+							form.setValue("amenities", amenities)
+						}}
+					/>
+				</div>
+
+				{/* Description */}
+				<div className="md:col-span-2">
+					<label className="text-sm font-medium">Description*</label>
+					<Textarea
+						{...form.register("description")}
+						className="mt-1"
+						placeholder="Stunning waterfront property featuring panoramic ocean views. This luxurious home offers modern amenities, high-end finishes, and an ideal location..."
+						rows={4}
+					/>
+					{form.formState.errors.description && (
+						<p className="text-red-500 text-sm mt-1">
+							{form.formState.errors.description.message}
 						</p>
 					)}
 				</div>
@@ -452,22 +714,6 @@ export function PropertyForm({
 							</div>
 						))}
 					</div>
-				)}
-			</div>
-
-			{/* Description */}
-			<div>
-				<label className="text-sm font-medium">Description*</label>
-				<Textarea
-					{...form.register("description")}
-					className="mt-1"
-					rows={4}
-					placeholder="Describe the property features, neighborhood, and unique selling points..."
-				/>
-				{form.formState.errors.description && (
-					<p className="text-red-500 text-sm mt-1">
-						{form.formState.errors.description.message}
-					</p>
 				)}
 			</div>
 
